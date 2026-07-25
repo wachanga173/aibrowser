@@ -3,7 +3,7 @@ const path = require('path');
 
 /**
  * Task 1.4 — Verifiable No-Telemetry Enforcer (Node.js CommonJS)
- * Scans codebase for network-emitted call signatures.
+ * Scans extension codebase, native host, and python orchestrator for network-emitted call signatures.
  */
 
 const ALLOWLISTED_FILES = [
@@ -12,7 +12,8 @@ const ALLOWLISTED_FILES = [
   path.normalize('scripts/check-no-telemetry.ts'),
   path.normalize('scripts/generate-dnr-rules.js'),
   path.normalize('scripts/generate-dnr-rules.ts'),
-  path.normalize('test-suite/telemetry-fixtures/disallowed-sample.ts')
+  path.normalize('test-suite/telemetry-fixtures/disallowed-sample.ts'),
+  path.normalize('public/index.html') // Vercel landing page GitHub API release fetcher
 ];
 
 const BANNED_PATTERNS = [

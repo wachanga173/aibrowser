@@ -10,7 +10,11 @@ import * as path from 'path';
 const ALLOWLISTED_FILES = [
   path.normalize('extension/src/allowlisted-network-calls.ts'),
   path.normalize('scripts/check-no-telemetry.ts'),
-  path.normalize('test-suite/telemetry-fixtures/disallowed-sample.ts') // fixture used strictly for testing the lint check itself
+  path.normalize('scripts/check-no-telemetry.js'),
+  path.normalize('scripts/generate-dnr-rules.js'),
+  path.normalize('scripts/generate-dnr-rules.ts'),
+  path.normalize('test-suite/telemetry-fixtures/disallowed-sample.ts'),
+  path.normalize('public/index.html')
 ];
 
 const BANNED_PATTERNS = [
@@ -51,7 +55,6 @@ export function runTelemetryCheck(targetDir: string = process.cwd()): { success:
   for (const file of allFiles) {
     const relativePath = path.normalize(path.relative(targetDir, file));
 
-    // Skip allowlisted files
     if (ALLOWLISTED_FILES.some(allowed => relativePath.endsWith(allowed))) {
       continue;
     }
@@ -60,7 +63,6 @@ export function runTelemetryCheck(targetDir: string = process.cwd()): { success:
     const lines = content.split('\n');
 
     lines.forEach((line, index) => {
-      // Ignore comment lines
       const trimmed = line.trim();
       if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('*')) return;
 
@@ -78,7 +80,6 @@ export function runTelemetryCheck(targetDir: string = process.cwd()): { success:
   };
 }
 
-// Execution if run directly via CLI
 if (require.main === module) {
   console.log('🔍 Running Verifiable Zero-Telemetry Enforcement Check...');
   const result = runTelemetryCheck();
