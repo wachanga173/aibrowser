@@ -1,0 +1,52 @@
+name: Automatic Production Build & Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies & Run Release Verification Suite
+        run: |
+          npm ci
+          npm run verify:release
+
+      - name: Package Chrome Extension Distribution ZIP
+        run: |
+          cd dist/chrome-extension && zip -r ../../chrome-extension.zip . && cd ../..
+
+      - name: Generate Release Version Tag
+        id: tag_name
+        run: |
+          echo "TAG_NAME=v1.0.${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+
+      - name: Create Automatic GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: Release ${{ env.TAG_NAME }}
+          body: |
+            Automatic production build release for Privacy AI Guard.
+            Includes zero-telemetry verification, static DNR blocking rules, WASM heuristics, and cross-browser support.
+          files: |
+            chrome-extension.zip
+            scripts/install-native-host.bat
+            scripts/install-native-host.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
