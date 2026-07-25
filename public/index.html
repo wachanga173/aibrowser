@@ -5,81 +5,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Privacy AI Guard - Local-First AI Browser Protection</title>
   <meta name="description" content="Open-source, zero-telemetry local privacy extension with ad/tracker blocking, fingerprinting defense, and offline AI page research.">
-  <link rel="stylesheet" href="../design-system/tokens.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #030712 100%);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --border-color: rgba(255, 255, 255, 0.12);
+      --primary-accent: #818cf8;
+      --shield-green: #22c55e;
+      --shield-green-glow: rgba(34, 197, 94, 0.35);
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      background: var(--bg-gradient-dark);
-      color: var(--text-primary-dark);
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: var(--font-body);
       margin: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
+
     .hero-container {
       max-width: 900px;
       padding: 80px 24px 40px 24px;
       text-align: center;
     }
+
     .hero-badge {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
       padding: 6px 16px;
       border-radius: 20px;
-      background: rgba(138, 92, 246, 0.15);
-      border: 1px solid rgba(138, 92, 246, 0.3);
+      background: rgba(129, 140, 248, 0.15);
+      border: 1px solid rgba(129, 140, 248, 0.3);
       color: var(--primary-accent);
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 24px;
     }
+
     .hero-title {
       font-family: var(--font-heading);
       font-size: 48px;
       font-weight: 700;
       line-height: 1.15;
-      margin: 0 0 16px 0;
-      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+      margin: 0 0 20px 0;
+      background: linear-gradient(135deg, #ffffff 0%, #c7d2fe 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+
     .hero-subtitle {
       font-size: 18px;
-      color: var(--text-secondary-dark);
+      color: var(--text-sub);
       max-width: 680px;
-      margin: 0 auto 32px auto;
+      margin: 0 auto 36px auto;
       line-height: 1.6;
     }
+
     .btn-download-primary {
       display: inline-flex;
       align-items: center;
-      gap: 12px;
+      justify-content: center;
       padding: 16px 36px;
       border-radius: 12px;
-      background: linear-gradient(135deg, var(--shield-green) 0%, hsl(152, 85%, 38%) 100%);
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
       color: white;
       font-family: var(--font-heading);
       font-size: 16px;
       font-weight: 700;
       text-decoration: none;
       box-shadow: 0 8px 24px var(--shield-green-glow);
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+
     .btn-download-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(34, 197, 94, 0.45);
+      box-shadow: 0 12px 32px rgba(34, 197, 94, 0.5);
     }
+
     .browsers-bar {
       display: flex;
       gap: 12px;
       justify-content: center;
       align-items: center;
-      margin-top: 24px;
+      margin-top: 28px;
       font-size: 13px;
-      color: var(--text-secondary-dark);
+      color: var(--text-sub);
     }
+
     .features-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -87,38 +116,47 @@
       max-width: 1000px;
       width: 100%;
       padding: 40px 24px;
-      box-sizing: border-box;
     }
-    .feature-card {
+
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
       padding: 24px;
       text-align: left;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     }
+
     .feature-title {
       font-family: var(--font-heading);
       font-size: 18px;
       font-weight: 600;
-      margin: 0 0 8px 0;
+      color: #ffffff;
+      margin: 0 0 10px 0;
     }
+
     .feature-desc {
       font-size: 13px;
-      color: var(--text-secondary-dark);
+      color: var(--text-sub);
       line-height: 1.5;
       margin: 0;
     }
+
     .install-steps {
       max-width: 800px;
       width: 100%;
       padding: 40px 24px;
-      box-sizing: border-box;
     }
+
     .step-card {
-      padding: 16px 20px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       display: flex;
       align-items: flex-start;
       gap: 16px;
-      text-align: left;
     }
+
     .step-number {
       width: 32px;
       height: 32px;
@@ -131,15 +169,20 @@
       justify-content: center;
       flex-shrink: 0;
     }
+
     footer {
       margin-top: auto;
       padding: 32px;
-      color: var(--text-secondary-dark);
+      color: var(--text-sub);
       font-size: 13px;
+    }
+
+    a {
+      color: var(--primary-accent);
     }
   </style>
 </head>
-<body class="dark-theme">
+<body>
 
   <div class="hero-container">
     <div class="hero-badge">
@@ -150,39 +193,39 @@
       Blocks ads, trackers, and fingerprinting scripts instantly while giving you local, offline AI research capabilities right inside your browser.
     </p>
 
-    <!-- Automatic Download Button fetching latest release via GitHub API -->
+    <!-- Automatic Download Link -->
     <a id="downloadReleaseBtn" href="https://github.com/wachanga173/aibrowser/releases/latest" target="_blank" class="btn-download-primary">
-      Download Latest Extension (.zip)
+      Download Extension (.zip)
     </a>
 
     <div class="browsers-bar">
       <span>Supported Browsers:</span>
-      <strong>Google Chrome</strong> &bull;
-      <strong>Microsoft Edge</strong> &bull;
-      <strong>Brave</strong> &bull;
-      <strong>Opera</strong> &bull;
-      <strong>Firefox</strong>
+      <strong style="color: #fff;">Google Chrome</strong> &bull;
+      <strong style="color: #fff;">Microsoft Edge</strong> &bull;
+      <strong style="color: #fff;">Brave</strong> &bull;
+      <strong style="color: #fff;">Opera</strong> &bull;
+      <strong style="color: #fff;">Firefox</strong>
     </div>
   </div>
 
-  <!-- Features Section -->
+  <!-- Features Grid -->
   <div class="features-grid">
-    <div class="glass-card feature-card">
+    <div class="glass-card">
       <h3 class="feature-title">Static DNR Ad Blocking</h3>
       <p class="feature-desc">Blocks ad networks and telemetry before requests ever leave your browser using compiled declarative rules.</p>
     </div>
 
-    <div class="glass-card feature-card">
+    <div class="glass-card">
       <h3 class="feature-title">WASM Heuristic Shield</h3>
       <p class="feature-desc">Rust-compiled WASM module detects canvas fingerprinting and excessive navigator property probes.</p>
     </div>
 
-    <div class="glass-card feature-card">
+    <div class="glass-card">
       <h3 class="feature-title">Offline AI Research</h3>
       <p class="feature-desc">Summarize pages and ask questions locally with zero server API calls or prompt data leakage.</p>
     </div>
 
-    <div class="glass-card feature-card">
+    <div class="glass-card">
       <h3 class="feature-title">Human Confirmation Gate</h3>
       <p class="feature-desc">Sensitive actions like form submissions require an explicit user click confirmation token.</p>
     </div>
@@ -190,35 +233,35 @@
 
   <!-- Installation Steps -->
   <div class="install-steps">
-    <h2 style="font-family: var(--font-heading); margin-bottom: 24px;">Installation Instructions</h2>
+    <h2 style="font-family: var(--font-heading); color: #ffffff; margin-bottom: 24px; text-align: center;">Installation Instructions</h2>
     
     <div class="glass-card step-card">
       <div class="step-number">1</div>
       <div>
-        <h4 style="margin: 0 0 4px 0;">Download Automated Release ZIP</h4>
-        <p style="margin: 0; font-size: 13px; color: var(--text-secondary-dark);">Click the download button above to retrieve the latest automatically built extension package from GitHub Releases.</p>
+        <h4 style="margin: 0 0 4px 0; color: #fff;">Download Automated Release ZIP</h4>
+        <p style="margin: 0; font-size: 13px; color: var(--text-sub);">Click the download button above to retrieve the latest automatically built extension package from GitHub Releases.</p>
       </div>
     </div>
 
     <div class="glass-card step-card">
       <div class="step-number">2</div>
       <div>
-        <h4 style="margin: 0 0 4px 0;">Load Unpacked in Browser</h4>
-        <p style="margin: 0; font-size: 13px; color: var(--text-secondary-dark);">Unzip the folder, open chrome://extensions (or edge://extensions), enable Developer Mode, and click Load unpacked.</p>
+        <h4 style="margin: 0 0 4px 0; color: #fff;">Load Unpacked in Browser</h4>
+        <p style="margin: 0; font-size: 13px; color: var(--text-sub);">Unzip the folder, open chrome://extensions (or edge://extensions), enable Developer Mode, and click Load unpacked.</p>
       </div>
     </div>
 
     <div class="glass-card step-card">
       <div class="step-number">3</div>
       <div>
-        <h4 style="margin: 0 0 4px 0;">Enjoy Privacy Protection</h4>
-        <p style="margin: 0; font-size: 13px; color: var(--text-secondary-dark);">The Privacy Guard icon will appear in your toolbar to instantly protect your web browsing.</p>
+        <h4 style="margin: 0 0 4px 0; color: #fff;">Enjoy Privacy Protection</h4>
+        <p style="margin: 0; font-size: 13px; color: var(--text-sub);">The Privacy Guard icon will appear in your toolbar to instantly protect your web browsing.</p>
       </div>
     </div>
   </div>
 
   <footer>
-    Open Source under MIT License &bull; <a href="https://github.com/wachanga173/aibrowser" target="_blank" style="color: var(--primary-accent);">View Source on GitHub</a>
+    Open Source under MIT License &bull; <a href="https://github.com/wachanga173/aibrowser" target="_blank">View Source on GitHub</a>
   </footer>
 
   <script>
