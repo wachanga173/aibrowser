@@ -1,7 +1,6 @@
 {
   "version": 2,
   "cleanUrls": true,
-  "public": true,
   "buildCommand": "npm run build:production",
   "outputDirectory": "public"
 }
