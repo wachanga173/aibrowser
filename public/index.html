@@ -36,13 +36,14 @@
       align-items: center;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
     /* Navigation Header */
     header {
       width: 100%;
       max-width: 1100px;
-      padding: 20px 24px;
+      padding: 24px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -50,13 +51,11 @@
 
     .brand-logo {
       font-family: var(--font-heading);
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 700;
       color: #ffffff;
       text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      letter-spacing: -0.5px;
     }
 
     .nav-links {
@@ -77,23 +76,19 @@
 
     /* Animations */
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(24px); }
+      from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes fadeInSlow {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+    .animate-1 { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-2 { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; opacity: 0; }
+    .animate-3 { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
 
-    .animate-1 { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .animate-2 { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards; opacity: 0; }
-    .animate-3 { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; opacity: 0; }
-
-    /* Hero Section */
+    /* Dynamic Hero Section */
     .hero-container {
+      width: 100%;
       max-width: 900px;
-      padding: 80px 24px 60px 24px;
+      padding: 60px 24px 40px 24px;
       text-align: center;
     }
 
@@ -107,16 +102,15 @@
       color: var(--primary-accent);
       font-size: 13px;
       font-weight: 600;
-      margin-bottom: 28px;
-      letter-spacing: 0.5px;
+      margin-bottom: 24px;
     }
 
     .hero-title {
       font-family: var(--font-heading);
-      font-size: 56px;
+      font-size: clamp(32px, 6vw, 56px);
       font-weight: 700;
       line-height: 1.12;
-      margin: 0 0 24px 0;
+      margin: 0 0 20px 0;
       background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -124,15 +118,15 @@
     }
 
     .hero-subtitle {
-      font-size: 19px;
+      font-size: clamp(15px, 2.5vw, 19px);
       color: var(--text-sub);
       max-width: 680px;
-      margin: 0 auto 40px auto;
+      margin: 0 auto 36px auto;
       line-height: 1.6;
       font-weight: 400;
     }
 
-    /* Clean Solid Button (No Glow) */
+    /* Clean Solid Button */
     .btn-download-clean {
       display: inline-flex;
       align-items: center;
@@ -147,6 +141,7 @@
       text-decoration: none;
       border: 1px solid rgba(255, 255, 255, 0.1);
       transition: background-color 0.2s ease, transform 0.2s ease;
+      width: auto;
     }
 
     .btn-download-clean:hover {
@@ -156,22 +151,23 @@
 
     .browsers-bar {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       justify-content: center;
       align-items: center;
-      margin-top: 32px;
+      flex-wrap: wrap;
+      margin-top: 28px;
       font-size: 13px;
       color: var(--text-sub);
     }
 
-    /* Features Section */
+    /* Symmetrical 2x2 Even Grid */
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 24px;
-      max-width: 1100px;
+      max-width: 1000px;
       width: 100%;
-      padding: 40px 24px 80px 24px;
+      padding: 40px 24px 60px 24px;
     }
 
     .glass-card {
@@ -182,6 +178,9 @@
       border-radius: 16px;
       padding: 32px 28px;
       text-align: left;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
       transition: border-color 0.3s ease, transform 0.3s ease;
     }
 
@@ -196,6 +195,7 @@
       font-weight: 600;
       color: #ffffff;
       margin: 0 0 12px 0;
+      line-height: 1.3;
     }
 
     .feature-desc {
@@ -205,18 +205,55 @@
       margin: 0;
     }
 
+    /* Installation Steps Section */
+    .install-steps {
+      max-width: 1000px;
+      width: 100%;
+      padding: 20px 24px 60px 24px;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .step-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(129, 140, 248, 0.15);
+      border: 1px solid var(--primary-accent);
+      color: var(--primary-accent);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
     /* Footer */
     footer {
       width: 100%;
       max-width: 1100px;
       border-top: 1px solid var(--border-color);
-      padding: 40px 24px;
+      padding: 36px 24px;
       margin-top: auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 13px;
       color: var(--text-sub);
+      flex-wrap: wrap;
+      gap: 16px;
     }
 
     .footer-links {
@@ -231,6 +268,31 @@
     }
 
     .footer-links a:hover { color: #ffffff; }
+
+    /* Responsive Mobile Breakpoints */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+      .steps-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero-container {
+        padding: 40px 20px 20px 20px;
+      }
+      .btn-download-clean {
+        width: 100%;
+      }
+      footer {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
   </style>
 </head>
 <body>
@@ -247,7 +309,7 @@
     </nav>
   </header>
 
-  <!-- Hero Section with Staggered Text Animations -->
+  <!-- Hero Section -->
   <div class="hero-container">
     <div class="hero-badge animate-1">
       Zero Telemetry &bull; 100% Local-First Engine
@@ -275,30 +337,61 @@
     </div>
   </div>
 
-  <!-- Features Grid -->
+  <!-- Evenly Arranged 2x2 Features Grid -->
   <div id="features" class="features-grid">
     <div class="glass-card">
       <h3 class="feature-title">Declarative Net Request Shield</h3>
-      <p class="feature-desc">Intercepts and blocks ad networks, trackers, and telemetry before network requests ever leave your browser.</p>
+      <p class="feature-desc">Intercepts and blocks ad networks, trackers, and telemetry before network requests ever leave your browser using compiled declarative rules.</p>
     </div>
 
     <div class="glass-card">
       <h3 class="feature-title">WASM Heuristic Defense</h3>
-      <p class="feature-desc">Compiled WebAssembly engine analyzes canvas operations and navigator property queries to block fingerprinting scripts.</p>
+      <p class="feature-desc">Compiled WebAssembly engine analyzes canvas operations and navigator property queries to detect and block fingerprinting scripts.</p>
     </div>
 
     <div class="glass-card">
       <h3 class="feature-title">Offline Page Intelligence</h3>
-      <p class="feature-desc">Process and query web page content locally using small quantized models with zero prompt data transmission.</p>
+      <p class="feature-desc">Process and query web page content locally using small quantized models with zero prompt data transmission or external server dependencies.</p>
     </div>
 
     <div class="glass-card">
       <h3 class="feature-title">Code-Enforced Human Gate</h3>
-      <p class="feature-desc">State-changing actions like form submissions strictly require an explicit user click confirmation token.</p>
+      <p class="feature-desc">State-changing actions like form submissions strictly require an explicit single-use user click confirmation token to proceed.</p>
     </div>
   </div>
 
-  <!-- Multi-Page Navigation Footer (No GitHub mentions) -->
+  <!-- Installation Steps -->
+  <div class="install-steps">
+    <h2 style="font-family: var(--font-heading); color: #ffffff; margin-bottom: 28px; text-align: center; font-size: clamp(24px, 4vw, 32px);">Installation Instructions</h2>
+    
+    <div class="steps-grid">
+      <div class="glass-card step-card">
+        <div class="step-number">1</div>
+        <div>
+          <h4 style="margin: 0 0 6px 0; color: #fff; font-size: 16px; font-family: var(--font-heading);">Download Release ZIP</h4>
+          <p style="margin: 0; font-size: 13px; color: var(--text-sub); line-height: 1.5;">Click the download button above to retrieve the latest pre-built extension package.</p>
+        </div>
+      </div>
+
+      <div class="glass-card step-card">
+        <div class="step-number">2</div>
+        <div>
+          <h4 style="margin: 0 0 6px 0; color: #fff; font-size: 16px; font-family: var(--font-heading);">Load Unpacked</h4>
+          <p style="margin: 0; font-size: 13px; color: var(--text-sub); line-height: 1.5;">Unzip the folder, open extensions in your browser, enable Developer Mode, and click Load unpacked.</p>
+        </div>
+      </div>
+
+      <div class="glass-card step-card">
+        <div class="step-number">3</div>
+        <div>
+          <h4 style="margin: 0 0 6px 0; color: #fff; font-size: 16px; font-family: var(--font-heading);">Active Protection</h4>
+          <p style="margin: 0; font-size: 13px; color: var(--text-sub); line-height: 1.5;">The Privacy Guard shield icon will appear in your toolbar to instantly protect browsing.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
   <footer>
     <div>&copy; 2026 Privacy Guard Engine. All rights reserved.</div>
     <div class="footer-links">
