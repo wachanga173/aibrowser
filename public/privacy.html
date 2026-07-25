@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Privacy Guard Engine</title>
+  <meta name="description" content="Official Privacy Policy for Privacy Guard Engine. Zero telemetry, local storage encryption, and total offline data isolation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #080c14;
+      --bg-gradient: linear-gradient(135deg, #0b1120 0%, #030712 100%);
+      --card-bg: rgba(22, 30, 46, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --primary-accent: #818cf8;
+      --shield-green: #10b981;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      width: 100%;
+      max-width: 1100px;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-logo {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .nav-item {
+      color: var(--text-sub);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-item:hover { color: #ffffff; }
+
+    .content-container {
+      max-width: 800px;
+      width: 100%;
+      padding: 60px 24px;
+    }
+
+    h1 {
+      font-family: var(--font-heading);
+      font-size: 40px;
+      font-weight: 700;
+      margin: 0 0 16px 0;
+      color: #ffffff;
+    }
+
+    .last-updated {
+      font-size: 14px;
+      color: var(--primary-accent);
+      margin-bottom: 40px;
+    }
+
+    .section {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      color: #ffffff;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    p, li {
+      font-size: 15px;
+      color: var(--text-sub);
+      line-height: 1.7;
+    }
+
+    ul { padding-left: 20px; }
+
+    footer {
+      width: 100%;
+      max-width: 1100px;
+      border-top: 1px solid var(--border-color);
+      padding: 40px 24px;
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      color: var(--text-sub);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover { color: #ffffff; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header>
+    <a href="index.html" class="brand-logo">
+      Privacy Guard
+    </a>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-item">Home</a>
+      <a href="privacy.html" class="nav-item" style="color: #fff;">Privacy Policy</a>
+      <a href="terms.html" class="nav-item">Terms of Service</a>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <div class="content-container">
+    <h1>Privacy Policy</h1>
+    <div class="last-updated">Effective Date: July 2026</div>
+
+    <div class="section">
+      <h2>1. Verifiable Zero Telemetry Guarantee</h2>
+      <p>Privacy Guard is designed under a non-negotiable architectural commitment: zero remote data transmission. The extension, background scripts, and local AI engines do not contain analytics, remote logging, telemetry trackers, or background telemetry pings.</p>
+    </div>
+
+    <div class="section">
+      <h2>2. Local Data Processing</h2>
+      <p>All page content analysis, ad/tracker filtering, and AI summarization occur entirely on your local machine. No raw web page HTML, extracted text snippets, or user prompt queries leave your browser.</p>
+    </div>
+
+    <div class="section">
+      <h2>3. Local Storage & Encryption at Rest</h2>
+      <p>Any data generated during browsing sessions (such as local activity logs or preference vectors) is stored strictly in your browser's local storage or encrypted local data directories. All local vector data is encrypted at rest using keys derived from your operating system's secure keychain.</p>
+    </div>
+
+    <div class="section">
+      <h2>4. Human Gate Action Isolation</h2>
+      <p>The extension enforces strict code-level permission boundaries. Sensitive actions (such as form submissions or navigating outside approved scopes) cannot be triggered automatically by AI models and require an explicit single-use user click confirmation token.</p>
+    </div>
+  </div>
+
+  <footer>
+    <div>&copy; 2026 Privacy Guard Engine. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </div>
+  </footer>
+
+</body>
+</html>

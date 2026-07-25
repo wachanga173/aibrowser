@@ -3,29 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy AI Guard - Local-First AI Browser Protection</title>
-  <meta name="description" content="Open-source, zero-telemetry local privacy extension with ad/tracker blocking, fingerprinting defense, and offline AI page research.">
+  <title>Privacy Guard — Next-Generation Local Privacy & Intelligence</title>
+  <meta name="description" content="Local-first privacy engine with ad and tracker blocking, fingerprinting defense, and offline AI page intelligence.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #090d16;
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #030712 100%);
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --border-color: rgba(255, 255, 255, 0.12);
+      --bg-dark: #080c14;
+      --bg-gradient: linear-gradient(135deg, #0b1120 0%, #030712 100%);
+      --card-bg: rgba(22, 30, 46, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(129, 140, 248, 0.3);
       --primary-accent: #818cf8;
-      --shield-green: #22c55e;
-      --shield-green-glow: rgba(34, 197, 94, 0.35);
+      --shield-green: #10b981;
       --text-main: #f8fafc;
       --text-sub: #94a3b8;
       --font-heading: 'Outfit', sans-serif;
       --font-body: 'Inter', sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       background: var(--bg-gradient);
@@ -40,63 +38,120 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Navigation Header */
+    header {
+      width: 100%;
+      max-width: 1100px;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-logo {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .nav-item {
+      color: var(--text-sub);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-item:hover { color: #ffffff; }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInSlow {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .animate-1 { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-2 { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards; opacity: 0; }
+    .animate-3 { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; opacity: 0; }
+
+    /* Hero Section */
     .hero-container {
       max-width: 900px;
-      padding: 80px 24px 40px 24px;
+      padding: 80px 24px 60px 24px;
       text-align: center;
     }
 
     .hero-badge {
       display: inline-flex;
       align-items: center;
-      padding: 6px 16px;
+      padding: 6px 18px;
       border-radius: 20px;
-      background: rgba(129, 140, 248, 0.15);
-      border: 1px solid rgba(129, 140, 248, 0.3);
+      background: rgba(129, 140, 248, 0.1);
+      border: 1px solid rgba(129, 140, 248, 0.2);
       color: var(--primary-accent);
       font-size: 13px;
       font-weight: 600;
-      margin-bottom: 24px;
+      margin-bottom: 28px;
+      letter-spacing: 0.5px;
     }
 
     .hero-title {
       font-family: var(--font-heading);
-      font-size: 48px;
+      font-size: 56px;
       font-weight: 700;
-      line-height: 1.15;
-      margin: 0 0 20px 0;
-      background: linear-gradient(135deg, #ffffff 0%, #c7d2fe 100%);
+      line-height: 1.12;
+      margin: 0 0 24px 0;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      letter-spacing: -1px;
     }
 
     .hero-subtitle {
-      font-size: 18px;
+      font-size: 19px;
       color: var(--text-sub);
       max-width: 680px;
-      margin: 0 auto 36px auto;
+      margin: 0 auto 40px auto;
       line-height: 1.6;
+      font-weight: 400;
     }
 
-    .btn-download-primary {
+    /* Clean Solid Button (No Glow) */
+    .btn-download-clean {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       padding: 16px 36px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-      color: white;
+      border-radius: 10px;
+      background: var(--shield-green);
+      color: #ffffff;
       font-family: var(--font-heading);
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 600;
       text-decoration: none;
-      box-shadow: 0 8px 24px var(--shield-green-glow);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background-color 0.2s ease, transform 0.2s ease;
     }
 
-    .btn-download-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(34, 197, 94, 0.5);
+    .btn-download-clean:hover {
+      background-color: #059669;
+      transform: translateY(-1px);
     }
 
     .browsers-bar {
@@ -104,18 +159,19 @@
       gap: 12px;
       justify-content: center;
       align-items: center;
-      margin-top: 28px;
+      margin-top: 32px;
       font-size: 13px;
       color: var(--text-sub);
     }
 
+    /* Features Section */
     .features-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 24px;
-      max-width: 1000px;
+      max-width: 1100px;
       width: 100%;
-      padding: 40px 24px;
+      padding: 40px 24px 80px 24px;
     }
 
     .glass-card {
@@ -124,144 +180,132 @@
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border-color);
       border-radius: 16px;
-      padding: 24px;
+      padding: 32px 28px;
       text-align: left;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .glass-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
     }
 
     .feature-title {
       font-family: var(--font-heading);
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
       color: #ffffff;
-      margin: 0 0 10px 0;
+      margin: 0 0 12px 0;
     }
 
     .feature-desc {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text-sub);
-      line-height: 1.5;
+      line-height: 1.6;
       margin: 0;
     }
 
-    .install-steps {
-      max-width: 800px;
-      width: 100%;
-      padding: 40px 24px;
-    }
-
-    .step-card {
-      margin-bottom: 16px;
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-    }
-
-    .step-number {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--primary-accent);
-      color: white;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
+    /* Footer */
     footer {
+      width: 100%;
+      max-width: 1100px;
+      border-top: 1px solid var(--border-color);
+      padding: 40px 24px;
       margin-top: auto;
-      padding: 32px;
-      color: var(--text-sub);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-size: 13px;
+      color: var(--text-sub);
     }
 
-    a {
-      color: var(--primary-accent);
+    .footer-links {
+      display: flex;
+      gap: 20px;
     }
+
+    .footer-links a {
+      color: var(--text-sub);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover { color: #ffffff; }
   </style>
 </head>
 <body>
 
+  <!-- Navigation Bar -->
+  <header>
+    <a href="index.html" class="brand-logo">
+      Privacy Guard
+    </a>
+    <nav class="nav-links">
+      <a href="#features" class="nav-item">Features</a>
+      <a href="privacy.html" class="nav-item">Privacy Policy</a>
+      <a href="terms.html" class="nav-item">Terms of Service</a>
+    </nav>
+  </header>
+
+  <!-- Hero Section with Staggered Text Animations -->
   <div class="hero-container">
-    <div class="hero-badge">
-      Zero Telemetry - 100% Local-First
+    <div class="hero-badge animate-1">
+      Zero Telemetry &bull; 100% Local-First Engine
     </div>
-    <h1 class="hero-title">Local-First AI & Ad Blocking Privacy Guard</h1>
-    <p class="hero-subtitle">
-      Blocks ads, trackers, and fingerprinting scripts instantly while giving you local, offline AI research capabilities right inside your browser.
+    <h1 class="hero-title animate-2">
+      Next-Generation Local Privacy & AI Intelligence
+    </h1>
+    <p class="hero-subtitle animate-3">
+      Blocks invasive trackers, ads, and fingerprinting probes instantly while providing local, offline AI research capabilities inside your web browser.
     </p>
 
-    <!-- Automatic Download Link -->
-    <a id="downloadReleaseBtn" href="https://github.com/wachanga173/aibrowser/releases/latest" target="_blank" class="btn-download-primary">
-      Download Extension (.zip)
-    </a>
+    <div class="animate-3">
+      <a id="downloadReleaseBtn" href="https://github.com/wachanga173/aibrowser/releases/latest" target="_blank" class="btn-download-clean">
+        Download Extension (.zip)
+      </a>
+    </div>
 
-    <div class="browsers-bar">
-      <span>Supported Browsers:</span>
+    <div class="browsers-bar animate-3">
+      <span>Compatible Browsers:</span>
       <strong style="color: #fff;">Google Chrome</strong> &bull;
       <strong style="color: #fff;">Microsoft Edge</strong> &bull;
       <strong style="color: #fff;">Brave</strong> &bull;
       <strong style="color: #fff;">Opera</strong> &bull;
-      <strong style="color: #fff;">Firefox</strong>
+      <strong style="color: #fff;">Mozilla Firefox</strong>
     </div>
   </div>
 
   <!-- Features Grid -->
-  <div class="features-grid">
+  <div id="features" class="features-grid">
     <div class="glass-card">
-      <h3 class="feature-title">Static DNR Ad Blocking</h3>
-      <p class="feature-desc">Blocks ad networks and telemetry before requests ever leave your browser using compiled declarative rules.</p>
+      <h3 class="feature-title">Declarative Net Request Shield</h3>
+      <p class="feature-desc">Intercepts and blocks ad networks, trackers, and telemetry before network requests ever leave your browser.</p>
     </div>
 
     <div class="glass-card">
-      <h3 class="feature-title">WASM Heuristic Shield</h3>
-      <p class="feature-desc">Rust-compiled WASM module detects canvas fingerprinting and excessive navigator property probes.</p>
+      <h3 class="feature-title">WASM Heuristic Defense</h3>
+      <p class="feature-desc">Compiled WebAssembly engine analyzes canvas operations and navigator property queries to block fingerprinting scripts.</p>
     </div>
 
     <div class="glass-card">
-      <h3 class="feature-title">Offline AI Research</h3>
-      <p class="feature-desc">Summarize pages and ask questions locally with zero server API calls or prompt data leakage.</p>
+      <h3 class="feature-title">Offline Page Intelligence</h3>
+      <p class="feature-desc">Process and query web page content locally using small quantized models with zero prompt data transmission.</p>
     </div>
 
     <div class="glass-card">
-      <h3 class="feature-title">Human Confirmation Gate</h3>
-      <p class="feature-desc">Sensitive actions like form submissions require an explicit user click confirmation token.</p>
+      <h3 class="feature-title">Code-Enforced Human Gate</h3>
+      <p class="feature-desc">State-changing actions like form submissions strictly require an explicit user click confirmation token.</p>
     </div>
   </div>
 
-  <!-- Installation Steps -->
-  <div class="install-steps">
-    <h2 style="font-family: var(--font-heading); color: #ffffff; margin-bottom: 24px; text-align: center;">Installation Instructions</h2>
-    
-    <div class="glass-card step-card">
-      <div class="step-number">1</div>
-      <div>
-        <h4 style="margin: 0 0 4px 0; color: #fff;">Download Automated Release ZIP</h4>
-        <p style="margin: 0; font-size: 13px; color: var(--text-sub);">Click the download button above to retrieve the latest automatically built extension package from GitHub Releases.</p>
-      </div>
-    </div>
-
-    <div class="glass-card step-card">
-      <div class="step-number">2</div>
-      <div>
-        <h4 style="margin: 0 0 4px 0; color: #fff;">Load Unpacked in Browser</h4>
-        <p style="margin: 0; font-size: 13px; color: var(--text-sub);">Unzip the folder, open chrome://extensions (or edge://extensions), enable Developer Mode, and click Load unpacked.</p>
-      </div>
-    </div>
-
-    <div class="glass-card step-card">
-      <div class="step-number">3</div>
-      <div>
-        <h4 style="margin: 0 0 4px 0; color: #fff;">Enjoy Privacy Protection</h4>
-        <p style="margin: 0; font-size: 13px; color: var(--text-sub);">The Privacy Guard icon will appear in your toolbar to instantly protect your web browsing.</p>
-      </div>
-    </div>
-  </div>
-
+  <!-- Multi-Page Navigation Footer (No GitHub mentions) -->
   <footer>
-    Open Source under MIT License &bull; <a href="https://github.com/wachanga173/aibrowser" target="_blank">View Source on GitHub</a>
+    <div>&copy; 2026 Privacy Guard Engine. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </div>
   </footer>
 
   <script>
@@ -275,7 +319,7 @@
           }
         }
       })
-      .catch(err => console.log('Using default releases URL fallback.'));
+      .catch(() => {});
   </script>
 </body>
 </html>

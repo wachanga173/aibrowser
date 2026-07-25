@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service — Privacy Guard Engine</title>
+  <meta name="description" content="Official Terms of Service for Privacy Guard Engine local browser extension and intelligence software.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #080c14;
+      --bg-gradient: linear-gradient(135deg, #0b1120 0%, #030712 100%);
+      --card-bg: rgba(22, 30, 46, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --primary-accent: #818cf8;
+      --shield-green: #10b981;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      width: 100%;
+      max-width: 1100px;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-logo {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .nav-item {
+      color: var(--text-sub);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-item:hover { color: #ffffff; }
+
+    .content-container {
+      max-width: 800px;
+      width: 100%;
+      padding: 60px 24px;
+    }
+
+    h1 {
+      font-family: var(--font-heading);
+      font-size: 40px;
+      font-weight: 700;
+      margin: 0 0 16px 0;
+      color: #ffffff;
+    }
+
+    .last-updated {
+      font-size: 14px;
+      color: var(--primary-accent);
+      margin-bottom: 40px;
+    }
+
+    .section {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      color: #ffffff;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    p, li {
+      font-size: 15px;
+      color: var(--text-sub);
+      line-height: 1.7;
+    }
+
+    footer {
+      width: 100%;
+      max-width: 1100px;
+      border-top: 1px solid var(--border-color);
+      padding: 40px 24px;
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      color: var(--text-sub);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover { color: #ffffff; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header>
+    <a href="index.html" class="brand-logo">
+      Privacy Guard
+    </a>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-item">Home</a>
+      <a href="privacy.html" class="nav-item">Privacy Policy</a>
+      <a href="terms.html" class="nav-item" style="color: #fff;">Terms of Service</a>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <div class="content-container">
+    <h1>Terms of Service</h1>
+    <div class="last-updated">Effective Date: July 2026</div>
+
+    <div class="section">
+      <h2>1. Acceptance of Terms</h2>
+      <p>By downloading, installing, or using Privacy Guard, you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, please do not use the extension.</p>
+    </div>
+
+    <div class="section">
+      <h2>2. Software License & Local Use</h2>
+      <p>Privacy Guard is provided under an open license for personal and organizational use. The software executes locally on your hardware. You retain full control over all locally processed data, stored preferences, and filter configurations.</p>
+    </div>
+
+    <div class="section">
+      <h2>3. Disclaimer of Warranties</h2>
+      <p>Privacy Guard is provided "as is" without warranty of any kind, express or implied. While the extension incorporates strict heuristic filtering and declarative net request rules, performance may vary depending on third-party site configurations.</p>
+    </div>
+
+    <div class="section">
+      <h2>4. Limitation of Liability</h2>
+      <p>In no event shall the authors or copyright holders be liable for any claim, damages, or other liability arising from, out of, or in connection with the software or the use or other dealings in the software.</p>
+    </div>
+  </div>
+
+  <footer>
+    <div>&copy; 2026 Privacy Guard Engine. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </div>
+  </footer>
+
+</body>
+</html>
