@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentActionSet",
+  "description": "Fixed, typed, closed set of executable actions",
+  "type": "object",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "extract_text" },
+        "selector": { "type": "string" }
+      },
+      "required": ["type", "selector"]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "click_element" },
+        "elementId": { "type": "string" }
+      },
+      "required": ["type", "elementId"]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "fill_field" },
+        "elementId": { "type": "string" },
+        "value": { "type": "string" }
+      },
+      "required": ["type", "elementId", "value"]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "navigate" },
+        "url": { "type": "string" }
+      },
+      "required": ["type", "url"]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "submit_form" },
+        "formId": { "type": "string" },
+        "confirmationToken": { "type": "string" }
+      },
+      "required": ["type", "formId", "confirmationToken"]
+    }
+  ]
+}

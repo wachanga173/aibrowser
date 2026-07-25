@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Human Confirmation Gate - Action Request</title>
+  <link rel="stylesheet" href="../../../design-system/tokens.css">
+  <style>
+    body {
+      width: 400px;
+      padding: 20px;
+      margin: 0 auto;
+    }
+    .modal-card {
+      padding: 24px;
+      border-left: 4px solid var(--warning-amber);
+    }
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      margin-top: 0;
+      color: var(--warning-amber);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .action-details {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 12px;
+      margin: 16px 0;
+      word-break: break-all;
+    }
+    .btn-row {
+      display: flex;
+      gap: 12px;
+    }
+    .btn-confirm {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: var(--shield-green);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-deny {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border-dark);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary-dark);
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="dark-theme">
+  <div class="glass-card modal-card">
+    <h2 class="modal-title">⚠️ Confirmation Required</h2>
+    <p style="font-size: 13px;">The AI Agent is requesting permission to perform an irreversible or sensitive action:</p>
+
+    <div id="actionPayload" class="action-details">
+      Action: submit_form<br>
+      Target Form: #checkout_form<br>
+      Destination: https://example.com/checkout
+    </div>
+
+    <div class="btn-row">
+      <button id="denyBtn" class="btn-deny">Deny</button>
+      <button id="confirmBtn" class="btn-confirm">Confirm Action</button>
+    </div>
+  </div>
+
+  <script src="dialog.js"></script>
+</body>
+</html>

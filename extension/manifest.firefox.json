@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "Privacy AI Browser Guard",
+  "version": "1.0.0",
+  "description": "Local-first privacy engine with ad/tracker blocking, fingerprinting defense, and local zero-telemetry architecture.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "privacy-ai-guard@local",
+      "strict_min_version": "115.0"
+    }
+  },
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "declarativeNetRequestFeedback",
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": ["src/background/index.js"]
+  },
+  "action": {
+    "default_popup": "src/ui/popup/index.html",
+    "default_title": "Privacy AI Guard Status"
+  },
+  "options_ui": {
+    "page": "src/ui/options/index.html",
+    "open_in_tab": true
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_default",
+        "enabled": true,
+        "path": "rules/ruleset_default.json"
+      }
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content-scripts/index.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/wasm/*", "design-system/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

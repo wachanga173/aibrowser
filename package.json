@@ -1,0 +1,13 @@
+{
+  "name": "privacy-ai-browser-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-First Privacy AI Browser Extension",
+  "scripts": {
+    "build:rules": "node scripts/generate-dnr-rules.js",
+    "build:production": "node scripts/build-production-release.js",
+    "lint:telemetry": "node scripts/check-no-telemetry.js",
+    "test": "node scripts/run-tests.js",
+    "verify:release": "npm run lint:telemetry && npm run build:production && npm run test"
+  }
+}
