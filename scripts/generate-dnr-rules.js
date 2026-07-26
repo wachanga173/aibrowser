@@ -23,7 +23,15 @@ const DEFAULT_FILTER_PATTERNS = [
   "||quantserve.com^",
   "*click_id=pop*",
   "*track=*click_id=*",
-  "*popunder*"
+  "*popunder*",
+  "*wrestpop*",
+  "*popdownload*",
+  "*downloadnow*",
+  "||*.monster^",
+  "||*.xyz^",
+  "||*.top^",
+  "||*.click^",
+  "||*.download^"
 ];
 
 function buildDnrRules(patterns) {
