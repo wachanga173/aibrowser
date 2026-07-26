@@ -50,34 +50,7 @@ function isAdUrlPattern(urlStr: string): boolean {
   return /(ad|banner|pop|click|redir|tracking|syndication|doubleclick|taboola|outbrain|adnxs|criteo|googlesyndication|adservice|wrestpop|downloadnow|popdownload|click_id|track=\d+|popunder|zoneid|aff_id|\.monster|\.xyz|\.top|\.click|\.download|\.icu|\.buzz|\?[a-f0-9]{8,})/i.test(urlStr);
 }
 
-// Inject window.open interceptor directly into the main world DOM context
-if (typeof document !== 'undefined') {
-  try {
-    const script = document.createElement('script');
-    script.textContent = `(${function() {
-      const originalOpen = window.open;
-      function isAd(url) {
-        if (!url) return true; // Block empty window.open('', '_blank') popups on movie/streaming sites
-        const u = url.toString();
-        return /(ad|banner|pop|click|redir|tracking|syndication|doubleclick|taboola|outbrain|adnxs|criteo|googlesyndication|adservice|wrestpop|downloadnow|popdownload|click_id|track=\d+|popunder|zoneid|aff_id|monster|xyz|top|click|download|icu|buzz|\?[a-f0-9]{8,})/i.test(u);
-      }
-
-      window.open = function(url, target, features) {
-        const urlStr = url ? url.toString() : '';
-        const targetStr = target ? target.toString() : '_blank';
-        if (!targetStr || targetStr === '_blank' || targetStr === '_new') {
-          if (isAd(urlStr)) {
-            console.log('[Privacy AI Guard] Intercepted ad popup window.open:', urlStr);
-            return null;
-          }
-        }
-        return originalOpen.apply(this, arguments as any);
-      };
-    }})();`;
-    (document.head || document.documentElement).appendChild(script);
-    script.remove();
-  } catch (e) {}
-}
+// Window open interception is natively executed in MAIN world via main-world.js
 
 // Intercept window.open calls in isolated content script context
 if (typeof window !== 'undefined') {
