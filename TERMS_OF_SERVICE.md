@@ -1,13 +1,13 @@
-# Privacy AI Guard — Enterprise Terms of Service
+# Privacy AI Guard — Terms of Service
 
 **Effective Date:** July 26, 2026  
-**Version:** 1.0.0 (Corporate Enterprise Edition)
+**Version:** 1.0.0 (Official Edition)
 
 ---
 
 ## 1. Acceptance of Terms
 
-By downloading, installing, accessing, or using Privacy AI Guard ("the Software", "the System"), you agree to be bound by these Enterprise Terms of Service ("Terms"). If you do not agree to all of these Terms, you may not install or use the Software.
+By downloading, installing, accessing, or using Privacy AI Guard ("the Software", "the System"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to all of these Terms, you may not install or use the Software.
 
 ---
 
@@ -17,7 +17,7 @@ By downloading, installing, accessing, or using Privacy AI Guard ("the Software"
 Subject to these Terms, Privacy AI Guard grants you a personal, non-exclusive, non-transferable, revocable license to use the Software for personal, professional, or commercial purposes.
 
 ### B. Open-Source Rights
-The Software source code is maintained publicly at [https://github.com/wachanga173/aibrowser](https://github.com/wachanga173/aibrowser). You may inspect, modify, and build the Software from source subject to applicable open-source license terms.
+The Software source code is made available for inspection. You may inspect, modify, and build the Software from source subject to applicable open-source license terms.
 
 ---
 
@@ -57,4 +57,4 @@ These Terms shall be governed by and construed in accordance with the laws of ap
 
 ## 8. Amendments & Updates
 
-We reserve the right to modify these Terms at any time. Updated Terms will be published in the repository root ([TERMS_OF_SERVICE.md](file:///c:/Users/Peter/OneDrive/visual%20code/GitHub/ai/TERMS_OF_SERVICE.md)) and accessible via the extension Options interface.
+We reserve the right to modify these Terms at any time. Updated Terms will be published and accessible via the extension Options interface.

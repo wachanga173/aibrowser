@@ -1,4 +1,4 @@
-# Privacy AI Guard — Enterprise Privacy Policy
+# Privacy AI Guard — Privacy Policy
 
 **Effective Date:** July 26, 2026  
 **Version:** 1.0.0 (Verifiable Zero-Telemetry)
@@ -63,7 +63,6 @@ Because Privacy AI Guard does not collect, process, transmit, or store personal 
 ## 6. Security Auditability
 
 Privacy AI Guard is open-source. Anyone can audit the network activity, build scripts, and source code:
-* **GitHub Repository:** [https://github.com/wachanga173/aibrowser](https://github.com/wachanga173/aibrowser)
 * **Automated Audit Command:** Run `npm run verify:release` to verify zero-telemetry compliance locally.
 
 ---
@@ -79,6 +78,5 @@ Privacy AI Guard incorporates multi-layered defense mechanisms to block maliciou
 
 ## 8. Contact & Governance
 
-For corporate inquiries, security vulnerability disclosure, or privacy audits:
+For security vulnerability disclosure or privacy audits:
 * **Security Contact:** [security@privacyguard.local](mailto:security@privacyguard.local)
-* **Repository Owner:** [https://github.com/wachanga173/aibrowser](https://github.com/wachanga173/aibrowser)
