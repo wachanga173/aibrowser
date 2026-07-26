@@ -99,6 +99,88 @@ function isAdDomainUrl(url: string): boolean {
 
 const spawnedAboutBlankTabs = new Set<number>();
 
+// ── Tab-burst detection state ─────────────────────────────────────────
+// Track tab creation events per opener tab. If a single opener spawns
+// 2+ new tabs within 2 seconds, close the excess tabs.
+
+const TAB_BURST_WINDOW_MS = 2000;
+const TAB_BURST_THRESHOLD = 2;
+
+interface TabBurstEntry {
+  tabId: number;
+  timestamp: number;
+  url: string;
+}
+
+// Map from openerTabId -> list of recently spawned tab entries
+const tabBurstMap = new Map<number, TabBurstEntry[]>();
+
+// Map from tabId -> the URL the user intended to navigate to (sent from content script)
+const userIntentUrls = new Map<number, string>();
+
+// Prune old entries from the burst map for a given opener
+function pruneTabBurst(openerId: number): TabBurstEntry[] {
+  const now = Date.now();
+  const entries = tabBurstMap.get(openerId) || [];
+  const recent = entries.filter(e => now - e.timestamp < TAB_BURST_WINDOW_MS);
+  if (recent.length > 0) {
+    tabBurstMap.set(openerId, recent);
+  } else {
+    tabBurstMap.delete(openerId);
+  }
+  return recent;
+}
+
+// Check if a newly created tab is part of a burst, and close excess tabs if so
+function handleTabBurst(newTabId: number, openerId: number, url: string): boolean {
+  const recent = pruneTabBurst(openerId);
+  recent.push({ tabId: newTabId, timestamp: Date.now(), url });
+  tabBurstMap.set(openerId, recent);
+
+  if (recent.length >= TAB_BURST_THRESHOLD) {
+    // We have a burst. Close all tabs in the burst EXCEPT the one matching
+    // the user's intended URL (if any).
+    const intendedUrl = userIntentUrls.get(openerId);
+    let preservedOne = false;
+
+    for (const entry of recent) {
+      // Preserve the tab that matches the user's intended URL
+      if (!preservedOne && intendedUrl && entry.url && normalizeUrl(entry.url) === normalizeUrl(intendedUrl)) {
+        preservedOne = true;
+        continue;
+      }
+
+      chrome.tabs.remove(entry.tabId, () => {
+        if (chrome.runtime.lastError) {}
+      });
+      recordBlockedItem(entry.url || 'tab_burst_popup', 'Ad');
+    }
+
+    // Clear the burst entries — they have been handled
+    tabBurstMap.delete(openerId);
+    return true;
+  }
+
+  return false;
+}
+
+function normalizeUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    return u.origin + u.pathname;
+  } catch {
+    return url;
+  }
+}
+
+// Clean up intent URLs when tabs are closed
+if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onRemoved) {
+  chrome.tabs.onRemoved.addListener((tabId) => {
+    userIntentUrls.delete(tabId);
+    spawnedAboutBlankTabs.delete(tabId);
+  });
+}
+
 function checkAndCloseAdTab(tabId: number, url?: string) {
   if (!tabId || !url) return;
   if (spawnedAboutBlankTabs.has(tabId) && url !== 'about:blank' && !url.startsWith('chrome://')) {
@@ -113,10 +195,13 @@ function checkAndCloseAdTab(tabId: number, url?: string) {
   }
 }
 
-// Automatically close any newly spawned tabs navigating to ad domains or orphan about:blank popups
+// Automatically close any newly spawned tabs navigating to ad domains, detect tab bursts,
+// or close orphan about:blank popups
 if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
   chrome.tabs.onCreated.addListener((tab) => {
     const targetUrl = tab.pendingUrl || tab.url;
+
+    // Layer 1: Known ad domain — close immediately
     if (tab.id && targetUrl && isAdDomainUrl(targetUrl)) {
       chrome.tabs.remove(tab.id, () => {
         if (chrome.runtime.lastError) {}
@@ -125,6 +210,13 @@ if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
       return;
     }
 
+    // Layer 2: Tab-burst detection — if an opener tab is spawning tabs rapidly
+    if (tab.id && tab.openerTabId && targetUrl && targetUrl !== 'about:blank') {
+      const wasBurst = handleTabBurst(tab.id, tab.openerTabId, targetUrl);
+      if (wasBurst) return;
+    }
+
+    // Layer 3: Orphan about:blank popups — defer check to allow redirect chains
     if (tab.id && tab.openerTabId && (!targetUrl || targetUrl === 'about:blank' || targetUrl === '')) {
       spawnedAboutBlankTabs.add(tab.id);
       setTimeout(() => {
@@ -277,6 +369,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       case 'RECORD_HEURISTIC_BLOCK': {
         await recordBlockedItem(message.url || message.domain, message.category || 'Fingerprinting');
+        sendResponse({ success: true });
+        break;
+      }
+      case 'USER_CLICK_INTENT': {
+        // Content script reports the URL the user intends to navigate to.
+        // Store it keyed by the sender tab so the burst detector can
+        // preserve the user's intended tab.
+        if (sender.tab && sender.tab.id && message.url) {
+          userIntentUrls.set(sender.tab.id, message.url);
+          // Auto-expire intent after 5 seconds
+          setTimeout(() => {
+            userIntentUrls.delete(sender.tab!.id!);
+          }, 5000);
+        }
         sendResponse({ success: true });
         break;
       }

@@ -78,6 +78,70 @@ function isAdDomainUrl(url) {
 
 const spawnedAboutBlankTabs = new Set();
 
+// ── Tab-burst detection state ─────────────────────────────────────────
+
+const TAB_BURST_WINDOW_MS = 2000;
+const TAB_BURST_THRESHOLD = 2;
+
+const tabBurstMap = new Map();
+const userIntentUrls = new Map();
+
+function pruneTabBurst(openerId) {
+  const now = Date.now();
+  const entries = tabBurstMap.get(openerId) || [];
+  const recent = entries.filter(e => now - e.timestamp < TAB_BURST_WINDOW_MS);
+  if (recent.length > 0) {
+    tabBurstMap.set(openerId, recent);
+  } else {
+    tabBurstMap.delete(openerId);
+  }
+  return recent;
+}
+
+function handleTabBurst(newTabId, openerId, url) {
+  const recent = pruneTabBurst(openerId);
+  recent.push({ tabId: newTabId, timestamp: Date.now(), url });
+  tabBurstMap.set(openerId, recent);
+
+  if (recent.length >= TAB_BURST_THRESHOLD) {
+    const intendedUrl = userIntentUrls.get(openerId);
+    let preservedOne = false;
+
+    for (const entry of recent) {
+      if (!preservedOne && intendedUrl && entry.url && normalizeUrl(entry.url) === normalizeUrl(intendedUrl)) {
+        preservedOne = true;
+        continue;
+      }
+
+      chrome.tabs.remove(entry.tabId, () => {
+        if (chrome.runtime.lastError) {}
+      });
+      recordBlockedItem(entry.url || 'tab_burst_popup', 'Ad');
+    }
+
+    tabBurstMap.delete(openerId);
+    return true;
+  }
+
+  return false;
+}
+
+function normalizeUrl(url) {
+  try {
+    const u = new URL(url);
+    return u.origin + u.pathname;
+  } catch {
+    return url;
+  }
+}
+
+if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onRemoved) {
+  chrome.tabs.onRemoved.addListener((tabId) => {
+    userIntentUrls.delete(tabId);
+    spawnedAboutBlankTabs.delete(tabId);
+  });
+}
+
 function checkAndCloseAdTab(tabId, url) {
   if (!tabId || !url) return;
   if (spawnedAboutBlankTabs.has(tabId) && url !== 'about:blank' && !url.startsWith('chrome://')) {
@@ -92,9 +156,13 @@ function checkAndCloseAdTab(tabId, url) {
   }
 }
 
+// Automatically close any newly spawned tabs navigating to ad domains, detect tab bursts,
+// or close orphan about:blank popups
 if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
   chrome.tabs.onCreated.addListener((tab) => {
     const targetUrl = tab.pendingUrl || tab.url;
+
+    // Layer 1: Known ad domain
     if (tab.id && targetUrl && isAdDomainUrl(targetUrl)) {
       chrome.tabs.remove(tab.id, () => {
         if (chrome.runtime.lastError) {}
@@ -103,6 +171,13 @@ if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
       return;
     }
 
+    // Layer 2: Tab-burst detection
+    if (tab.id && tab.openerTabId && targetUrl && targetUrl !== 'about:blank') {
+      const wasBurst = handleTabBurst(tab.id, tab.openerTabId, targetUrl);
+      if (wasBurst) return;
+    }
+
+    // Layer 3: Orphan about:blank popups
     if (tab.id && tab.openerTabId && (!targetUrl || targetUrl === 'about:blank' || targetUrl === '')) {
       spawnedAboutBlankTabs.add(tab.id);
       setTimeout(() => {
@@ -244,6 +319,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       case 'RECORD_HEURISTIC_BLOCK': {
         await recordBlockedItem(message.url || message.domain, message.category || 'Fingerprinting');
+        sendResponse({ success: true });
+        break;
+      }
+      case 'USER_CLICK_INTENT': {
+        if (sender.tab && sender.tab.id && message.url) {
+          userIntentUrls.set(sender.tab.id, message.url);
+          setTimeout(() => {
+            userIntentUrls.delete(sender.tab.id);
+          }, 5000);
+        }
         sendResponse({ success: true });
         break;
       }
