@@ -87,6 +87,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function checkForUpdates() {
+    const updateBanner = document.getElementById('updateBanner') as HTMLElement;
+    const updateVersionText = document.getElementById('updateVersionText') as HTMLElement;
+    const updateDownloadLink = document.getElementById('updateDownloadLink') as HTMLAnchorElement;
+
+    if (!updateBanner) return;
+
+    fetch('https://api.github.com/repos/wachanga173/aibrowser/releases/latest')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.tag_name) {
+          const latestTag = data.tag_name;
+          const currentManifestVersion = chrome.runtime.getManifest().version;
+          if (latestTag.replace('v', '') !== currentManifestVersion) {
+            updateBanner.style.display = 'flex';
+            if (updateVersionText) updateVersionText.textContent = `Version ${latestTag} published on GitHub`;
+            if (data.html_url && updateDownloadLink) updateDownloadLink.href = data.html_url;
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
+  checkForUpdates();
+
   openActivityLogBtn.addEventListener('click', () => {
     openTabWithHash('#activity-log');
   });
