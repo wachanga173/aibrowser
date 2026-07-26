@@ -82,7 +82,15 @@ const AD_DOMAIN_PATTERNS = [
   /pubmatic\.com/i,
   /rubiconproject\.com/i,
   /openx\.net/i,
-  /quantserve\.com/i
+  /quantserve\.com/i,
+  /click_id=pop/i,
+  /click_id=/i,
+  /pop202/i,
+  /track=\d+/i,
+  /popunder/i,
+  /aff_id=/i,
+  /zoneid=/i,
+  /pop\d{4}/i
 ];
 
 function isAdDomainUrl(url: string): boolean {

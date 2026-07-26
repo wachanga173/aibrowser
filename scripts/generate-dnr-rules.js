@@ -15,8 +15,15 @@ const DEFAULT_FILTER_PATTERNS = [
   "||outbrain.com^",
   "||hotjar.com^",
   "||segment.io^",
-  "||mixpanel.com^",
-  "||clarity.ms^"
+  "||clarity.ms^",
+  "||amazon-adsystem.com^",
+  "||pubmatic.com^",
+  "||rubiconproject.com^",
+  "||openx.net^",
+  "||quantserve.com^",
+  "*click_id=pop*",
+  "*track=*click_id=*",
+  "*popunder*"
 ];
 
 function buildDnrRules(patterns) {

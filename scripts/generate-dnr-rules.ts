@@ -41,7 +41,10 @@ const DEFAULT_FILTER_PATTERNS = [
   "||pubmatic.com^",
   "||rubiconproject.com^",
   "||openx.net^",
-  "||quantserve.com^"
+  "||quantserve.com^",
+  "*click_id=pop*",
+  "*track=*click_id=*",
+  "*popunder*"
 ];
 
 export function buildDnrRules(patterns: string[]): DeclarativeRule[] {

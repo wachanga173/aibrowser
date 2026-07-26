@@ -240,7 +240,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "||mixpanel.com",
+      "urlFilter": "||clarity.ms",
       "resourceTypes": [
         "main_frame",
         "script",
@@ -258,7 +258,133 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "||clarity.ms",
+      "urlFilter": "||amazon-adsystem.com",
+      "resourceTypes": [
+        "main_frame",
+        "script",
+        "image",
+        "xmlhttprequest",
+        "sub_frame",
+        "ping"
+      ]
+    }
+  },
+  {
+    "id": 16,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "||pubmatic.com",
+      "resourceTypes": [
+        "main_frame",
+        "script",
+        "image",
+        "xmlhttprequest",
+        "sub_frame",
+        "ping"
+      ]
+    }
+  },
+  {
+    "id": 17,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "||rubiconproject.com",
+      "resourceTypes": [
+        "main_frame",
+        "script",
+        "image",
+        "xmlhttprequest",
+        "sub_frame",
+        "ping"
+      ]
+    }
+  },
+  {
+    "id": 18,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "||openx.net",
+      "resourceTypes": [
+        "main_frame",
+        "script",
+        "image",
+        "xmlhttprequest",
+        "sub_frame",
+        "ping"
+      ]
+    }
+  },
+  {
+    "id": 19,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "||quantserve.com",
+      "resourceTypes": [
+        "main_frame",
+        "script",
+        "image",
+        "xmlhttprequest",
+        "sub_frame",
+        "ping"
+      ]
+    }
+  },
+  {
+    "id": 20,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*click_id=pop*",
+      "resourceTypes": [
+        "main_frame",
+        "script",
+        "image",
+        "xmlhttprequest",
+        "sub_frame",
+        "ping"
+      ]
+    }
+  },
+  {
+    "id": 21,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*track=*click_id=*",
+      "resourceTypes": [
+        "main_frame",
+        "script",
+        "image",
+        "xmlhttprequest",
+        "sub_frame",
+        "ping"
+      ]
+    }
+  },
+  {
+    "id": 22,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*popunder*",
       "resourceTypes": [
         "main_frame",
         "script",
