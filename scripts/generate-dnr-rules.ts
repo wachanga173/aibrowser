@@ -48,11 +48,10 @@ const DEFAULT_FILTER_PATTERNS = [
   "*wrestpop*",
   "*popdownload*",
   "*downloadnow*",
-  "||*.monster^",
-  "||*.xyz^",
-  "||*.top^",
-  "||*.click^",
-  "||*.download^"
+  "*.monster",
+  "*.xyz",
+  "*.top",
+  "*.click",
 ];
 
 export function buildDnrRules(patterns: string[]): DeclarativeRule[] {

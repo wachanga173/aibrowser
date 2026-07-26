@@ -456,7 +456,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "||*.monster",
+      "urlFilter": "*.monster",
       "resourceTypes": [
         "main_frame",
         "script",
@@ -474,7 +474,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "||*.xyz",
+      "urlFilter": "*.xyz",
       "resourceTypes": [
         "main_frame",
         "script",
@@ -492,7 +492,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "||*.top",
+      "urlFilter": "*.top",
       "resourceTypes": [
         "main_frame",
         "script",
@@ -510,7 +510,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "||*.click",
+      "urlFilter": "*.click",
       "resourceTypes": [
         "main_frame",
         "script",
@@ -528,7 +528,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "||*.download",
+      "urlFilter": "*.download",
       "resourceTypes": [
         "main_frame",
         "script",
