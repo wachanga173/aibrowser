@@ -45,14 +45,18 @@ function checkHeuristicThresholds() {
   }
 }
 
+function isAdUrlPattern(urlStr: string): boolean {
+  if (!urlStr) return false;
+  return /(ad|banner|pop|click|redir|tracking|syndication|doubleclick|taboola|outbrain|adnxs|criteo|googlesyndication|adservice)/i.test(urlStr);
+}
+
 // Intercept window.open calls targeting ad/popunder patterns in new tabs
 if (typeof window !== 'undefined') {
   const originalWindowOpen = window.open;
   window.open = function (url?: string | URL, target?: string, features?: string) {
     if (url) {
       const urlStr = url.toString();
-      const isAdPattern = /(ad|banner|pop|click|redir|tracking|syndication|doubleclick|taboola|outbrain)/i.test(urlStr);
-      if (isAdPattern) {
+      if (isAdUrlPattern(urlStr)) {
         chrome.runtime.sendMessage({
           type: 'RECORD_HEURISTIC_BLOCK',
           url: urlStr,
@@ -65,4 +69,24 @@ if (typeof window !== 'undefined') {
     return originalWindowOpen.apply(this, [url, target, features] as any);
   };
 }
+
+// Intercept clicks on links targeting new tabs that match ad patterns
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (event: MouseEvent) => {
+    const anchor = (event.target as HTMLElement)?.closest?.('a') as HTMLAnchorElement | null;
+    if (anchor && anchor.href && isAdUrlPattern(anchor.href)) {
+      if (anchor.target === '_blank' || event.ctrlKey || event.shiftKey || event.metaKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        chrome.runtime.sendMessage({
+          type: 'RECORD_HEURISTIC_BLOCK',
+          url: anchor.href,
+          domain: anchor.href,
+          category: 'Ad'
+        });
+      }
+    }
+  }, true);
+}
+
 

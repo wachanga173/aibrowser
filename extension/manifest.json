@@ -10,7 +10,9 @@
     "declarativeNetRequestFeedback",
     "storage",
     "activeTab",
-    "scripting"
+    "scripting",
+    "tabs",
+    "webNavigation"
   ],
   "host_permissions": [
     "<all_urls>"

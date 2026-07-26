@@ -39,13 +39,17 @@ function checkHeuristicThresholds() {
   }
 }
 
+function isAdUrlPattern(urlStr) {
+  if (!urlStr) return false;
+  return /(ad|banner|pop|click|redir|tracking|syndication|doubleclick|taboola|outbrain|adnxs|criteo|googlesyndication|adservice)/i.test(urlStr);
+}
+
 if (typeof window !== 'undefined') {
   const originalWindowOpen = window.open;
   window.open = function (url, target, features) {
     if (url) {
       const urlStr = url.toString();
-      const isAdPattern = /(ad|banner|pop|click|redir|tracking|syndication|doubleclick|taboola|outbrain)/i.test(urlStr);
-      if (isAdPattern) {
+      if (isAdUrlPattern(urlStr)) {
         chrome.runtime.sendMessage({
           type: 'RECORD_HEURISTIC_BLOCK',
           url: urlStr,
@@ -57,5 +61,23 @@ if (typeof window !== 'undefined') {
     }
     return originalWindowOpen.apply(this, [url, target, features]);
   };
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (event) => {
+    const anchor = event.target && event.target.closest ? event.target.closest('a') : null;
+    if (anchor && anchor.href && isAdUrlPattern(anchor.href)) {
+      if (anchor.target === '_blank' || event.ctrlKey || event.shiftKey || event.metaKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        chrome.runtime.sendMessage({
+          type: 'RECORD_HEURISTIC_BLOCK',
+          url: anchor.href,
+          domain: anchor.href,
+          category: 'Ad'
+        });
+      }
+    }
+  }, true);
 }
 

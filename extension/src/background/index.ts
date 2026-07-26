@@ -63,6 +63,58 @@ if (chrome.declarativeNetRequest && chrome.declarativeNetRequest.onRuleMatchedDe
   });
 }
 
+const AD_DOMAIN_PATTERNS = [
+  /google-analytics\.com/i,
+  /doubleclick\.net/i,
+  /googlesyndication\.com/i,
+  /facebook\.net/i,
+  /scorecardresearch\.com/i,
+  /adservice\.google\.com/i,
+  /adnxs\.com/i,
+  /criteo\.com/i,
+  /taboola\.com/i,
+  /outbrain\.com/i,
+  /hotjar\.com/i,
+  /segment\.io/i,
+  /mixpanel\.com/i,
+  /clarity\.ms/i,
+  /amazon-adsystem\.com/i,
+  /pubmatic\.com/i,
+  /rubiconproject\.com/i,
+  /openx\.net/i,
+  /quantserve\.com/i
+];
+
+function isAdDomainUrl(url: string): boolean {
+  if (!url || url === 'about:blank' || url.startsWith('chrome://') || url.startsWith('edge://') || url.startsWith('about:')) return false;
+  return AD_DOMAIN_PATTERNS.some(p => p.test(url));
+}
+
+// Automatically close any newly spawned tabs navigating to ad domains
+if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
+  chrome.tabs.onCreated.addListener((tab) => {
+    const targetUrl = tab.pendingUrl || tab.url;
+    if (tab.id && targetUrl && isAdDomainUrl(targetUrl)) {
+      chrome.tabs.remove(tab.id, () => {
+        if (chrome.runtime.lastError) {}
+      });
+      recordBlockedItem(targetUrl, 'Ad');
+    }
+  });
+}
+
+if (typeof chrome !== 'undefined' && chrome.webNavigation && chrome.webNavigation.onBeforeNavigate) {
+  chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+    if (details.frameId === 0 && details.tabId && details.url && isAdDomainUrl(details.url)) {
+      chrome.tabs.remove(details.tabId, () => {
+        if (chrome.runtime.lastError) {}
+      });
+      recordBlockedItem(details.url, 'Ad');
+    }
+  });
+}
+
+
 export async function recordBlockedItem(url: string, category: 'Ad' | 'Tracker' | 'Fingerprinting' | 'AutonomousAction' = 'Ad') {
   const state = await chrome.storage.local.get(['blockingEnabled', 'blockedCountToday', 'activityLog']);
   if (state.blockingEnabled === false) return;
