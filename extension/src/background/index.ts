@@ -111,20 +111,51 @@ function isAdDomainUrl(url: string): boolean {
   return AD_DOMAIN_PATTERNS.some(p => p.test(url));
 }
 
+const spawnedAboutBlankTabs = new Set<number>();
+
 function checkAndCloseAdTab(tabId: number, url?: string) {
-  if (tabId && url && isAdDomainUrl(url)) {
+  if (!tabId || !url) return;
+  if (isAdDomainUrl(url) || (spawnedAboutBlankTabs.has(tabId) && url !== 'about:blank' && !url.startsWith('chrome://'))) {
     chrome.tabs.remove(tabId, () => {
       if (chrome.runtime.lastError) {}
     });
+    spawnedAboutBlankTabs.delete(tabId);
     recordBlockedItem(url, 'Ad');
   }
 }
 
-// Automatically close any newly spawned tabs navigating to ad domains
+// Automatically close any newly spawned tabs navigating to ad domains or orphan about:blank popups
 if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
   chrome.tabs.onCreated.addListener((tab) => {
     const targetUrl = tab.pendingUrl || tab.url;
-    if (tab.id) checkAndCloseAdTab(tab.id, targetUrl);
+    if (tab.id && targetUrl && isAdDomainUrl(targetUrl)) {
+      chrome.tabs.remove(tab.id, () => {
+        if (chrome.runtime.lastError) {}
+      });
+      recordBlockedItem(targetUrl, 'Ad');
+      return;
+    }
+
+    if (tab.id && tab.openerTabId && (!targetUrl || targetUrl === 'about:blank' || targetUrl === '')) {
+      spawnedAboutBlankTabs.add(tab.id);
+      setTimeout(() => {
+        if (spawnedAboutBlankTabs.has(tab.id!)) {
+          chrome.tabs.get(tab.id!, (t) => {
+            if (chrome.runtime.lastError) {
+              spawnedAboutBlankTabs.delete(tab.id!);
+              return;
+            }
+            if (t && (t.url === 'about:blank' || !t.url || isAdDomainUrl(t.url))) {
+              chrome.tabs.remove(tab.id!, () => {
+                if (chrome.runtime.lastError) {}
+              });
+              recordBlockedItem(t.url || 'about:blank_popup', 'Ad');
+            }
+            spawnedAboutBlankTabs.delete(tab.id!);
+          });
+        }
+      }, 500);
+    }
   });
 }
 
