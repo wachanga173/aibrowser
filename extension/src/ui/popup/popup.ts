@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const currentManifestVersion = chrome.runtime.getManifest().version;
           if (latestTag.replace('v', '') !== currentManifestVersion) {
             updateBanner.style.display = 'flex';
-            if (updateVersionText) updateVersionText.textContent = `Version ${latestTag} published on GitHub`;
+            if (updateVersionText) updateVersionText.textContent = `Version ${latestTag} is ready to install`;
             if (data.html_url && updateDownloadLink) updateDownloadLink.href = data.html_url;
           }
         }
