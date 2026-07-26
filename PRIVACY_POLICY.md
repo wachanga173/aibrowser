@@ -73,10 +73,3 @@ Privacy AI Guard incorporates multi-layered defense mechanisms to block maliciou
 * **Zero Network Exposure:** No listening sockets or open inbound ports exist. Hackers on external networks cannot remotely scan, connect to, or exploit the Software.
 * **DOM & Prompt Injection Firewall:** Malicious webpage scripts attempting to manipulate the local AI are sanitized and quarantined.
 * **Native Host OS Sandboxing:** File system access by the native host is strictly validated against unauthorized path traversal attempts.
-
----
-
-## 8. Contact & Governance
-
-For security vulnerability disclosure or privacy audits:
-* **Security Contact:** [security@privacyguard.local](mailto:security@privacyguard.local)
