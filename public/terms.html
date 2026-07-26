@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Terms of Service — Privacy Guard Engine</title>
-  <meta name="description" content="Official Terms of Service for Privacy Guard Engine local browser extension and intelligence software.">
+  <title>Corporate Terms of Service — Privacy AI Guard</title>
+  <meta name="description" content="Comprehensive Corporate Terms of Service for Privacy Guard Engine local browser extension and intelligence software.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
@@ -40,7 +40,7 @@
     header {
       width: 100%;
       max-width: 1100px;
-      padding: 20px 24px;
+      padding: 24px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -71,23 +71,25 @@
     .nav-item:hover { color: #ffffff; }
 
     .content-container {
-      max-width: 800px;
+      max-width: 900px;
       width: 100%;
       padding: 60px 24px;
     }
 
     h1 {
       font-family: var(--font-heading);
-      font-size: 40px;
+      font-size: 42px;
       font-weight: 700;
       margin: 0 0 16px 0;
       color: #ffffff;
+      letter-spacing: -0.5px;
     }
 
     .last-updated {
       font-size: 14px;
       color: var(--primary-accent);
       margin-bottom: 40px;
+      font-weight: 600;
     }
 
     .section {
@@ -95,23 +97,36 @@
       backdrop-filter: blur(16px);
       border: 1px solid var(--border-color);
       border-radius: 16px;
-      padding: 32px;
-      margin-bottom: 24px;
+      padding: 36px;
+      margin-bottom: 28px;
     }
 
     h2 {
       font-family: var(--font-heading);
-      font-size: 22px;
+      font-size: 24px;
       color: #ffffff;
       margin-top: 0;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    h3 {
+      font-family: var(--font-heading);
+      font-size: 17px;
+      color: var(--primary-accent);
+      margin-top: 22px;
+      margin-bottom: 10px;
     }
 
     p, li {
       font-size: 15px;
       color: var(--text-sub);
-      line-height: 1.7;
+      line-height: 1.8;
     }
+
+    ul { padding-left: 24px; margin-bottom: 16px; }
+    li { margin-bottom: 8px; }
 
     footer {
       width: 100%;
@@ -155,27 +170,74 @@
 
   <!-- Main Content -->
   <div class="content-container">
-    <h1>Terms of Service</h1>
-    <div class="last-updated">Effective Date: July 2026</div>
+    <h1>Corporate Terms of Service</h1>
+    <div class="last-updated">Effective Date: July 26, 2026 &bull; Version 1.0.0 (Corporate Enterprise Edition)</div>
 
     <div class="section">
-      <h2>1. Acceptance of Terms</h2>
-      <p>By downloading, installing, or using Privacy Guard, you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, please do not use the extension.</p>
+      <h2>1. Acceptance of Agreement</h2>
+      <p>By downloading, installing, compiling, or accessing Privacy AI Guard ("the Software", "the Service"), you enter into a legally binding agreement and agree to comply with all terms and conditions set forth in these Enterprise Terms of Service ("Terms"). If you do not agree to these Terms, you are not authorized to install or use the Software.</p>
     </div>
 
     <div class="section">
-      <h2>2. Software License & Local Use</h2>
-      <p>Privacy Guard is provided under an open license for personal and organizational use. The software executes locally on your hardware. You retain full control over all locally processed data, stored preferences, and filter configurations.</p>
+      <h2>2. Software Scope & License Grant</h2>
+      <h3>A. License Grant</h3>
+      <p>Subject to your compliance with these Terms, Privacy AI Guard grants you a personal, non-exclusive, non-transferable, revocable license to install and execute the Software for personal, professional, or corporate enterprise use.</p>
+      <h3>B. Open-Source Rights</h3>
+      <p>The Software source code, build scripts, and native host integration modules are publicly hosted at <a href="https://github.com/wachanga173/aibrowser" target="_blank" style="color: var(--primary-accent);">https://github.com/wachanga173/aibrowser</a>. You may inspect, audit, modify, and build custom variations subject to the open-source licensing terms specified in the repository root.</p>
     </div>
 
     <div class="section">
-      <h2>3. Disclaimer of Warranties</h2>
-      <p>Privacy Guard is provided "as is" without warranty of any kind, express or implied. While the extension incorporates strict heuristic filtering and declarative net request rules, performance may vary depending on third-party site configurations.</p>
+      <h2>3. Data Sovereignty & User Ownership</h2>
+      <p>You retain exclusive ownership, title, and intellectual property rights over all local browsing data, webpage content extracts, vector database indexes, and AI prompt inputs/outputs created during your use of the Software. The Software operates locally; Privacy AI Guard claims zero ownership or rights over your local data stores.</p>
     </div>
 
     <div class="section">
-      <h2>4. Limitation of Liability</h2>
-      <p>In no event shall the authors or copyright holders be liable for any claim, damages, or other liability arising from, out of, or in connection with the software or the use or other dealings in the software.</p>
+      <h2>4. User Responsibilities & Acceptable Use</h2>
+      <p>You agree to use the Software strictly in accordance with applicable laws. You shall not:</p>
+      <ul>
+        <li>Attempt to bypass, neutralize, or tamper with code-enforced security boundaries, including the Human Gate confirmation engine (<code>executor.js</code>).</li>
+        <li>Use the Software to construct automated exploitation frameworks, distribute malicious prompt injection payloads, or conduct unauthorized network intrusions.</li>
+        <li>Reverse engineer or tamper with native host sandboxing policies (<code>sandbox/mod.rs</code>) for malicious intent.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>5. Code-Level Security Controls & Anti-Exploit Protections</h2>
+      <p>The Software incorporates strict anti-hacker and anti-exploit protections:</p>
+      <ul>
+        <li><strong>No Open Listening Ports:</strong> The Software does not run background network servers or open socket listeners, eliminating remote network attack vectors.</li>
+        <li><strong>Native OS Sandboxing:</strong> Native host file system access is strictly restricted to designated local sandbox paths. Path traversal attempts automatically trigger security blocks.</li>
+        <li><strong>Human Confirmation Requirement:</strong> State-changing operations require explicit human click token validation before proceeding.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>6. Disclaimer of Warranties</h2>
+      <p>THE SOFTWARE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SOFTWARE WILL BE UNINTERRUPTED, ERROR-FREE, OR COMPLETELY FREE FROM VULNERABILITIES.</p>
+    </div>
+
+    <div class="section">
+      <h2>7. Limitation of Liability</h2>
+      <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL PRIVACY AI GUARD, ITS DEVELOPERS, OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES (INCLUDING LOSS OF DATA, BUSINESS INTERRUPTION, OR COMPUTER FAILURE) ARISING OUT OF OR IN CONNECTION WITH THE USE OR INABILITY TO USE THE SOFTWARE.</p>
+    </div>
+
+    <div class="section">
+      <h2>8. Indemnification</h2>
+      <p>You agree to defend, indemnify, and hold harmless Privacy AI Guard and its developers from and against any claims, liabilities, damages, losses, and expenses arising out of or in any way connected with your misuse of the Software or violation of these Terms.</p>
+    </div>
+
+    <div class="section">
+      <h2>9. Modifications & Governing Law</h2>
+      <p>We reserve the right to amend these Terms at any time by publishing updated terms to this page and the repository root (<code>TERMS_OF_SERVICE.md</code>). These Terms are governed by applicable local laws without regard to conflict of law principles.</p>
+    </div>
+
+    <div class="section">
+      <h2>10. Contact & Inquiries</h2>
+      <p>For questions or corporate licensing inquiries regarding these Terms:</p>
+      <ul>
+        <li><strong>Legal Contact:</strong> <a href="mailto:security@privacyguard.local" style="color: var(--primary-accent);">security@privacyguard.local</a></li>
+        <li><strong>GitHub Repository:</strong> <a href="https://github.com/wachanga173/aibrowser" target="_blank" style="color: var(--primary-accent);">https://github.com/wachanga173/aibrowser</a></li>
+      </ul>
     </div>
   </div>
 
