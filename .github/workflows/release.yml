@@ -22,16 +22,21 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Compute Dynamic Release Version
+        id: dynamic_version
+        run: |
+          BASE_VERSION=$(node -p "require('./package.json').version.split('.').slice(0, 2).join('.')")
+          DYNAMIC_VERSION="${BASE_VERSION}.${GITHUB_RUN_NUMBER}"
+          echo "BUILD_VERSION=${DYNAMIC_VERSION}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=v${DYNAMIC_VERSION}" >> $GITHUB_ENV
+          echo "Computed Dynamic Build Version: v${DYNAMIC_VERSION}"
+
       - name: Install Dependencies & Run Release Verification Suite
         run: |
           npm ci
           npm run verify:release
-
-      - name: Dynamic Version Extraction
-        id: dynamic_version
-        run: |
-          PKG_VERSION=$(node -p "require('./package.json').version")
-          echo "RELEASE_TAG=v${PKG_VERSION}" >> $GITHUB_ENV
+        env:
+          BUILD_VERSION: ${{ env.BUILD_VERSION }}
 
       - name: Package Chrome Extension Distribution ZIP
         run: |
@@ -42,8 +47,9 @@ jobs:
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           name: Privacy Guard ${{ env.RELEASE_TAG }}
+          make_latest: true
           body: |
-            Automatic production release for Privacy AI Guard.
+            Automatic production release for Privacy AI Guard (Version ${{ env.RELEASE_TAG }}).
             Features dynamic background updates, static DNR ad blocking, WASM fingerprinting heuristics, and local AI.
           files: |
             chrome-extension.zip

@@ -9,7 +9,7 @@ function buildProductionRelease() {
 
   const rootDir = process.cwd();
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'));
-  const version = pkg.version;
+  const version = process.env.BUILD_VERSION || pkg.version;
 
   console.log(`Dynamic Build Target Version: v${version}`);
 
