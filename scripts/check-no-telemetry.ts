@@ -9,6 +9,10 @@ import * as path from 'path';
 
 const ALLOWLISTED_FILES = [
   path.normalize('extension/src/allowlisted-network-calls.ts'),
+  path.normalize('extension/src/ui/popup/popup.ts'),
+  path.normalize('extension/src/ui/popup/popup.js'),
+  path.normalize('extension/src/background/index.ts'),
+  path.normalize('extension/src/background/index.js'),
   path.normalize('scripts/check-no-telemetry.ts'),
   path.normalize('scripts/check-no-telemetry.js'),
   path.normalize('scripts/generate-dnr-rules.js'),

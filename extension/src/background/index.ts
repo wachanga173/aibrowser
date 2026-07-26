@@ -36,6 +36,26 @@ chrome.runtime.onInstalled.addListener(async () => {
   }
 });
 
+// Check for GitHub updates and display toolbar badge notification
+async function checkGitHubReleaseUpdate() {
+  try {
+    const res = await fetch('https://api.github.com/repos/wachanga173/aibrowser/releases/latest');
+    const data = await res.json();
+    if (data && data.tag_name) {
+      const latestTag = data.tag_name.replace('v', '');
+      const currentVersion = chrome.runtime.getManifest().version;
+      if (latestTag !== currentVersion) {
+        if (chrome.action && chrome.action.setBadgeText) {
+          await chrome.action.setBadgeText({ text: 'NEW' });
+          await chrome.action.setBadgeBackgroundColor({ color: '#818cf8' });
+        }
+      }
+    }
+  } catch (e) {}
+}
+
+checkGitHubReleaseUpdate();
+
 // Listen for matched declarativeNetRequest debug rules (if supported in dev/unpacked mode)
 if (chrome.declarativeNetRequest && chrome.declarativeNetRequest.onRuleMatchedDebug) {
   chrome.declarativeNetRequest.onRuleMatchedDebug.addListener((info) => {
