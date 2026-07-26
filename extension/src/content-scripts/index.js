@@ -39,9 +39,14 @@ function checkHeuristicThresholds() {
   }
 }
 
+const AD_PATTERN_REGEX = /(?:google-analytics\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
+
 function isAdUrlPattern(urlStr) {
   if (!urlStr) return false;
-  return /(ad|banner|pop|click|redir|tracking|syndication|doubleclick|taboola|outbrain|adnxs|criteo|googlesyndication|adservice|wrestpop|downloadnow|popdownload|click_id|track=\d+|popunder|zoneid|aff_id|\.monster|\.xyz|\.top|\.click|\.download|\.icu|\.buzz|\?[a-f0-9]{8,})/i.test(urlStr);
+  if (/\.(png|jpe?g|gif|webp|svg|avif|bmp|ico|tiff|pdf)(\?.*)?$/i.test(urlStr)) {
+    return false;
+  }
+  return AD_PATTERN_REGEX.test(urlStr);
 }
 
 // Window open interception is natively executed in MAIN world via main-world.js
@@ -50,11 +55,11 @@ if (typeof window !== 'undefined') {
   const originalWindowOpen = window.open;
   window.open = function (url, target, features) {
     const urlStr = url ? url.toString() : '';
-    if (isAdUrlPattern(urlStr) || !urlStr) {
+    if (urlStr && isAdUrlPattern(urlStr)) {
       chrome.runtime.sendMessage({
         type: 'RECORD_HEURISTIC_BLOCK',
-        url: urlStr || 'popunder_popup',
-        domain: urlStr || 'popunder_popup',
+        url: urlStr,
+        domain: urlStr,
         category: 'Ad'
       });
       return null;

@@ -84,26 +84,12 @@ const AD_DOMAIN_PATTERNS = [
   /openx\.net/i,
   /quantserve\.com/i,
   /click_id=pop/i,
-  /click_id=/i,
   /pop202/i,
-  /track=\d+/i,
   /popunder/i,
-  /aff_id=/i,
-  /zoneid=/i,
   /pop\d{4}/i,
   /wrestpop/i,
   /downloadnow/i,
-  /popdownload/i,
-  /\.monster(\/|\?|$)/i,
-  /\.xyz(\/|\?|$)/i,
-  /\.top(\/|\?|$)/i,
-  /\.click(\/|\?|$)/i,
-  /\.download(\/|\?|$)/i,
-  /\.icu(\/|\?|$)/i,
-  /\.buzz(\/|\?|$)/i,
-  /\?[a-f0-9]{8,}/i,
-  /redirect.*ad/i,
-  /ad.*redirect/i
+  /popdownload/i
 ];
 
 function isAdDomainUrl(url: string): boolean {
@@ -115,7 +101,10 @@ const spawnedAboutBlankTabs = new Set<number>();
 
 function checkAndCloseAdTab(tabId: number, url?: string) {
   if (!tabId || !url) return;
-  if (isAdDomainUrl(url) || (spawnedAboutBlankTabs.has(tabId) && url !== 'about:blank' && !url.startsWith('chrome://'))) {
+  if (spawnedAboutBlankTabs.has(tabId) && url !== 'about:blank' && !url.startsWith('chrome://')) {
+    spawnedAboutBlankTabs.delete(tabId);
+  }
+  if (isAdDomainUrl(url)) {
     chrome.tabs.remove(tabId, () => {
       if (chrome.runtime.lastError) {}
     });
