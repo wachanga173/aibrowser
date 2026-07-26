@@ -115,12 +115,53 @@
       color: white;
       border-color: var(--primary-accent);
     }
+    .nav-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-dark);
+      padding-bottom: 12px;
+    }
+    body.light-theme .nav-tabs {
+      border-bottom-color: var(--border-light);
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary-dark);
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    body.light-theme .tab-btn {
+      color: var(--text-secondary-light);
+      background: rgba(0, 0, 0, 0.04);
+    }
+    .tab-btn:hover {
+      color: var(--text-primary-dark);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .tab-btn.active {
+      background: var(--primary-accent);
+      color: white;
+      border-color: var(--primary-accent);
+    }
+    .tab-section {
+      display: none;
+    }
+    .tab-section.active {
+      display: block;
+    }
   </style>
 </head>
 <body class="dark-theme">
   <div class="header">
     <div class="title-area">
-      <h1>Privacy Guard Settings</h1>
+      <h1>Privacy Guard Settings & Audit Log</h1>
       <p>Local-First Ad & Tracker Blocking Options & Verifiable Logs</p>
     </div>
     <div>
@@ -129,8 +170,13 @@
     </div>
   </div>
 
-  <div class="grid">
-    <!-- Filter Lists Panel -->
+  <div class="nav-tabs">
+    <button id="tabBtnSettings" class="tab-btn active" data-tab="settings">⚙️ Settings & Rules</button>
+    <button id="tabBtnActivity" class="tab-btn" data-tab="activity-log">📋 Activity & Audit Log</button>
+  </div>
+
+  <!-- Settings Tab Section -->
+  <div id="settingsSection" class="tab-section active">
     <div class="glass-card panel">
       <h2>Filter Lists & Rules</h2>
       <div class="setting-item">
@@ -164,8 +210,10 @@
         <input type="checkbox" id="gateEnforced" checked disabled>
       </div>
     </div>
+  </div>
 
-    <!-- Local Activity & Autonomous Audit Log Panel -->
+  <!-- Activity & Audit Log Tab Section -->
+  <div id="activityLogSection" class="tab-section">
     <div class="glass-card panel">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h2 style="margin: 0; border: none; padding: 0;">Activity & Autonomous Audit Log</h2>
@@ -176,7 +224,7 @@
       </div>
       <p style="font-size: 11px; color: var(--text-secondary-dark); margin-top: 0;">Logged exclusively on your local device via <code>chrome.storage.local</code>.</p>
 
-      <div style="max-height: 400px; overflow-y: auto;">
+      <div style="max-height: 450px; overflow-y: auto;">
         <table class="log-table">
           <thead>
             <tr>

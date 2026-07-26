@@ -4,14 +4,58 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportLogBtn = document.getElementById('exportLogBtn') as HTMLElement;
   const themeToggleBtn = document.getElementById('themeToggleBtn') as HTMLElement;
 
+  const tabBtnSettings = document.getElementById('tabBtnSettings') as HTMLElement;
+  const tabBtnActivity = document.getElementById('tabBtnActivity') as HTMLElement;
+  const settingsSection = document.getElementById('settingsSection') as HTMLElement;
+  const activityLogSection = document.getElementById('activityLogSection') as HTMLElement;
+
+  const filterEasyList = document.getElementById('filterEasyList') as HTMLInputElement;
+  const filterEasyPrivacy = document.getElementById('filterEasyPrivacy') as HTMLInputElement;
+  const filterHeuristic = document.getElementById('filterHeuristic') as HTMLInputElement;
+
   let currentTheme = 'dark';
   let activityLog: any[] = [];
 
+  function switchTab(tabName: string) {
+    if (tabName === 'activity-log' || tabName === 'activity') {
+      tabBtnSettings?.classList.remove('active');
+      tabBtnActivity?.classList.add('active');
+      settingsSection?.classList.remove('active');
+      activityLogSection?.classList.add('active');
+      window.location.hash = 'activity-log';
+    } else {
+      tabBtnActivity?.classList.remove('active');
+      tabBtnSettings?.classList.add('active');
+      activityLogSection?.classList.remove('active');
+      settingsSection?.classList.add('active');
+      window.location.hash = 'settings';
+    }
+  }
+
+  function handleInitialHash() {
+    const hash = window.location.hash.toLowerCase();
+    if (hash.includes('activity')) {
+      switchTab('activity-log');
+    } else {
+      switchTab('settings');
+    }
+  }
+
+  tabBtnSettings?.addEventListener('click', () => switchTab('settings'));
+  tabBtnActivity?.addEventListener('click', () => switchTab('activity-log'));
+
+  window.addEventListener('hashchange', handleInitialHash);
+
   function loadLogAndSettings() {
     chrome.runtime.sendMessage({ type: 'GET_STATUS' }, (status) => {
-      if (status && status.theme) {
-        currentTheme = status.theme;
-        applyTheme(currentTheme);
+      if (status) {
+        if (status.theme) {
+          currentTheme = status.theme;
+          applyTheme(currentTheme);
+        }
+        if (filterEasyList && status.filterEasyList !== undefined) filterEasyList.checked = status.filterEasyList;
+        if (filterEasyPrivacy && status.filterEasyPrivacy !== undefined) filterEasyPrivacy.checked = status.filterEasyPrivacy;
+        if (filterHeuristic && status.filterHeuristic !== undefined) filterHeuristic.checked = status.filterHeuristic;
       }
     });
 
@@ -21,6 +65,20 @@ document.addEventListener('DOMContentLoaded', () => {
       renderLogTable(activityLog);
     });
   }
+
+  function saveFilterSettings() {
+    const filters = {
+      filterEasyList: filterEasyList ? filterEasyList.checked : true,
+      filterEasyPrivacy: filterEasyPrivacy ? filterEasyPrivacy.checked : true,
+      filterHeuristic: filterHeuristic ? filterHeuristic.checked : true
+    };
+    chrome.storage.local.set(filters);
+    chrome.runtime.sendMessage({ type: 'UPDATE_FILTERS', filters });
+  }
+
+  if (filterEasyList) filterEasyList.addEventListener('change', saveFilterSettings);
+  if (filterEasyPrivacy) filterEasyPrivacy.addEventListener('change', saveFilterSettings);
+  if (filterHeuristic) filterHeuristic.addEventListener('change', saveFilterSettings);
 
   function applyTheme(theme: string) {
     document.body.className = theme === 'light' ? 'light-theme' : 'dark-theme';
@@ -70,5 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadAnchor.remove();
   });
 
+  handleInitialHash();
   loadLogAndSettings();
 });

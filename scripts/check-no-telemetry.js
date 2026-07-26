@@ -13,7 +13,7 @@ const ALLOWLISTED_FILES = [
   path.normalize('scripts/generate-dnr-rules.js'),
   path.normalize('scripts/generate-dnr-rules.ts'),
   path.normalize('test-suite/telemetry-fixtures/disallowed-sample.ts'),
-  path.normalize('public/index.html') // Vercel landing page GitHub API release fetcher
+  path.normalize('public/index.html')
 ];
 
 const BANNED_PATTERNS = [
@@ -80,14 +80,14 @@ function runTelemetryCheck(targetDir = process.cwd()) {
 }
 
 if (require.main === module) {
-  console.log('🔍 Running Verifiable Zero-Telemetry Enforcement Check...');
+  console.log('Running Verifiable Zero-Telemetry Enforcement Check...');
   const result = runTelemetryCheck();
   if (!result.success) {
-    console.error('❌ ZERO-TELEMETRY VIOLATIONS DETECTED:');
+    console.error('ZERO-TELEMETRY VIOLATIONS DETECTED:');
     result.violations.forEach(v => console.error(`  - ${v}`));
     process.exit(1);
   } else {
-    console.log('✅ ZERO-TELEMETRY CHECK PASSED: 0 unauthorized network calls found.');
+    console.log('ZERO-TELEMETRY CHECK PASSED: 0 unauthorized network calls found.');
   }
 }
 

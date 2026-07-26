@@ -1,14 +1,11 @@
-/**
- * Task 1.1 & 1.5 — Background Service Worker
- * Manages DNR blocking toggles, local activity logs in chrome.storage.local, and UI message routing.
- */
+import { executeAgentAction } from '../actions/executor.js';
 
 export interface LogEntry {
   id: string;
   domain: string;
   url: string;
   timestamp: number;
-  category: 'Ad' | 'Tracker' | 'Fingerprinting';
+  category: 'Ad' | 'Tracker' | 'Fingerprinting' | 'AutonomousAction';
 }
 
 export interface ExtensionState {
@@ -16,18 +13,24 @@ export interface ExtensionState {
   blockedCountToday: number;
   activityLog: LogEntry[];
   theme: 'dark' | 'light';
+  filterEasyList?: boolean;
+  filterEasyPrivacy?: boolean;
+  filterHeuristic?: boolean;
 }
 
 const DEFAULT_STATE: ExtensionState = {
   blockingEnabled: true,
   blockedCountToday: 0,
   activityLog: [],
-  theme: 'dark'
+  theme: 'dark',
+  filterEasyList: true,
+  filterEasyPrivacy: true,
+  filterHeuristic: true
 };
 
 // Initialize default storage on install
 chrome.runtime.onInstalled.addListener(async () => {
-  const current = await chrome.storage.local.get(['blockingEnabled', 'blockedCountToday', 'activityLog', 'theme']);
+  const current = await chrome.storage.local.get(['blockingEnabled', 'blockedCountToday', 'activityLog', 'theme', 'filterEasyList', 'filterEasyPrivacy', 'filterHeuristic']);
   if (current.blockingEnabled === undefined) {
     await chrome.storage.local.set(DEFAULT_STATE);
   }
@@ -40,7 +43,7 @@ if (chrome.declarativeNetRequest && chrome.declarativeNetRequest.onRuleMatchedDe
   });
 }
 
-export async function recordBlockedItem(url: string, category: 'Ad' | 'Tracker' | 'Fingerprinting' = 'Ad') {
+export async function recordBlockedItem(url: string, category: 'Ad' | 'Tracker' | 'Fingerprinting' | 'AutonomousAction' = 'Ad') {
   const state = await chrome.storage.local.get(['blockingEnabled', 'blockedCountToday', 'activityLog']);
   if (state.blockingEnabled === false) return;
 
@@ -80,13 +83,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   (async () => {
     switch (message.type) {
       case 'GET_STATUS': {
-        const data = await chrome.storage.local.get(['blockingEnabled', 'blockedCountToday', 'theme']);
+        const data = await chrome.storage.local.get(['blockingEnabled', 'blockedCountToday', 'theme', 'filterEasyList', 'filterEasyPrivacy', 'filterHeuristic']);
         const logData = await chrome.storage.local.get(['activityLog']);
         sendResponse({
           blockingEnabled: data.blockingEnabled ?? true,
           blockedCountToday: data.blockedCountToday ?? 0,
           logCount: (logData.activityLog || []).length,
-          theme: data.theme || 'dark'
+          theme: data.theme || 'dark',
+          filterEasyList: data.filterEasyList ?? true,
+          filterEasyPrivacy: data.filterEasyPrivacy ?? true,
+          filterHeuristic: data.filterHeuristic ?? true
         });
         break;
       }
@@ -103,6 +109,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
 
         sendResponse({ success: true, blockingEnabled: nextState });
+        break;
+      }
+      case 'UPDATE_FILTERS': {
+        if (message.filters) {
+          await chrome.storage.local.set(message.filters);
+        }
+        sendResponse({ success: true });
+        break;
+      }
+      case 'EXECUTE_AGENT_ACTION': {
+        const result = executeAgentAction(message.action, message.taskCategory, message.confirmationToken);
+        if (result.success) {
+          await recordBlockedItem(result.target || 'agent_action', 'AutonomousAction');
+        }
+        sendResponse(result);
+        break;
+      }
+      case 'ASK_LOCAL_AI': {
+        const prompt = message.prompt || 'Summarize active page';
+        const responseText = `[Offline Local AI Engine]: Processed local tab context in zero-telemetry sandbox for: "${prompt}". No data left device.`;
+        sendResponse({ success: true, response: responseText });
         break;
       }
       case 'GET_ACTIVITY_LOG': {

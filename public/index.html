@@ -321,9 +321,9 @@
       Blocks invasive trackers, ads, and fingerprinting probes instantly while providing local, offline AI research capabilities right inside your web browser.
     </p>
 
-    <!-- Download Release ZIP Link -->
+    <!-- Automatic Download Link (Fallback points directly to latest release download) -->
     <div class="animate-3">
-      <a id="downloadReleaseBtn" href="https://github.com/wachanga173/aibrowser/releases/latest" target="_blank" class="btn-download-clean">
+      <a id="downloadReleaseBtn" href="https://github.com/wachanga173/aibrowser/releases/latest/download/chrome-extension.zip" target="_blank" class="btn-download-clean">
         Download Extension Package (.zip)
       </a>
     </div>
@@ -370,7 +370,7 @@
         <div class="step-number">1</div>
         <div>
           <h4 style="margin: 0 0 6px 0; color: #fff; font-size: 16px; font-family: var(--font-heading);">Download & Unzip Package</h4>
-          <p style="margin: 0; font-size: 13px; color: var(--text-sub); line-height: 1.5;">Click Download Extension Package above and unzip the downloaded .zip file into a folder on your computer.</p>
+          <p style="margin: 0; font-size: 13px; color: var(--text-sub); line-height: 1.5;">Click Download Extension Package above to get the latest automatically built release .zip file.</p>
         </div>
       </div>
 
@@ -403,6 +403,7 @@
   </footer>
 
   <script>
+    // Dynamically queries GitHub API for the latest release asset download URL
     fetch('https://api.github.com/repos/wachanga173/aibrowser/releases/latest')
       .then(res => res.json())
       .then(data => {

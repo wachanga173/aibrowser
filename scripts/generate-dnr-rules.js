@@ -44,7 +44,7 @@ function generateRulesetFile(outputPath) {
     fs.mkdirSync(targetDir, { recursive: true });
   }
   fs.writeFileSync(outputPath, JSON.stringify(rules, null, 2), 'utf-8');
-  console.log(`✅ Generated ${rules.length} static DNR blocking rules at: ${outputPath}`);
+  console.log(`Generated ${rules.length} static DNR blocking rules at: ${outputPath}`);
 }
 
 if (require.main === module) {

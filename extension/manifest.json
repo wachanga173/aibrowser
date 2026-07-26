@@ -3,6 +3,7 @@
   "name": "Privacy AI Browser Guard",
   "version": "1.0.0",
   "description": "Local-first privacy engine with ad/tracker blocking, fingerprinting defense, and local zero-telemetry architecture.",
+  "update_url": "https://raw.githubusercontent.com/wachanga173/aibrowser/main/updates.xml",
   "permissions": [
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess",

@@ -18,13 +18,13 @@ An open-source, local-first browser extension providing ad/tracker blocking, fin
 
 ### Step 1: Download Release Bundle
 Download the latest release archive from [GitHub Releases](https://github.com/wachanga173/aibrowser/releases):
-- `chrome-extension-v1.0.0.zip` (for Chrome, Edge, Brave, Opera, Vivaldi)
-- `firefox-extension-v1.0.0.zip` (for Firefox)
+- `chrome-extension.zip` (for Chrome, Edge, Brave, Opera, Vivaldi)
+- `firefox-extension.zip` (for Firefox)
 
 ### Step 2: Load Extension in Your Browser
 
 #### For Chromium Browsers (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi):
-1. Extract (unzip) `chrome-extension-v1.0.0.zip` to a folder on your computer.
+1. Extract (unzip) `chrome-extension.zip` to a folder on your computer.
 2. Open your browser and navigate to the extensions page:
    - Chrome: `chrome://extensions/`
    - Edge: `edge://extensions/`
