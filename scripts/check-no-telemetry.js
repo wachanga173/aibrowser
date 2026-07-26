@@ -17,7 +17,9 @@ const ALLOWLISTED_FILES = [
   path.normalize('scripts/generate-dnr-rules.js'),
   path.normalize('scripts/generate-dnr-rules.ts'),
   path.normalize('test-suite/telemetry-fixtures/disallowed-sample.ts'),
-  path.normalize('public/index.html')
+  path.normalize('public/index.html'),
+  path.normalize('public/privacy.html'),
+  path.normalize('public/terms.html')
 ];
 
 const BANNED_PATTERNS = [

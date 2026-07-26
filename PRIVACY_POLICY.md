@@ -1,7 +1,7 @@
 # Privacy AI Guard — Privacy Policy
 
-**Effective Date:** July 26, 2026  
-**Version:** 1.0.0 (Verifiable Zero-Telemetry)
+**Effective Date:** Current Release  
+**Version:** Latest Release (Verifiable Zero-Telemetry)
 
 ---
 
