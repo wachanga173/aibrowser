@@ -173,6 +173,7 @@
   <div class="nav-tabs">
     <button id="tabBtnSettings" class="tab-btn active" data-tab="settings">⚙️ Settings & Rules</button>
     <button id="tabBtnActivity" class="tab-btn" data-tab="activity-log">📋 Activity & Audit Log</button>
+    <button id="tabBtnLegal" class="tab-btn" data-tab="privacy-terms">📜 Terms & Privacy Policy</button>
   </div>
 
   <!-- Settings Tab Section -->
@@ -239,6 +240,32 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Corporate Terms & Privacy Tab Section -->
+  <div id="legalSection" class="tab-section">
+    <div class="glass-card panel">
+      <h2>Corporate Enterprise Terms & Privacy Framework</h2>
+      
+      <div style="margin-bottom: 20px; line-height: 1.6; font-size: 13px;">
+        <h3 style="margin-top: 0; color: var(--primary-accent);">1. Verifiable Zero-Telemetry Data Sovereignty</h3>
+        <p style="color: var(--text-secondary-dark);">Privacy AI Guard operates under a strict, non-negotiable architectural framework: <strong>Zero outbound data transmission</strong>. All DOM parsing, ad/tracker filtering, local vector indexing, and AI prompt processing execute 100% locally on your computer. Zero metrics, URLs, or prompts leave your device.</p>
+        
+        <h3 style="color: var(--primary-accent); margin-top: 16px;">2. Local Storage & Encryption at Rest</h3>
+        <p style="color: var(--text-secondary-dark);">All logs, blocking metrics, and local vector embeddings are stored strictly in local storage (<code>chrome.storage.local</code>) or local data directories. Vectors are encrypted at rest using keys derived from your operating system's native keychain.</p>
+        
+        <h3 style="color: var(--primary-accent); margin-top: 16px;">3. Human Confirmation Gate Enforcement</h3>
+        <p style="color: var(--text-secondary-dark);">Sensitive actions (such as form submission or external navigation) require an explicit, single-use user click confirmation token. Autonomous AI cannot execute state-changing actions without explicit human approval.</p>
+
+        <h3 style="color: var(--primary-accent); margin-top: 16px;">4. Full Corporate Documentation & Source Verification</h3>
+        <p style="color: var(--text-secondary-dark);">Review our complete open-source codebase, verification build scripts, and legal framework:</p>
+        <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+          <a href="https://github.com/wachanga173/aibrowser/blob/main/PRIVACY_POLICY.md" target="_blank" class="btn-action" style="text-decoration: none;">📄 Privacy Policy Document</a>
+          <a href="https://github.com/wachanga173/aibrowser/blob/main/TERMS_OF_SERVICE.md" target="_blank" class="btn-action" style="text-decoration: none;">⚖️ Terms of Service Document</a>
+          <a href="https://github.com/wachanga173/aibrowser" target="_blank" class="btn-action" style="text-decoration: none;">🛡️ GitHub Security Audit Repo</a>
+        </div>
       </div>
     </div>
   </div>

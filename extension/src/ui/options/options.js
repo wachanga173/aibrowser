@@ -6,8 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const tabBtnSettings = document.getElementById('tabBtnSettings');
   const tabBtnActivity = document.getElementById('tabBtnActivity');
+  const tabBtnLegal = document.getElementById('tabBtnLegal');
   const settingsSection = document.getElementById('settingsSection');
   const activityLogSection = document.getElementById('activityLogSection');
+  const legalSection = document.getElementById('legalSection');
 
   const filterEasyList = document.getElementById('filterEasyList');
   const filterEasyPrivacy = document.getElementById('filterEasyPrivacy');
@@ -17,16 +19,23 @@ document.addEventListener('DOMContentLoaded', () => {
   let activityLog = [];
 
   function switchTab(tabName) {
+    tabBtnSettings?.classList.remove('active');
+    tabBtnActivity?.classList.remove('active');
+    tabBtnLegal?.classList.remove('active');
+    settingsSection?.classList.remove('active');
+    activityLogSection?.classList.remove('active');
+    legalSection?.classList.remove('active');
+
     if (tabName === 'activity-log' || tabName === 'activity') {
-      tabBtnSettings?.classList.remove('active');
       tabBtnActivity?.classList.add('active');
-      settingsSection?.classList.remove('active');
       activityLogSection?.classList.add('active');
       window.location.hash = 'activity-log';
+    } else if (tabName === 'privacy-terms' || tabName === 'legal') {
+      tabBtnLegal?.classList.add('active');
+      legalSection?.classList.add('active');
+      window.location.hash = 'privacy-terms';
     } else {
-      tabBtnActivity?.classList.remove('active');
       tabBtnSettings?.classList.add('active');
-      activityLogSection?.classList.remove('active');
       settingsSection?.classList.add('active');
       window.location.hash = 'settings';
     }
@@ -36,6 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash.toLowerCase();
     if (hash.includes('activity')) {
       switchTab('activity-log');
+    } else if (hash.includes('privacy') || hash.includes('terms') || hash.includes('legal')) {
+      switchTab('privacy-terms');
     } else {
       switchTab('settings');
     }
@@ -43,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   tabBtnSettings?.addEventListener('click', () => switchTab('settings'));
   tabBtnActivity?.addEventListener('click', () => switchTab('activity-log'));
+  tabBtnLegal?.addEventListener('click', () => switchTab('privacy-terms'));
 
   window.addEventListener('hashchange', handleInitialHash);
 
