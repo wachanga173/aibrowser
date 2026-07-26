@@ -5,7 +5,7 @@ import * as path from 'path';
 
 function runTestSuite() {
   console.log('----------------------------------------------------');
-  console.log('🚀 RUNNING PRIVACY AI EXTENSION PHASE 1 TEST SUITE');
+  console.log('RUNNING PRIVACY AI EXTENSION PHASE 1 TEST SUITE');
   console.log('----------------------------------------------------\n');
 
   let passed = 0;
@@ -15,10 +15,10 @@ function runTestSuite() {
   console.log('Test 1: Main Codebase Zero-Telemetry Lint Check...');
   const telemetryResult = runTelemetryCheck(process.cwd());
   if (telemetryResult.success) {
-    console.log('  ✅ PASSED: 0 unauthorized network calls in main codebase.\n');
+    console.log('  [PASSED]: 0 unauthorized network calls in main codebase.\n');
     passed++;
   } else {
-    console.error('  ❌ FAILED: Telemetry check failed:', telemetryResult.violations);
+    console.error('  [FAILED]: Telemetry check failed:', telemetryResult.violations);
     failed++;
   }
 
@@ -30,10 +30,10 @@ function runTestSuite() {
   // Test pattern directly on fixture line
   const hasFetch = /\bfetch\s*\(/.test(fixtureContent);
   if (hasFetch) {
-    console.log('  ✅ PASSED: Telemetry enforcer demonstrably flags unauthorized fetch calls.\n');
+    console.log('  [PASSED]: Telemetry enforcer demonstrably flags unauthorized fetch calls.\n');
     passed++;
   } else {
-    console.error('  ❌ FAILED: Telemetry enforcer missed test fixture violation.\n');
+    console.error('  [FAILED]: Telemetry enforcer missed test fixture violation.\n');
     failed++;
   }
 
@@ -41,17 +41,23 @@ function runTestSuite() {
   console.log('Test 3: DNR Rules Engine Format & Generation...');
   const samplePatterns = ['||tracker.com^', '||badad.net/*'];
   const rules = buildDnrRules(samplePatterns);
-  if (rules.length === 2 && rules[0].action.type === 'block' && rules[0].condition.urlFilter === '||tracker.com') {
-    console.log('  ✅ PASSED: DNR rules successfully transformed into valid Chrome DNR JSON schema.\n');
+  if (
+    rules.length === 2 &&
+    rules[0].action.type === 'block' &&
+    rules[0].condition.urlFilter === '||tracker.com' &&
+    rules[0].condition.resourceTypes &&
+    rules[0].condition.resourceTypes.includes('main_frame')
+  ) {
+    console.log('  [PASSED]: DNR rules successfully transformed into valid Chrome DNR JSON schema with main_frame new tab blocking.\n');
     passed++;
   } else {
-    console.error('  ❌ FAILED: DNR rule generator produced invalid schema.', rules);
+    console.error('  [FAILED]: DNR rule generator produced invalid schema.', rules);
     failed++;
   }
 
   // Summary
   console.log('----------------------------------------------------');
-  console.log(`📊 TEST SUITE RESULTS: ${passed} PASSED, ${failed} FAILED`);
+  console.log(`TEST SUITE RESULTS: ${passed} PASSED, ${failed} FAILED`);
   console.log('----------------------------------------------------\n');
 
   if (failed > 0) {

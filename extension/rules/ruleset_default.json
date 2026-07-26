@@ -8,6 +8,7 @@
     "condition": {
       "urlFilter": "||google-analytics.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -25,6 +26,7 @@
     "condition": {
       "urlFilter": "||doubleclick.net",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -42,6 +44,7 @@
     "condition": {
       "urlFilter": "||googlesyndication.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -59,6 +62,7 @@
     "condition": {
       "urlFilter": "||facebook.net/signals/*",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -76,6 +80,7 @@
     "condition": {
       "urlFilter": "||connect.facebook.net/*",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -93,6 +98,7 @@
     "condition": {
       "urlFilter": "||scorecardresearch.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -110,6 +116,7 @@
     "condition": {
       "urlFilter": "||adservice.google.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -127,6 +134,7 @@
     "condition": {
       "urlFilter": "||adnxs.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -144,6 +152,7 @@
     "condition": {
       "urlFilter": "||criteo.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -161,6 +170,7 @@
     "condition": {
       "urlFilter": "||taboola.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -178,6 +188,7 @@
     "condition": {
       "urlFilter": "||outbrain.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -195,6 +206,7 @@
     "condition": {
       "urlFilter": "||hotjar.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -212,6 +224,7 @@
     "condition": {
       "urlFilter": "||segment.io",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -229,6 +242,7 @@
     "condition": {
       "urlFilter": "||mixpanel.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -246,6 +260,7 @@
     "condition": {
       "urlFilter": "||clarity.ms",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",

@@ -58,7 +58,7 @@ export function buildDnrRules(patterns: string[]): DeclarativeRule[] {
       action: { type: 'block' },
       condition: {
         urlFilter: cleanFilter,
-        resourceTypes: ['script', 'image', 'xmlhttprequest', 'sub_frame', 'ping']
+        resourceTypes: ['main_frame', 'script', 'image', 'xmlhttprequest', 'sub_frame', 'ping']
       }
     };
   });
@@ -71,7 +71,7 @@ export function generateRulesetFile(outputPath: string) {
     fs.mkdirSync(targetDir, { recursive: true });
   }
   fs.writeFileSync(outputPath, JSON.stringify(rules, null, 2), 'utf-8');
-  console.log(`✅ Generated ${rules.length} static DNR blocking rules at: ${outputPath}`);
+  console.log(`Generated ${rules.length} static DNR blocking rules at: ${outputPath}`);
 }
 
 if (require.main === module) {

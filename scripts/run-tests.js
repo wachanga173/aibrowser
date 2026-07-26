@@ -41,8 +41,14 @@ function runTestSuite() {
   console.log('Test 3: DNR Rules Engine Format & Generation...');
   const samplePatterns = ['||tracker.com^', '||badad.net/*'];
   const rules = buildDnrRules(samplePatterns);
-  if (rules.length === 2 && rules[0].action.type === 'block' && rules[0].condition.urlFilter === '||tracker.com') {
-    console.log('  [PASSED]: DNR rules transformed into valid Chrome DNR JSON schema.\n');
+  if (
+    rules.length === 2 &&
+    rules[0].action.type === 'block' &&
+    rules[0].condition.urlFilter === '||tracker.com' &&
+    rules[0].condition.resourceTypes &&
+    rules[0].condition.resourceTypes.includes('main_frame')
+  ) {
+    console.log('  [PASSED]: DNR rules transformed into valid Chrome DNR JSON schema with main_frame new tab blocking support.\n');
     passed++;
   } else {
     console.error('  [FAILED]: DNR rule generator produced invalid schema.', rules);

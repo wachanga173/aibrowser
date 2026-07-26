@@ -44,3 +44,25 @@ function checkHeuristicThresholds() {
     });
   }
 }
+
+// Intercept window.open calls targeting ad/popunder patterns in new tabs
+if (typeof window !== 'undefined') {
+  const originalWindowOpen = window.open;
+  window.open = function (url?: string | URL, target?: string, features?: string) {
+    if (url) {
+      const urlStr = url.toString();
+      const isAdPattern = /(ad|banner|pop|click|redir|tracking|syndication|doubleclick|taboola|outbrain)/i.test(urlStr);
+      if (isAdPattern) {
+        chrome.runtime.sendMessage({
+          type: 'RECORD_HEURISTIC_BLOCK',
+          url: urlStr,
+          domain: urlStr,
+          category: 'Ad'
+        });
+        return null;
+      }
+    }
+    return originalWindowOpen.apply(this, [url, target, features] as any);
+  };
+}
+

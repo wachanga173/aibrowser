@@ -31,7 +31,7 @@ function buildDnrRules(patterns) {
       action: { type: 'block' },
       condition: {
         urlFilter: cleanFilter,
-        resourceTypes: ['script', 'image', 'xmlhttprequest', 'sub_frame', 'ping']
+        resourceTypes: ['main_frame', 'script', 'image', 'xmlhttprequest', 'sub_frame', 'ping']
       }
     };
   });

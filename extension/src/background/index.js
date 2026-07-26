@@ -132,7 +132,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         break;
       }
       case 'RECORD_HEURISTIC_BLOCK': {
-        await recordBlockedItem(message.url || message.domain, 'Fingerprinting');
+        await recordBlockedItem(message.url || message.domain, message.category || 'Fingerprinting');
         sendResponse({ success: true });
         break;
       }
