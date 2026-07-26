@@ -90,7 +90,20 @@ const AD_DOMAIN_PATTERNS = [
   /popunder/i,
   /aff_id=/i,
   /zoneid=/i,
-  /pop\d{4}/i
+  /pop\d{4}/i,
+  /wrestpop/i,
+  /downloadnow/i,
+  /popdownload/i,
+  /\.monster(\/|\?|$)/i,
+  /\.xyz(\/|\?|$)/i,
+  /\.top(\/|\?|$)/i,
+  /\.click(\/|\?|$)/i,
+  /\.download(\/|\?|$)/i,
+  /\.icu(\/|\?|$)/i,
+  /\.buzz(\/|\?|$)/i,
+  /\?[a-f0-9]{8,}/i,
+  /redirect.*ad/i,
+  /ad.*redirect/i
 ];
 
 function isAdDomainUrl(url: string): boolean {
@@ -98,29 +111,49 @@ function isAdDomainUrl(url: string): boolean {
   return AD_DOMAIN_PATTERNS.some(p => p.test(url));
 }
 
+function checkAndCloseAdTab(tabId: number, url?: string) {
+  if (tabId && url && isAdDomainUrl(url)) {
+    chrome.tabs.remove(tabId, () => {
+      if (chrome.runtime.lastError) {}
+    });
+    recordBlockedItem(url, 'Ad');
+  }
+}
+
 // Automatically close any newly spawned tabs navigating to ad domains
 if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
   chrome.tabs.onCreated.addListener((tab) => {
     const targetUrl = tab.pendingUrl || tab.url;
-    if (tab.id && targetUrl && isAdDomainUrl(targetUrl)) {
-      chrome.tabs.remove(tab.id, () => {
-        if (chrome.runtime.lastError) {}
-      });
-      recordBlockedItem(targetUrl, 'Ad');
-    }
+    if (tab.id) checkAndCloseAdTab(tab.id, targetUrl);
   });
 }
 
-if (typeof chrome !== 'undefined' && chrome.webNavigation && chrome.webNavigation.onBeforeNavigate) {
-  chrome.webNavigation.onBeforeNavigate.addListener((details) => {
-    if (details.frameId === 0 && details.tabId && details.url && isAdDomainUrl(details.url)) {
-      chrome.tabs.remove(details.tabId, () => {
-        if (chrome.runtime.lastError) {}
-      });
-      recordBlockedItem(details.url, 'Ad');
-    }
+// Intercept tab updates / redirects / morphing URLs
+if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onUpdated) {
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    const currentUrl = changeInfo.url || tab.pendingUrl || tab.url;
+    if (tabId) checkAndCloseAdTab(tabId, currentUrl);
   });
 }
+
+if (typeof chrome !== 'undefined' && chrome.webNavigation) {
+  if (chrome.webNavigation.onBeforeNavigate) {
+    chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+      if (details.frameId === 0 && details.tabId) {
+        checkAndCloseAdTab(details.tabId, details.url);
+      }
+    });
+  }
+
+  if (chrome.webNavigation.onCommitted) {
+    chrome.webNavigation.onCommitted.addListener((details) => {
+      if (details.frameId === 0 && details.tabId) {
+        checkAndCloseAdTab(details.tabId, details.url);
+      }
+    });
+  }
+}
+
 
 
 export async function recordBlockedItem(url: string, category: 'Ad' | 'Tracker' | 'Fingerprinting' | 'AutonomousAction' = 'Ad') {
