@@ -75,6 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       );
     });
+
+    aiPromptInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        askAiBtn.click();
+      }
+    });
   }
 
   function openTabWithHash(hash) {
