@@ -156,6 +156,33 @@
     .tab-section.active {
       display: block;
     }
+
+    /* Responsive Mobile Breakpoints */
+    @media (max-width: 768px) {
+      body {
+        padding: 20px 12px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .nav-tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tab-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+      }
+
+      .panel {
+        padding: 16px;
+      }
+    }
   </style>
 </head>
 <body class="dark-theme">

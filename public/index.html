@@ -151,13 +151,30 @@
 
     .browsers-bar {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       justify-content: center;
       align-items: center;
       flex-wrap: wrap;
       margin-top: 28px;
       font-size: 13px;
       color: var(--text-sub);
+    }
+
+    .browsers-label {
+      font-weight: 500;
+      color: var(--text-sub);
+      margin-right: 4px;
+    }
+
+    .browser-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #f8fafc;
+      white-space: nowrap;
     }
 
     /* Symmetrical 2x2 Grid */
@@ -269,29 +286,157 @@
 
     .footer-links a:hover { color: var(--primary-accent); }
 
-    /* Responsive Mobile Breakpoints */
+    /* Responsive Multi-Tier Breakpoints */
     @media (max-width: 768px) {
       header {
         flex-direction: column;
         gap: 16px;
         text-align: center;
+        padding: 20px 16px;
       }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+      }
+
       .features-grid {
         grid-template-columns: 1fr;
+        padding: 24px 16px 40px 16px;
+        gap: 16px;
       }
+
+      .features-grid .glass-card[style*="span 2"] {
+        grid-column: span 1 !important;
+      }
+
       .steps-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
       }
+
+      .install-steps {
+        padding: 16px 16px 40px 16px;
+      }
+
       .hero-container {
-        padding: 40px 20px 20px 20px;
+        padding: 36px 16px 20px 16px;
       }
+
       .btn-download-clean {
         width: 100%;
+        max-width: 380px;
       }
+
+      .glass-card {
+        padding: 24px 20px;
+      }
+
       footer {
         flex-direction: column;
         text-align: center;
+        padding: 28px 16px;
       }
+
+      .footer-links {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-title {
+        font-size: clamp(24px, 7vw, 36px);
+      }
+
+      .hero-badge {
+        padding: 5px 14px;
+        font-size: 12px;
+        margin-bottom: 16px;
+      }
+
+      .glass-card {
+        padding: 20px 16px;
+      }
+
+      .feature-title {
+        font-size: 18px;
+      }
+
+      .feature-desc {
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .nav-item {
+        font-size: 13px;
+      }
+    }
+
+    /* Mobile & Tablet Notice Card Styles */
+    .mobile-notice-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(129, 140, 248, 0.3);
+      border-radius: 14px;
+      padding: 24px 20px;
+      max-width: 540px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .mobile-notice-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      background: rgba(129, 140, 248, 0.15);
+      color: var(--primary-accent);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .mobile-notice-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 8px 0;
+    }
+
+    .mobile-notice-desc {
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.5;
+      margin: 0 0 16px 0;
+    }
+
+    .btn-copy-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .btn-copy-link:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: var(--primary-accent);
     }
   </style>
 </head>
@@ -321,20 +466,32 @@
       Blocks invasive trackers, ads, and fingerprinting probes instantly while providing local, offline AI research capabilities right inside your web browser.
     </p>
 
-    <!-- Automatic Download Link (Fallback points directly to latest release download) -->
-    <div class="animate-3">
+    <!-- Automatic Download Link (For Desktop Browsers) -->
+    <div id="desktopDownloadWrapper" class="animate-3">
       <a id="downloadReleaseBtn" href="https://github.com/wachanga173/aibrowser/releases/latest/download/chrome-extension.zip" target="_blank" class="btn-download-clean">
         Download Extension Package (.zip)
       </a>
     </div>
 
+    <!-- Mobile & Tablet Device Notice Card -->
+    <div id="mobileDeviceNotice" class="mobile-notice-card animate-3" style="display: none;">
+      <div class="mobile-notice-badge">Desktop Environment Required</div>
+      <h3 class="mobile-notice-title">Browser Extension for Desktop Browsers</h3>
+      <p class="mobile-notice-desc">
+        Browser extensions cannot be installed directly on mobile or tablet browsers. Open this page on a desktop computer running Google Chrome, Microsoft Edge, Brave, Opera, or Mozilla Firefox.
+      </p>
+      <button id="copyDesktopLinkBtn" class="btn-copy-link" type="button">
+        Copy Link for Desktop
+      </button>
+    </div>
+
     <div class="browsers-bar animate-3">
-      <span>Supported Browsers:</span>
-      <strong style="color: #fff;">Google Chrome</strong> &bull;
-      <strong style="color: #fff;">Microsoft Edge</strong> &bull;
-      <strong style="color: #fff;">Brave</strong> &bull;
-      <strong style="color: #fff;">Opera</strong> &bull;
-      <strong style="color: #fff;">Mozilla Firefox</strong>
+      <span class="browsers-label">Supported Browsers:</span>
+      <span class="browser-chip">Google Chrome</span>
+      <span class="browser-chip">Microsoft Edge</span>
+      <span class="browser-chip">Brave</span>
+      <span class="browser-chip">Opera</span>
+      <span class="browser-chip">Mozilla Firefox</span>
     </div>
   </div>
 
@@ -415,11 +572,46 @@
         if (data && data.assets && data.assets.length > 0) {
           const zipAsset = data.assets.find(a => a.name.endsWith('.zip')) || data.assets[0];
           if (zipAsset && zipAsset.browser_download_url) {
-            document.getElementById('downloadReleaseBtn').href = zipAsset.browser_download_url;
+            const btn = document.getElementById('downloadReleaseBtn');
+            if (btn) btn.href = zipAsset.browser_download_url;
           }
         }
       })
       .catch(() => {});
+
+    // Detect Mobile / Tablet viewports or mobile user-agents
+    function checkDeviceType() {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(navigator.userAgent) || window.innerWidth <= 820;
+      const desktopWrapper = document.getElementById('desktopDownloadWrapper');
+      const mobileNotice = document.getElementById('mobileDeviceNotice');
+      
+      if (isMobileDevice) {
+        if (desktopWrapper) desktopWrapper.style.display = 'none';
+        if (mobileNotice) mobileNotice.style.display = 'block';
+      } else {
+        if (desktopWrapper) desktopWrapper.style.display = 'block';
+        if (mobileNotice) mobileNotice.style.display = 'none';
+      }
+    }
+
+    checkDeviceType();
+    window.addEventListener('resize', checkDeviceType);
+
+    // Copy desktop page link functionality for mobile/tablet users
+    const copyBtn = document.getElementById('copyDesktopLinkBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function() {
+        const pageUrl = window.location.href;
+        navigator.clipboard.writeText(pageUrl).then(() => {
+          copyBtn.textContent = 'Link Copied to Clipboard';
+          setTimeout(() => {
+            copyBtn.textContent = 'Copy Link for Desktop';
+          }, 3000);
+        }).catch(() => {
+          copyBtn.textContent = 'Failed to Copy';
+        });
+      });
+    }
   </script>
 </body>
 </html>

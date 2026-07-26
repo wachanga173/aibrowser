@@ -78,7 +78,7 @@
 
     h1 {
       font-family: var(--font-heading);
-      font-size: 42px;
+      font-size: clamp(26px, 5vw, 42px);
       font-weight: 700;
       margin: 0 0 16px 0;
       color: #ffffff;
@@ -152,6 +152,72 @@
     }
 
     .footer-links a:hover { color: var(--primary-accent); }
+
+    /* Responsive Mobile Breakpoints */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        padding: 20px 16px;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+      }
+
+      .content-container {
+        padding: 32px 16px;
+      }
+
+      .section {
+        padding: 24px 20px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      footer {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+        padding: 28px 16px;
+      }
+
+      .footer-links {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .content-container {
+        padding: 24px 12px;
+      }
+
+      .section {
+        padding: 18px 14px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+
+      p, li {
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      ul {
+        padding-left: 18px;
+      }
+    }
   </style>
 </head>
 <body>
