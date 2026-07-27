@@ -40,13 +40,39 @@ function checkHeuristicThresholds() {
   }
 }
 
-const AD_PATTERN_REGEX = /(?:google-analytics\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
+const AD_PATTERN_REGEX = /(?:google-analytics\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net\/[^/]+\/fbevents\.js|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
+
+// ── First-party safe domains (borrowed from uBlock Origin approach) ──────
+// These domains must never be blocked so Videos, Images, Maps work correctly.
+const SAFE_DOMAIN_SUFFIXES = [
+  'youtube.com', 'youtu.be', 'ytimg.com', 'googlevideo.com',
+  'google.com', 'google.co.uk', 'google.ca', 'google.com.au',
+  'google.de', 'google.fr', 'google.co.jp', 'google.co.in', 'google.com.br',
+  'googleapis.com', 'googleusercontent.com', 'gstatic.com', 'ggpht.com',
+  'facebook.com', 'fbcdn.net', 'instagram.com', 'cdninstagram.com',
+  'bing.com', 'vimeo.com', 'dailymotion.com', 'twitch.tv',
+  'openstreetmap.org'
+];
+
+function isSafeUrl(urlStr) {
+  try {
+    const hostname = new URL(urlStr).hostname.toLowerCase();
+    for (const safe of SAFE_DOMAIN_SUFFIXES) {
+      if (hostname === safe || hostname.endsWith('.' + safe)) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 function isAdUrlPattern(urlStr) {
   if (!urlStr) return false;
   if (/\.(png|jpe?g|gif|webp|svg|avif|bmp|ico|tiff|pdf)(\?.*)?$/i.test(urlStr)) {
     return false;
   }
+  // Never block first-party safe domains
+  if (isSafeUrl(urlStr)) return false;
   return AD_PATTERN_REGEX.test(urlStr);
 }
 

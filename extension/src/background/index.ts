@@ -63,11 +63,49 @@ if (chrome.declarativeNetRequest && chrome.declarativeNetRequest.onRuleMatchedDe
   });
 }
 
+// ── First-party domains that must NEVER be blocked ────────────────────
+// Borrowed from uBlock Origin's approach: legitimate services are allowlisted
+// so that Videos, Images, Maps, and social media embeds load correctly.
+const FIRST_PARTY_SAFE_DOMAINS = new Set([
+  'youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com',
+  'youtu.be', 'ytimg.com', 'i.ytimg.com', 'googlevideo.com',
+  'maps.google.com', 'maps.googleapis.com', 'maps.gstatic.com',
+  'google.com', 'www.google.com',
+  'google.co.uk', 'google.ca', 'google.com.au', 'google.de',
+  'google.fr', 'google.co.jp', 'google.co.in', 'google.com.br',
+  'images.google.com', 'lens.google.com',
+  'accounts.google.com', 'mail.google.com', 'drive.google.com',
+  'docs.google.com', 'news.google.com', 'play.google.com',
+  'gstatic.com', 'googleapis.com', 'googleusercontent.com', 'ggpht.com',
+  'facebook.com', 'www.facebook.com', 'm.facebook.com',
+  'fbcdn.net', 'instagram.com', 'www.instagram.com', 'cdninstagram.com',
+  'bing.com', 'www.bing.com',
+  'vimeo.com', 'player.vimeo.com',
+  'dailymotion.com', 'twitch.tv', 'www.twitch.tv',
+  'openstreetmap.org', 'tile.openstreetmap.org'
+]);
+
+function isSafeDomain(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    // Check exact match first
+    if (FIRST_PARTY_SAFE_DOMAINS.has(hostname)) return true;
+    // Check if it's a subdomain of a safe domain
+    for (const safe of FIRST_PARTY_SAFE_DOMAINS) {
+      if (hostname.endsWith('.' + safe)) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 const AD_DOMAIN_PATTERNS = [
   /google-analytics\.com/i,
   /doubleclick\.net/i,
   /googlesyndication\.com/i,
-  /facebook\.net/i,
+  /facebook\.net\/signals/i,
+  /connect\.facebook\.net\/[^/]+\/fbevents\.js/i,
   /scorecardresearch\.com/i,
   /adservice\.google\.com/i,
   /adnxs\.com/i,
@@ -94,6 +132,8 @@ const AD_DOMAIN_PATTERNS = [
 
 function isAdDomainUrl(url: string): boolean {
   if (!url || url === 'about:blank' || url.startsWith('chrome://') || url.startsWith('edge://') || url.startsWith('about:')) return false;
+  // Never block first-party safe domains (YouTube, Maps, Images, Facebook, etc.)
+  if (isSafeDomain(url)) return false;
   return AD_DOMAIN_PATTERNS.some(p => p.test(url));
 }
 
