@@ -51,6 +51,43 @@
     return AD_PATTERN_REGEX.test(u);
   }
 
+  // ── Suspicious auto-generated redirect domain heuristic ────────────────
+  // Streaming sites open throwaway domains like "unfortunatelyejectinflected.com"
+  // that are long concatenated words with no hyphens, digits, or subdomains.
+  // These exist solely to redirect through ad chains.
+
+  const COMMON_TLDS = new Set([
+    'com', 'net', 'org', 'io', 'co', 'info', 'xyz', 'online', 'site',
+    'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link'
+  ]);
+
+  function isSuspiciousRedirectDomain(url: string): boolean {
+    try {
+      const hostname = new URL(url).hostname.toLowerCase();
+      // Skip safe domains
+      if (isSafeUrl(url)) return false;
+
+      // Extract the registrable domain (strip subdomains by taking last 2 parts)
+      const parts = hostname.split('.');
+      if (parts.length < 2) return false;
+      const tld = parts[parts.length - 1];
+      const sld = parts[parts.length - 2]; // second-level domain
+
+      // Only check common cheap TLDs used by ad redirect domains
+      if (!COMMON_TLDS.has(tld)) return false;
+
+      // Heuristic: the SLD is 20+ chars, all lowercase letters, no hyphens or digits
+      // This catches "unfortunatelyejectinflected", "watchmoviestreamfree", etc.
+      if (sld.length >= 20 && /^[a-z]+$/.test(sld)) {
+        return true;
+      }
+
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
   // ── User click tracking ───────────────────────────────────────────────
   // Track the currently active user click event to detect parasitic popups.
   // When the user clicks on an anchor, any window.open() call during that
@@ -131,6 +168,12 @@
 
     // Layer 1: Known ad URL — block unconditionally
     if (urlStr && isNewTab && isKnownAdUrl(urlStr)) {
+      return null;
+    }
+
+    // Layer 1.5: Suspicious auto-generated redirect domain
+    // Block if opened during a user click (parasitic popup) or no user click context
+    if (urlStr && isNewTab && isSuspiciousRedirectDomain(urlStr)) {
       return null;
     }
 

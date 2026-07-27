@@ -52,6 +52,43 @@
     return AD_PATTERN_REGEX.test(u);
   }
 
+  // ── Suspicious auto-generated redirect domain heuristic ────────────────
+  // Streaming sites open throwaway domains like "unfortunatelyejectinflected.com"
+  // that are long concatenated words with no hyphens, digits, or subdomains.
+  // These exist solely to redirect through ad chains.
+
+  var COMMON_TLDS = new Set([
+    'com', 'net', 'org', 'io', 'co', 'info', 'xyz', 'online', 'site',
+    'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link'
+  ]);
+
+  function isSuspiciousRedirectDomain(url) {
+    try {
+      var hostname = new URL(url).hostname.toLowerCase();
+      // Skip safe domains
+      if (isSafeUrl(url)) return false;
+
+      // Extract the registrable domain (strip subdomains by taking last 2 parts)
+      var parts = hostname.split('.');
+      if (parts.length < 2) return false;
+      var tld = parts[parts.length - 1];
+      var sld = parts[parts.length - 2]; // second-level domain
+
+      // Only check common cheap TLDs used by ad redirect domains
+      if (!COMMON_TLDS.has(tld)) return false;
+
+      // Heuristic: the SLD is 20+ chars, all lowercase letters, no hyphens or digits
+      // This catches "unfortunatelyejectinflected", "watchmoviestreamfree", etc.
+      if (sld.length >= 20 && /^[a-z]+$/.test(sld)) {
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // ── User click tracking ───────────────────────────────────────────────
 
   let activeUserClickAnchor = null;
@@ -120,6 +157,11 @@
 
     // Layer 1: Known ad URL
     if (urlStr && isNewTab && isKnownAdUrl(urlStr)) {
+      return null;
+    }
+
+    // Layer 1.5: Suspicious auto-generated redirect domain
+    if (urlStr && isNewTab && isSuspiciousRedirectDomain(urlStr)) {
       return null;
     }
 

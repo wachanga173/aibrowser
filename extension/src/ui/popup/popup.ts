@@ -51,18 +51,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!promptText) return;
 
       askAiBtn.disabled = true;
-      askAiBtn.textContent = 'Thinking locally...';
+      askAiBtn.textContent = 'Extracting page content...';
       aiResponseArea.style.display = 'block';
-      aiResponseArea.textContent = 'Analyzing page content in isolated local sandbox...';
+      aiResponseArea.textContent = 'Reading the current page...';
+
+      // Show progress update after a brief delay
+      const progressTimeout = setTimeout(() => {
+        askAiBtn.textContent = 'Running AI analysis...';
+        aiResponseArea.textContent = 'Analyzing page content with local AI engine...';
+      }, 1500);
 
       chrome.runtime.sendMessage(
         { type: 'ASK_LOCAL_AI', prompt: promptText },
         (response) => {
+          clearTimeout(progressTimeout);
           askAiBtn.disabled = false;
-          askAiBtn.textContent = 'Ask AI (Offline)';
+          askAiBtn.textContent = 'Ask AI (Local)';
 
           if (chrome.runtime.lastError || !response) {
-            aiResponseArea.textContent = 'Local AI engine ready. (Sanitized context isolated)';
+            aiResponseArea.textContent = 'Could not connect to the local AI engine. Try again.';
             return;
           }
 
@@ -71,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
           } else if (response.error) {
             aiResponseArea.textContent = `Error: ${response.error}`;
           } else {
-            aiResponseArea.textContent = 'Local AI query completed.';
+            aiResponseArea.textContent = 'AI query completed with no output.';
           }
         }
       );
