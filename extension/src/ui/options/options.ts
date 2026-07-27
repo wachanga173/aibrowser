@@ -140,6 +140,49 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadAnchor.remove();
   });
 
+  const btnTestVector = document.getElementById('btnTestVector');
+  const btnCheckSession = document.getElementById('btnCheckSession');
+  const btnTriggerGate = document.getElementById('btnTriggerGate');
+  const nativeHostOutput = document.getElementById('nativeHostOutput');
+
+  if (btnTestVector && nativeHostOutput) {
+    btnTestVector.addEventListener('click', () => {
+      nativeHostOutput.style.display = 'block';
+      nativeHostOutput.textContent = 'Querying local vector engine...';
+      chrome.runtime.sendMessage({ type: 'VECTOR_SEARCH', queryEmbedding: [0.9, 0.1, 0.0] }, (resp) => {
+        if (resp && resp.ranked_topics) {
+          nativeHostOutput.textContent = `Vector Search Topics:\n${resp.ranked_topics.map((t: any) => `• ${t[0]} (Rank Score: ${t[1].toFixed(2)})`).join('\n')}`;
+        } else {
+          nativeHostOutput.textContent = 'Vector Search Result: ' + JSON.stringify(resp);
+        }
+      });
+    });
+  }
+
+  if (btnCheckSession && nativeHostOutput) {
+    btnCheckSession.addEventListener('click', () => {
+      nativeHostOutput.style.display = 'block';
+      nativeHostOutput.textContent = 'Checking credential broker session...';
+      chrome.runtime.sendMessage({ type: 'CHECK_SESSION', domain: 'example.com' }, (resp) => {
+        if (resp) {
+          nativeHostOutput.textContent = `Credential Broker Status:\nDomain: ${resp.domain}\nAuthenticated: ${resp.is_authenticated}\nValid Until: ${resp.session_valid_until}`;
+        }
+      });
+    });
+  }
+
+  if (btnTriggerGate && nativeHostOutput) {
+    btnTriggerGate.addEventListener('click', () => {
+      nativeHostOutput.style.display = 'block';
+      nativeHostOutput.textContent = 'Opening Human Confirmation Gate modal...';
+      chrome.runtime.sendMessage({ type: 'OPEN_CONFIRMATION_DIALOG' }, (resp) => {
+        if (resp && resp.status) {
+          nativeHostOutput.textContent = `Human Gate Status: Modal confirmation window opened.`;
+        }
+      });
+    });
+  }
+
   handleInitialHash();
   loadLogAndSettings();
 });

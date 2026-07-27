@@ -12,7 +12,8 @@
     "activeTab",
     "scripting",
     "tabs",
-    "webNavigation"
+    "webNavigation",
+    "nativeMessaging"
   ],
   "host_permissions": [
     "<all_urls>"

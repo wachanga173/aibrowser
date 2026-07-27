@@ -1,6 +1,15 @@
+mod credential_broker;
+mod sandbox;
+mod vector_store;
+
 use std::io::{self, Read, Write};
+use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
+use credential_broker::CredentialBroker;
+use sandbox::SandboxEnforcer;
+use vector_store::LocalVectorStore;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct NativeMessage {
@@ -14,6 +23,15 @@ fn main() -> io::Result<()> {
     let stdin = io::stdin();
     let mut stdout = io::stdout();
     let mut handle = stdin.lock();
+
+    let mut vector_store = LocalVectorStore::new();
+    let credential_broker = CredentialBroker::new();
+    let sandbox = SandboxEnforcer::new(std::env::temp_dir().join("privacy_ai_sandbox"));
+
+    // Seed default vector documents
+    vector_store.insert("doc1".into(), "Privacy Technology".into(), vec![0.9, 0.1, 0.0], 2.5);
+    vector_store.insert("doc2".into(), "Ad Blocking Rules".into(), vec![0.8, 0.2, 0.1], 1.8);
+    vector_store.insert("doc3".into(), "Local AI Inference".into(), vec![0.3, 0.9, 0.2], 1.2);
 
     loop {
         let mut length_bytes = [0u8; 4];
@@ -33,7 +51,44 @@ fn main() -> io::Result<()> {
                     let extracted = parse_and_sanitize_dom(html);
                     serde_json::to_value(extracted).unwrap_or(Value::Null)
                 },
-                "vector_search" => serde_json::json!({ "results": [], "query": msg.payload }),
+                "vector_search" => {
+                    let query_emb = msg.payload.get("query_embedding")
+                        .and_then(|v| v.as_array())
+                        .map(|arr| arr.iter().filter_map(|x| x.as_f64().map(|f| f as f32)).collect::<Vec<f32>>())
+                        .unwrap_or_else(|| vec![1.0, 0.0, 0.0]);
+                    let ranked = vector_store.rank_topics(&query_emb);
+                    serde_json::json!({ "ranked_topics": ranked })
+                },
+                "vector_insert" => {
+                    let id = msg.payload.get("id").and_then(|v| v.as_str()).unwrap_or("doc_new");
+                    let topic = msg.payload.get("topic").and_then(|v| v.as_str()).unwrap_or("General");
+                    let engagement = msg.payload.get("engagement").and_then(|v| v.as_f64()).unwrap_or(1.0) as f32;
+                    let emb = msg.payload.get("embedding")
+                        .and_then(|v| v.as_array())
+                        .map(|arr| arr.iter().filter_map(|x| x.as_f64().map(|f| f as f32)).collect::<Vec<f32>>())
+                        .unwrap_or_else(|| vec![0.5, 0.5, 0.0]);
+
+                    vector_store.insert(id.into(), topic.into(), emb, engagement);
+                    serde_json::json!({ "success": true, "inserted_id": id })
+                },
+                "check_session" => {
+                    let domain = msg.payload.get("domain").and_then(|v| v.as_str()).unwrap_or("example.com");
+                    let is_logged_in = credential_broker.is_logged_in(domain);
+                    let session_status = credential_broker.inject_session(domain);
+                    serde_json::json!({
+                        "domain": domain,
+                        "is_authenticated": is_logged_in,
+                        "session_valid_until": session_status.session_valid_until
+                    })
+                },
+                "validate_path" => {
+                    let raw_path = msg.payload.get("path").and_then(|v| v.as_str()).unwrap_or("");
+                    let path = PathBuf::from(raw_path);
+                    match sandbox.validate_file_access(&path) {
+                        Ok(norm) => serde_json::json!({ "valid": true, "canonical_path": norm.display().to_string() }),
+                        Err(err) => serde_json::json!({ "valid": false, "error": err })
+                    }
+                },
                 _ => serde_json::json!({ "error": "unsupported_message_type" })
             };
 
@@ -83,11 +138,9 @@ struct FormFieldItem {
 }
 
 fn parse_and_sanitize_dom(html: &str) -> ExtractedDomSchema {
-    // Basic DOM sanitization & hidden text stripping rule engine
     let mut stripped_count = 0;
     let mut visible_text = String::new();
 
-    // Check for hidden style blocks or hidden attributes
     let lines = html.lines();
     for line in lines {
         let lower = line.to_lowercase();
@@ -100,10 +153,9 @@ fn parse_and_sanitize_dom(html: &str) -> ExtractedDomSchema {
             || lower.contains("aria-hidden=\"true\"")
             || lower.contains("font-size:0") {
             stripped_count += 1;
-            continue; // STRIP HIDDEN ELEMENT
+            continue;
         }
 
-        // Strip HTML tags for visible text output
         let clean_line = strip_html_tags(line);
         if !clean_line.trim().is_empty() {
             visible_text.push_str(&clean_line);

@@ -238,13 +238,22 @@
         <input type="checkbox" id="filterHeuristic" checked>
       </div>
 
-      <h2 style="margin-top: 24px;">Autonomous Action Controls</h2>
+      <h2 style="margin-top: 24px;">Autonomous Action & Native Host Controls</h2>
       <div class="setting-item">
         <div class="setting-info">
           <span class="setting-name">Human Gate Enforcement</span>
           <span class="setting-desc">Require click tokens for sensitive actions</span>
         </div>
         <input type="checkbox" id="gateEnforced" checked disabled>
+      </div>
+
+      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 8px;">
+          <button id="btnTestVector" class="btn-action" style="flex: 1;">Vector Search</button>
+          <button id="btnCheckSession" class="btn-action" style="flex: 1;">Session Status</button>
+          <button id="btnTriggerGate" class="btn-action" style="flex: 1; border-color: var(--warning-amber); color: var(--warning-amber);">Trigger Human Gate</button>
+        </div>
+        <div id="nativeHostOutput" style="font-size: 11px; padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 6px; display: none; word-break: break-all; white-space: pre-wrap;"></div>
       </div>
     </div>
   </div>
