@@ -25,6 +25,8 @@ chrome.runtime.onInstalled.addListener(async () => {
   }
 });
 
+let latestUpdateDownloadUrl = null;
+
 async function checkGitHubReleaseUpdate() {
   try {
     const res = await fetch('https://api.github.com/repos/wachanga173/aibrowser/releases/latest');
@@ -33,6 +35,45 @@ async function checkGitHubReleaseUpdate() {
       const latestTag = data.tag_name.replace('v', '');
       const currentVersion = chrome.runtime.getManifest().version;
       if (latestTag !== currentVersion) {
+        const ua = (typeof navigator !== 'undefined' ? navigator.userAgent : '').toLowerCase();
+        const isFirefox = typeof globalThis.InstallTrigger !== 'undefined' || /firefox|fxios/.test(ua);
+        const isSafari = /safari/.test(ua) && !/chrome|chromium|crios|android/.test(ua);
+        const isBrave = (typeof navigator !== 'undefined' && typeof navigator.brave !== 'undefined') || /brave/.test(ua);
+        const isEdge = /edg\//.test(ua);
+
+        let primaryTarget = 'chrome';
+        let fallbackFileName = 'chrome-extension.zip';
+
+        if (isSafari) {
+          primaryTarget = 'safari';
+          fallbackFileName = 'safari-extension.zip';
+        } else if (isFirefox) {
+          primaryTarget = 'firefox';
+          fallbackFileName = 'firefox-extension.zip';
+        } else if (isBrave) {
+          primaryTarget = 'brave';
+          fallbackFileName = 'chrome-extension.zip';
+        } else if (isEdge) {
+          primaryTarget = 'edge';
+          fallbackFileName = 'chrome-extension.zip';
+        }
+
+        let downloadUrl = `https://github.com/wachanga173/aibrowser/releases/download/${data.tag_name}/${fallbackFileName}`;
+
+        if (data.assets && data.assets.length > 0) {
+          let match = data.assets.find((a) => a.name && a.name.toLowerCase().includes(primaryTarget));
+          if (!match && (primaryTarget === 'brave' || primaryTarget === 'edge' || primaryTarget === 'chrome')) {
+            match = data.assets.find((a) => a.name && (a.name.toLowerCase().includes('chrome') || a.name.toLowerCase().includes('chromium')));
+          }
+          if (!match) {
+            match = data.assets.find((a) => a.name && (a.name.endsWith('.zip') || a.name.endsWith('.xpi') || a.name.endsWith('.pkg')));
+          }
+          if (match && match.browser_download_url) {
+            downloadUrl = match.browser_download_url;
+          }
+        }
+        latestUpdateDownloadUrl = downloadUrl;
+
         if (chrome.action && chrome.action.setBadgeText) {
           await chrome.action.setBadgeText({ text: 'NEW' });
           await chrome.action.setBadgeBackgroundColor({ color: '#818cf8' });

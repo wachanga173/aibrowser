@@ -565,15 +565,34 @@
   </footer>
 
   <script>
-    // Dynamically queries GitHub API for the latest release asset download URL
+    // Dynamically queries GitHub API for the latest release asset download URL matching the user's browser
     fetch('https://api.github.com/repos/wachanga173/aibrowser/releases/latest')
       .then(res => res.json())
       .then(data => {
         if (data && data.assets && data.assets.length > 0) {
-          const zipAsset = data.assets.find(a => a.name.endsWith('.zip')) || data.assets[0];
-          if (zipAsset && zipAsset.browser_download_url) {
+          const ua = navigator.userAgent.toLowerCase();
+          const isFirefox = /firefox|fxios/.test(ua);
+          const isSafari = /safari/.test(ua) && !/chrome|chromium|crios|android/.test(ua);
+          const isBrave = (typeof navigator.brave !== 'undefined') || /brave/.test(ua);
+          const isEdge = /edg\//.test(ua);
+
+          let target = 'chrome';
+          if (isSafari) target = 'safari';
+          else if (isFirefox) target = 'firefox';
+          else if (isBrave) target = 'brave';
+          else if (isEdge) target = 'edge';
+
+          let matchAsset = data.assets.find(a => a.name && a.name.toLowerCase().includes(target));
+          if (!matchAsset && (target === 'brave' || target === 'edge' || target === 'chrome')) {
+            matchAsset = data.assets.find(a => a.name && (a.name.toLowerCase().includes('chrome') || a.name.toLowerCase().includes('chromium')));
+          }
+          if (!matchAsset) {
+            matchAsset = data.assets.find(a => a.name && (a.name.endsWith('.zip') || a.name.endsWith('.xpi') || a.name.endsWith('.pkg'))) || data.assets[0];
+          }
+
+          if (matchAsset && matchAsset.browser_download_url) {
             const btn = document.getElementById('downloadReleaseBtn');
-            if (btn) btn.href = zipAsset.browser_download_url;
+            if (btn) btn.href = matchAsset.browser_download_url;
           }
         }
       })

@@ -8,28 +8,12 @@
     "condition": {
       "urlFilter": "||google-analytics.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
         "sub_frame",
         "ping"
-      ],
-      "excludedInitiatorDomains": [
-        "google.com",
-        "google.co.uk",
-        "google.ca",
-        "google.com.au",
-        "google.de",
-        "google.fr",
-        "google.co.jp",
-        "google.co.in",
-        "google.com.br",
-        "youtube.com",
-        "maps.google.com",
-        "mail.google.com",
-        "drive.google.com",
-        "docs.google.com",
-        "accounts.google.com"
       ]
     }
   },
@@ -42,28 +26,12 @@
     "condition": {
       "urlFilter": "||doubleclick.net",
       "resourceTypes": [
+        "main_frame",
         "script",
+        "image",
         "xmlhttprequest",
         "sub_frame",
         "ping"
-      ],
-      "excludedInitiatorDomains": [
-        "google.com",
-        "google.co.uk",
-        "google.ca",
-        "google.com.au",
-        "google.de",
-        "google.fr",
-        "google.co.jp",
-        "google.co.in",
-        "google.com.br",
-        "youtube.com",
-        "maps.google.com",
-        "mail.google.com",
-        "drive.google.com",
-        "docs.google.com",
-        "accounts.google.com",
-        "news.google.com"
       ]
     }
   },
@@ -76,19 +44,12 @@
     "condition": {
       "urlFilter": "||googlesyndication.com",
       "resourceTypes": [
+        "main_frame",
         "script",
+        "image",
         "xmlhttprequest",
         "sub_frame",
         "ping"
-      ],
-      "excludedInitiatorDomains": [
-        "google.com",
-        "google.co.uk",
-        "google.ca",
-        "google.com.au",
-        "google.de",
-        "google.fr",
-        "youtube.com"
       ]
     }
   },
@@ -101,6 +62,7 @@
     "condition": {
       "urlFilter": "||facebook.net/signals/*",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -116,10 +78,13 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "||connect.facebook.net/*/fbevents.js",
+      "urlFilter": "||connect.facebook.net/*",
       "resourceTypes": [
+        "main_frame",
         "script",
+        "image",
         "xmlhttprequest",
+        "sub_frame",
         "ping"
       ]
     }
@@ -133,6 +98,7 @@
     "condition": {
       "urlFilter": "||scorecardresearch.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -150,14 +116,12 @@
     "condition": {
       "urlFilter": "||adservice.google.com",
       "resourceTypes": [
+        "main_frame",
         "script",
+        "image",
         "xmlhttprequest",
         "sub_frame",
         "ping"
-      ],
-      "excludedInitiatorDomains": [
-        "google.com",
-        "youtube.com"
       ]
     }
   },
@@ -170,6 +134,7 @@
     "condition": {
       "urlFilter": "||adnxs.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -187,6 +152,7 @@
     "condition": {
       "urlFilter": "||criteo.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -204,6 +170,7 @@
     "condition": {
       "urlFilter": "||taboola.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -221,6 +188,7 @@
     "condition": {
       "urlFilter": "||outbrain.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -238,6 +206,7 @@
     "condition": {
       "urlFilter": "||hotjar.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -255,6 +224,7 @@
     "condition": {
       "urlFilter": "||segment.io",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -272,6 +242,7 @@
     "condition": {
       "urlFilter": "||clarity.ms",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -289,6 +260,7 @@
     "condition": {
       "urlFilter": "||amazon-adsystem.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -306,6 +278,7 @@
     "condition": {
       "urlFilter": "||pubmatic.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -323,6 +296,7 @@
     "condition": {
       "urlFilter": "||rubiconproject.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -340,6 +314,7 @@
     "condition": {
       "urlFilter": "||openx.net",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -357,6 +332,7 @@
     "condition": {
       "urlFilter": "||quantserve.com",
       "resourceTypes": [
+        "main_frame",
         "script",
         "image",
         "xmlhttprequest",
@@ -470,417 +446,6 @@
         "xmlhttprequest",
         "sub_frame",
         "ping"
-      ]
-    }
-  },
-
-  {
-    "id": 100,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||youtube.com",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "media",
-        "image",
-        "xmlhttprequest",
-        "script",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 101,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||ytimg.com",
-      "resourceTypes": [
-        "image",
-        "media",
-        "script",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 102,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||googlevideo.com",
-      "resourceTypes": [
-        "media",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 103,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||maps.google.com",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "image",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 104,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||maps.googleapis.com",
-      "resourceTypes": [
-        "image",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 105,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||maps.gstatic.com",
-      "resourceTypes": [
-        "image",
-        "script",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 106,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||google.com/maps",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "image",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 107,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||google.com/search",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "image",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 108,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||google.com/images",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "image",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 109,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||ggpht.com",
-      "resourceTypes": [
-        "image",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 110,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||googleusercontent.com",
-      "resourceTypes": [
-        "image",
-        "media",
-        "sub_frame",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 111,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||gstatic.com",
-      "resourceTypes": [
-        "image",
-        "script",
-        "stylesheet",
-        "font",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 112,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||googleapis.com",
-      "resourceTypes": [
-        "image",
-        "script",
-        "xmlhttprequest",
-        "font",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 113,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||facebook.com",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "image",
-        "media",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 114,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||fbcdn.net",
-      "resourceTypes": [
-        "image",
-        "media",
-        "script",
-        "stylesheet",
-        "font",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 115,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||instagram.com",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "image",
-        "media",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 116,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||cdninstagram.com",
-      "resourceTypes": [
-        "image",
-        "media",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 117,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||bing.com",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "image",
-        "media",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 118,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||vimeo.com",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "media",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 119,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||dailymotion.com",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "media",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 120,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||twitch.tv",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "media",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 121,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||openstreetmap.org",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "image",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 122,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||apple.com/maps",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "image",
-        "script",
-        "xmlhttprequest",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 123,
-    "priority": 10,
-    "action": {
-      "type": "allow"
-    },
-    "condition": {
-      "urlFilter": "||connect.facebook.net/*/sdk.js",
-      "resourceTypes": [
-        "script"
       ]
     }
   }
