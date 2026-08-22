@@ -2,6 +2,8 @@
   "name": "privacy-ai-browser-extension",
   "version": "1.0.0",
   "private": true,
+
+
   "description": "Local-First Privacy AI Browser Extension",
   "scripts": {
     "build:rules": "node scripts/generate-dnr-rules.js",

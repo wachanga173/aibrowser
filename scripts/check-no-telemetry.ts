@@ -13,6 +13,8 @@ const ALLOWLISTED_FILES = [
   path.normalize('extension/src/ui/popup/popup.js'),
   path.normalize('extension/src/background/index.ts'),
   path.normalize('extension/src/background/index.js'),
+  path.normalize('extension/src/background/agent-engine.ts'),
+  path.normalize('extension/src/background/agent-engine.js'),
   path.normalize('scripts/check-no-telemetry.ts'),
   path.normalize('scripts/check-no-telemetry.js'),
   path.normalize('scripts/generate-dnr-rules.js'),

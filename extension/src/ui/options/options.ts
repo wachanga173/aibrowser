@@ -14,9 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const filterEasyList = document.getElementById('filterEasyList') as HTMLInputElement;
   const filterEasyPrivacy = document.getElementById('filterEasyPrivacy') as HTMLInputElement;
   const filterHeuristic = document.getElementById('filterHeuristic') as HTMLInputElement;
+  const agentHighlightEnabled = document.getElementById('agentHighlightEnabled') as HTMLInputElement;
+  const agentSemanticEnabled = document.getElementById('agentSemanticEnabled') as HTMLInputElement;
+  const tabAutoSuspend = document.getElementById('tabAutoSuspend') as HTMLInputElement;
+
+  const optionsMemorySummary = document.getElementById('optionsMemorySummary') as HTMLElement;
+  const optionsOptimizeBtn = document.getElementById('optionsOptimizeBtn') as HTMLButtonElement;
 
   let currentTheme = 'dark';
   let activityLog: any[] = [];
+
+  function applyTheme(theme: string) {
+    currentTheme = theme === 'light' ? 'light' : 'dark';
+    document.body.className = currentTheme === 'light' ? 'light-theme' : 'dark-theme';
+  }
 
   function switchTab(tabName: string) {
     tabBtnSettings?.classList.remove('active');
@@ -59,15 +70,19 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('hashchange', handleInitialHash);
 
   function loadLogAndSettings() {
+    chrome.storage.local.get(['theme', 'filterEasyList', 'filterEasyPrivacy', 'filterHeuristic', 'agentHighlightEnabled', 'agentSemanticEnabled', 'tabAutoSuspend'], (stored) => {
+      if (stored.theme) applyTheme(stored.theme);
+      if (filterEasyList && stored.filterEasyList !== undefined) filterEasyList.checked = stored.filterEasyList;
+      if (filterEasyPrivacy && stored.filterEasyPrivacy !== undefined) filterEasyPrivacy.checked = stored.filterEasyPrivacy;
+      if (filterHeuristic && stored.filterHeuristic !== undefined) filterHeuristic.checked = stored.filterHeuristic;
+      if (agentHighlightEnabled && stored.agentHighlightEnabled !== undefined) agentHighlightEnabled.checked = stored.agentHighlightEnabled;
+      if (agentSemanticEnabled && stored.agentSemanticEnabled !== undefined) agentSemanticEnabled.checked = stored.agentSemanticEnabled;
+      if (tabAutoSuspend && stored.tabAutoSuspend !== undefined) tabAutoSuspend.checked = stored.tabAutoSuspend;
+    });
+
     chrome.runtime.sendMessage({ type: 'GET_STATUS' }, (status) => {
-      if (status) {
-        if (status.theme) {
-          currentTheme = status.theme;
-          applyTheme(currentTheme);
-        }
-        if (filterEasyList && status.filterEasyList !== undefined) filterEasyList.checked = status.filterEasyList;
-        if (filterEasyPrivacy && status.filterEasyPrivacy !== undefined) filterEasyPrivacy.checked = status.filterEasyPrivacy;
-        if (filterHeuristic && status.filterHeuristic !== undefined) filterHeuristic.checked = status.filterHeuristic;
+      if (status && status.theme) {
+        applyTheme(status.theme);
       }
     });
 
@@ -76,13 +91,47 @@ document.addEventListener('DOMContentLoaded', () => {
       activityLog = response.activityLog || [];
       renderLogTable(activityLog);
     });
+
+    loadOptionsMemory();
+  }
+
+  function loadOptionsMemory() {
+    if (!optionsMemorySummary) return;
+    chrome.runtime.sendMessage({ type: 'GET_MEMORY_ANALYTICS' }, (res) => {
+      if (chrome.runtime.lastError || !res || !res.success) return;
+
+      const totalGB = (res.systemCapacityBytes / (1024 * 1024 * 1024)).toFixed(1);
+      const usedGB = (res.usedCapacityBytes / (1024 * 1024 * 1024)).toFixed(1);
+      const percent = res.usedPercent || Math.round((res.usedCapacityBytes / res.systemCapacityBytes) * 100);
+
+      optionsMemorySummary.innerHTML = `
+        <strong>System RAM:</strong> ${usedGB} GB in use of ${totalGB} GB (${percent}% capacity)<br>
+        <strong>Open Tabs:</strong> ${res.totalTabsCount || 1} open tab(s) (${res.discardedTabsCount || 0} suspended/sleeping)<br>
+        <strong>Active Page JS Heap:</strong> ${res.pageMemory && res.pageMemory.usedJSHeapSize > 0 ? (res.pageMemory.usedJSHeapSize / (1024 * 1024)).toFixed(1) + ' MB' : '< 20 MB'}
+      `;
+    });
+  }
+
+  if (optionsOptimizeBtn) {
+    optionsOptimizeBtn.addEventListener('click', () => {
+      optionsOptimizeBtn.disabled = true;
+      optionsOptimizeBtn.textContent = 'Reclaiming...';
+      chrome.runtime.sendMessage({ type: 'OPTIMIZE_TABS_RAM' }, (res) => {
+        optionsOptimizeBtn.disabled = false;
+        optionsOptimizeBtn.textContent = 'Reclaim Inactive RAM';
+        loadOptionsMemory();
+      });
+    });
   }
 
   function saveFilterSettings() {
     const filters = {
       filterEasyList: filterEasyList ? filterEasyList.checked : true,
       filterEasyPrivacy: filterEasyPrivacy ? filterEasyPrivacy.checked : true,
-      filterHeuristic: filterHeuristic ? filterHeuristic.checked : true
+      filterHeuristic: filterHeuristic ? filterHeuristic.checked : true,
+      agentHighlightEnabled: agentHighlightEnabled ? agentHighlightEnabled.checked : true,
+      agentSemanticEnabled: agentSemanticEnabled ? agentSemanticEnabled.checked : true,
+      tabAutoSuspend: tabAutoSuspend ? tabAutoSuspend.checked : true
     };
     chrome.storage.local.set(filters);
     chrome.runtime.sendMessage({ type: 'UPDATE_FILTERS', filters });
@@ -91,14 +140,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (filterEasyList) filterEasyList.addEventListener('change', saveFilterSettings);
   if (filterEasyPrivacy) filterEasyPrivacy.addEventListener('change', saveFilterSettings);
   if (filterHeuristic) filterHeuristic.addEventListener('change', saveFilterSettings);
-
-  function applyTheme(theme: string) {
-    document.body.className = theme === 'light' ? 'light-theme' : 'dark-theme';
-  }
+  if (agentHighlightEnabled) agentHighlightEnabled.addEventListener('change', saveFilterSettings);
+  if (agentSemanticEnabled) agentSemanticEnabled.addEventListener('change', saveFilterSettings);
+  if (tabAutoSuspend) tabAutoSuspend.addEventListener('change', saveFilterSettings);
 
   function renderLogTable(logs: any[]) {
     if (logs.length === 0) {
-      logTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-secondary-dark);">No activity recorded yet.</td></tr>';
+      logTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">No activity recorded yet.</td></tr>';
       return;
     }
 
@@ -107,42 +155,55 @@ document.addEventListener('DOMContentLoaded', () => {
       let badgeClass = 'badge-ad';
       if (log.category === 'Tracker') badgeClass = 'badge-tracker';
       if (log.category === 'Fingerprinting') badgeClass = 'badge-fingerprinting';
+      if (log.category === 'AutonomousAction') badgeClass = 'badge-action';
 
       return `
         <tr>
           <td>${date}</td>
           <td><span class="badge ${badgeClass}">${log.category}</span></td>
-          <td style="word-break: break-all;"><strong>${log.domain}</strong><br><span style="font-size: 10px; color: var(--text-secondary-dark);">${log.url}</span></td>
+          <td style="word-break: break-all;"><strong>${log.domain || 'Local Action'}</strong><br><span style="font-size: 10px; color: var(--text-secondary);">${log.url || ''}</span></td>
         </tr>
       `;
     }).join('');
   }
 
-  themeToggleBtn.addEventListener('click', () => {
-    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    applyTheme(currentTheme);
-    chrome.storage.local.set({ theme: currentTheme });
-  });
-
-  clearLogBtn.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ type: 'CLEAR_LOG' }, () => {
-      loadLogAndSettings();
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(nextTheme);
+      chrome.storage.local.set({ theme: nextTheme });
     });
+  }
+
+  // Cross-view theme sync
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.theme) {
+      applyTheme(changes.theme.newValue);
+    }
   });
 
-  exportLogBtn.addEventListener('click', () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activityLog, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `privacy_guard_activity_log_${Date.now()}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  });
+  if (clearLogBtn) {
+    clearLogBtn.addEventListener('click', () => {
+      chrome.runtime.sendMessage({ type: 'CLEAR_LOG' }, () => {
+        loadLogAndSettings();
+      });
+    });
+  }
+
+  if (exportLogBtn) {
+    exportLogBtn.addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activityLog, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `privacy_guard_activity_log_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    });
+  }
 
   const btnTestVector = document.getElementById('btnTestVector');
   const btnCheckSession = document.getElementById('btnCheckSession');
-  const btnTriggerGate = document.getElementById('btnTriggerGate');
   const nativeHostOutput = document.getElementById('nativeHostOutput');
 
   if (btnTestVector && nativeHostOutput) {
@@ -166,18 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
       chrome.runtime.sendMessage({ type: 'CHECK_SESSION', domain: 'example.com' }, (resp) => {
         if (resp) {
           nativeHostOutput.textContent = `Credential Broker Status:\nDomain: ${resp.domain}\nAuthenticated: ${resp.is_authenticated}\nValid Until: ${resp.session_valid_until}`;
-        }
-      });
-    });
-  }
-
-  if (btnTriggerGate && nativeHostOutput) {
-    btnTriggerGate.addEventListener('click', () => {
-      nativeHostOutput.style.display = 'block';
-      nativeHostOutput.textContent = 'Opening Human Confirmation Gate modal...';
-      chrome.runtime.sendMessage({ type: 'OPEN_CONFIRMATION_DIALOG' }, (resp) => {
-        if (resp && resp.status) {
-          nativeHostOutput.textContent = `Human Gate Status: Modal confirmation window opened.`;
         }
       });
     });

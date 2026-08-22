@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy Guard — Next-Generation Local Privacy & Intelligence</title>
-  <meta name="description" content="Local-first privacy engine with ad and tracker blocking, fingerprinting defense, and offline AI page intelligence.">
+  <title>Privacy Guard | Next Generation Local Privacy & Intelligence</title>
+  <meta name="description" content="Local first privacy engine with ad and tracker blocking, fingerprinting defense, and offline AI page intelligence.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
@@ -381,16 +381,17 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(129, 140, 248, 0.3);
-      border-radius: 14px;
-      padding: 24px 20px;
+      border-radius: 16px;
+      padding: 32px 24px;
       max-width: 540px;
       margin: 0 auto;
       text-align: center;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
     }
 
     .mobile-notice-badge {
       display: inline-block;
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 12px;
       background: rgba(129, 140, 248, 0.15);
       color: var(--primary-accent);
@@ -398,30 +399,57 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     .mobile-notice-title {
       font-family: var(--font-heading);
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 700;
       color: #ffffff;
-      margin: 0 0 8px 0;
+      margin: 0 0 12px 0;
+      line-height: 1.35;
+    }
+
+    .mobile-notice-visit-box {
+      background: rgba(129, 140, 248, 0.12);
+      border: 1px solid rgba(129, 140, 248, 0.25);
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin: 20px 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.6;
+      display: block;
+      word-break: break-word;
+    }
+
+    .notice-domain-link {
+      color: #818cf8;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      font-weight: 700;
+      transition: color 0.2s ease;
+    }
+
+    .notice-domain-link:hover {
+      color: #a5b4fc;
     }
 
     .mobile-notice-desc {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text-sub);
-      line-height: 1.5;
-      margin: 0 0 16px 0;
+      line-height: 1.7;
+      margin: 0 0 24px 0;
     }
 
     .btn-copy-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 12px 24px;
-      border-radius: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
       background: rgba(255, 255, 255, 0.08);
       color: #ffffff;
       font-family: var(--font-heading);
@@ -429,14 +457,15 @@
       font-weight: 600;
       border: 1px solid rgba(255, 255, 255, 0.15);
       cursor: pointer;
-      transition: background-color 0.2s ease, border-color 0.2s ease;
+      transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
       width: 100%;
-      max-width: 320px;
+      max-width: 340px;
     }
 
     .btn-copy-link:hover {
       background: rgba(255, 255, 255, 0.16);
       border-color: var(--primary-accent);
+      transform: translateY(-1px);
     }
   </style>
 </head>
@@ -457,10 +486,10 @@
   <!-- Hero Section -->
   <div class="hero-container">
     <div class="hero-badge animate-1">
-      Zero Telemetry &bull; 100% Local-First Engine
+      Zero Telemetry &bull; 100% Local First Engine
     </div>
     <h1 class="hero-title animate-2">
-      Next-Generation Local Privacy & AI Intelligence
+      Next Generation Local Privacy & AI Intelligence
     </h1>
     <p class="hero-subtitle animate-3">
       Blocks invasive trackers, ads, and fingerprinting probes instantly while providing local, offline AI research capabilities right inside your web browser.
@@ -477,9 +506,15 @@
     <div id="mobileDeviceNotice" class="mobile-notice-card animate-3" style="display: none;">
       <div class="mobile-notice-badge">Desktop Environment Required</div>
       <h3 class="mobile-notice-title">Browser Extension for Desktop Browsers</h3>
+      
+      <div class="mobile-notice-visit-box">
+        Visit <a href="#" target="_blank" class="notice-domain-link">this-page</a> on Desktop
+      </div>
+
       <p class="mobile-notice-desc">
-        Browser extensions cannot be installed directly on mobile or tablet browsers. Open this page on a desktop computer running Google Chrome, Microsoft Edge, Brave, Opera, or Mozilla Firefox.
+        Browser extensions cannot be installed directly on mobile or tablet browsers. Please visit this-page on a desktop computer running Google Chrome, Microsoft Edge, Brave, Opera, or Mozilla Firefox to download and install the extension.
       </p>
+      
       <button id="copyDesktopLinkBtn" class="btn-copy-link" type="button">
         Copy Link for Desktop
       </button>
@@ -513,12 +548,12 @@
     </div>
 
     <div class="glass-card">
-      <h3 class="feature-title">Code-Enforced Human Gate</h3>
+      <h3 class="feature-title">Code Enforced Human Gate</h3>
       <p class="feature-desc">State-changing actions like form submissions strictly require an explicit single-use user click confirmation token to proceed.</p>
     </div>
 
     <div class="glass-card" style="grid-column: span 2;">
-      <h3 class="feature-title">Anti-Hacker Vulnerability Isolation</h3>
+      <h3 class="feature-title">Anti Hacker Vulnerability Isolation</h3>
       <p class="feature-desc">Zero inbound or outbound network listening ports. Native OS path sandboxing, DOM sanitization walls, and injection firewalls prevent malicious web scripts or hacker attacks from compromising your local machine.</p>
     </div>
   </div>

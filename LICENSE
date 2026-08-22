@@ -1,0 +1,24 @@
+PROPRIETARY & SOURCE-AVAILABLE SOFTWARE LICENSE
+
+Copyright (c) 2026 Peter Wachanga. All Rights Reserved.
+
+PREAMBLE
+This software and associated documentation files (the "Software") are proprietary and confidential intellectual property of Peter Wachanga. The source code is made publicly visible for security auditability, zero-telemetry verification, and personal inspection only.
+
+1. PERMITTED USE & EVALUATION
+Subject to the terms and restrictions herein, you are granted a non-exclusive, non-transferable, revocable license to:
+(a) Inspect and audit the source code and build scripts locally.
+(b) Compile and run the Software solely for personal, non-commercial, or educational evaluation on your own devices.
+
+2. RESTRICTIONS
+You shall NOT, directly or indirectly:
+(a) Sell, rent, lease, sublicense, distribute, or commercially exploit the Software or any portion thereof.
+(b) Re-host, repackage, or distribute modified or unmodified versions of the Software on any public store, repository, or package manager under another name or brand.
+(c) Remove, alter, or obscure any copyright notices, trademarks, or proprietary declarations embedded in the Software.
+(d) Incorporate the Software into any commercial product or hosted service without prior written authorization from the copyright holder.
+
+3. INTELLECTUAL PROPERTY & OWNERSHIP
+All title, ownership rights, and intellectual property rights in and to the Software (including but not limited to code, architecture, algorithms, user interfaces, and documentation) remain exclusively with Peter Wachanga.
+
+4. DISCLAIMER OF WARRANTY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

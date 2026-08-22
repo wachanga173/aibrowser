@@ -2,6 +2,8 @@
   "manifest_version": 3,
   "name": "Privacy AI Browser Guard",
   "version": "1.0.0",
+
+
   "description": "Local-first privacy engine with ad/tracker blocking, fingerprinting defense, and local zero-telemetry architecture.",
   "browser_specific_settings": {
     "gecko": {

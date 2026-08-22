@@ -1,11 +1,11 @@
 /**
- * Task 3.1 — Closed Action Type Definitions & Task Allowlist Enforcer
+ * Closed Action Type Definitions & Task Allowlist Enforcer
  */
 
 export const TASK_ALLOWLISTS = {
-  RESEARCH_ONLY: ['extract_text'],
-  FORM_FILLING: ['extract_text', 'click_element', 'fill_field', 'submit_form'],
-  FULL_NAVIGATION: ['extract_text', 'click_element', 'fill_field', 'navigate', 'submit_form']
+  RESEARCH_ONLY: ['extract_text', 'highlight_text', 'scroll_page', 'extract_structured_data'],
+  FORM_FILLING: ['extract_text', 'highlight_text', 'scroll_page', 'click_element', 'fill_field', 'submit_form'],
+  FULL_NAVIGATION: ['extract_text', 'highlight_text', 'scroll_page', 'extract_structured_data', 'click_element', 'fill_field', 'navigate', 'submit_form']
 };
 
 export const SENSITIVE_ACTIONS = ['submit_form', 'navigate'];
@@ -26,3 +26,4 @@ export function validateActionAllowed(action, taskCategory = 'RESEARCH_ONLY') {
 
   return { isAllowed: true };
 }
+

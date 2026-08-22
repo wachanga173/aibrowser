@@ -38,9 +38,10 @@ jobs:
         env:
           BUILD_VERSION: ${{ env.BUILD_VERSION }}
 
-      - name: Package Chrome Extension Distribution ZIP
+      - name: Package Chrome & Firefox Extension Distribution ZIPs
         run: |
           cd dist/chrome-extension && zip -r ../../chrome-extension.zip . && cd ../..
+          cd dist/firefox-extension && zip -r ../../firefox-extension.zip . && cd ../..
 
       - name: Create Automatic GitHub Release
         uses: softprops/action-gh-release@v1
@@ -50,11 +51,13 @@ jobs:
           make_latest: true
           body: |
             Automatic production release for Privacy AI Guard (Version ${{ env.RELEASE_TAG }}).
-            Features dynamic background updates, static DNR ad blocking, WASM fingerprinting heuristics, and local AI.
+            Features dynamic background updates, static DNR ad blocking, WASM fingerprinting heuristics, local AI Browser Agent, and RAM Analytics.
           files: |
             chrome-extension.zip
+            firefox-extension.zip
             updates.xml
             scripts/install-native-host.bat
             scripts/install-native-host.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

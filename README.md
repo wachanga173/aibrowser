@@ -1,6 +1,6 @@
 # Local-First Privacy AI Browser Extension
 
-An open-source, local-first browser extension providing ad/tracker blocking, fingerprinting heuristic detection, and local AI-assisted web research while enforcing verifiable privacy walls across all major web browsers (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi, Firefox).
+A source-available, local-first browser extension providing ad/tracker blocking, fingerprinting heuristic detection, and local AI-assisted web research while enforcing verifiable privacy walls across all major web browsers (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi, Firefox).
 
 ---
 

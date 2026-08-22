@@ -60,10 +60,11 @@ Because Privacy AI Guard does not collect, process, transmit, or store personal 
 
 ---
 
-## 6. Security Auditability
+## 6. Security Auditability & Source Transparency
 
-Privacy AI Guard is open-source. Anyone can audit the network activity, build scripts, and source code:
+Privacy AI Guard source code is publicly inspectable. Anyone can audit the network activity, build scripts, and local security boundaries:
 * **Automated Audit Command:** Run `npm run verify:release` to verify zero-telemetry compliance locally.
+
 
 ---
 

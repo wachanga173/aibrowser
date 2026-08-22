@@ -14,10 +14,11 @@ By downloading, installing, accessing, or using Privacy AI Guard ("the Software"
 ## 2. License & Intellectual Property Rights
 
 ### A. License Grant
-Subject to these Terms, Privacy AI Guard grants you a personal, non-exclusive, non-transferable, revocable license to use the Software for personal, professional, or commercial purposes.
+Subject to these Terms and the [LICENSE](file:///c:/Users/Peter/OneDrive/visual%20code/GitHub/ai/LICENSE) file, Privacy AI Guard grants you a personal, non-exclusive, non-transferable, revocable license to use the Software for personal or internal evaluation purposes.
 
-### B. Open-Source Rights
-The Software source code is made available for inspection. You may inspect, modify, and build the Software from source subject to applicable open-source license terms.
+### B. Source-Available Rights & Restrictions
+The Software source code is made available for security auditability and personal inspection. You may inspect, audit, and build the Software locally. Unauthorized commercial distribution, rehosting, selling, or repackaging under another brand is strictly prohibited.
+
 
 ---
 

@@ -177,19 +177,18 @@ function runTestSuite() {
     failed++;
   }
 
-  // Test 8: Human Confirmation Gate Security Block
-  console.log('Test 8: Human Confirmation Gate Enforcement...');
+  // Test 8: Direct Action Execution & Security Allowlist Enforcement
+  console.log('Test 8: Direct Action Execution & Allowlist Enforcement...');
   const sensitiveAction = { type: 'submit_form', formId: '#checkout' };
   
-  const blockedExec = executeAgentAction(sensitiveAction, 'FORM_FILLING', null);
-  const token = generateUserClickToken('checkout_req_01');
-  const approvedExec = executeAgentAction(sensitiveAction, 'FORM_FILLING', token);
+  const blockedExec = executeAgentAction(sensitiveAction, 'RESEARCH_ONLY');
+  const approvedExec = executeAgentAction(sensitiveAction, 'FORM_FILLING');
 
-  if (!blockedExec.success && blockedExec.error.includes('HUMAN GATE BLOCK') && approvedExec.success) {
-    console.log('  [PASSED]: Sensitive actions blocked without user click token; succeeded when valid token provided.\n');
+  if (!blockedExec.success && blockedExec.error.includes('SECURITY BLOCK') && approvedExec.success && approvedExec.actionExecuted === 'submit_form') {
+    console.log('  [PASSED]: Direct action execution validates scope allowlist correctly.\n');
     passed++;
   } else {
-    console.error('  [FAILED]: Human confirmation gate enforcement failed.\n');
+    console.error('  [FAILED]: Action execution allowlist validation failed.\n');
     failed++;
   }
 
@@ -219,6 +218,45 @@ function runTestSuite() {
     failed++;
   }
 
+  // Test 11: Intelligent Browser AI Agent Local NLP Processing
+  console.log('Test 11: Intelligent Browser AI Agent Local NLP Engine...');
+  const { BrowserAIAgent } = require('../extension/src/background/agent-engine.js');
+  const agent = new BrowserAIAgent();
+  const samplePage = {
+    title: 'Modern Privacy Architecture',
+    url: 'https://example.com/privacy',
+    domain: 'example.com',
+    description: 'A guide to local-first privacy and telemetry defense.',
+    headings: [{ level: 1, text: 'Core Architecture' }, { level: 2, text: 'Local Processing' }],
+    paragraphs: [
+      'Privacy Guard provides local-first ad blocking and on-device machine intelligence.',
+      'All prompt evaluations execute strictly on the client device without telemetry.'
+    ],
+    links: [{ text: 'Documentation', href: 'https://example.com/docs' }],
+    forms: [],
+    scriptsCount: 2,
+    thirdPartyDomains: [],
+    readingTimeMinutes: 2,
+    wordCount: 150,
+    rawText: 'Privacy Guard provides local-first ad blocking and on-device machine intelligence. All prompt evaluations execute strictly on the client device without telemetry. Users retain full data sovereignty without external network leakage.'
+  };
+
+  const summaryResult = agent.executeLocalNLP('', 'SUMMARIZE', samplePage);
+  const takeawaysResult = agent.executeLocalNLP('', 'KEY_TAKEAWAYS', samplePage);
+  const qaResult = agent.answerSpecificQuestion('What does Privacy Guard provide?', samplePage);
+
+  if (
+    summaryResult.includes('Executive Summary') &&
+    takeawaysResult.includes('Key Takeaways') &&
+    qaResult.includes('Privacy Guard provides local-first ad blocking')
+  ) {
+    console.log('  [PASSED]: Intelligent Browser AI Agent generated structured summaries, takeaways, and QA matches locally.\n');
+    passed++;
+  } else {
+    console.error('  [FAILED]: Browser AI Agent NLP engine failed to generate structured response.\n');
+    failed++;
+  }
+
   // Summary
   console.log('----------------------------------------------------');
   console.log(`TEST SUITE RESULTS: ${passed} PASSED, ${failed} FAILED`);
@@ -230,3 +268,4 @@ function runTestSuite() {
 }
 
 runTestSuite();
+

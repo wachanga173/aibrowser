@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy AI Guard - Settings & Audit Log</title>
+  <title>Privacy Guard - Settings & Audit Log</title>
   <link rel="stylesheet" href="../../../design-system/tokens.css">
   <style>
     body {
       max-width: 960px;
       margin: 0 auto;
       padding: 32px 16px;
+      color: var(--text-primary);
     }
     .header {
       display: flex;
@@ -21,14 +22,12 @@
       font-family: var(--font-heading);
       font-size: 24px;
       margin: 0 0 4px 0;
+      color: var(--text-primary);
     }
     .title-area p {
-      color: var(--text-secondary-dark);
+      color: var(--text-secondary);
       margin: 0;
       font-size: 14px;
-    }
-    body.light-theme .title-area p {
-      color: var(--text-secondary-light);
     }
     .grid {
       display: grid;
@@ -36,24 +35,29 @@
       gap: 24px;
     }
     .panel {
-      padding: 20px;
+      padding: 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
     }
     .panel h2 {
       font-family: var(--font-heading);
       font-size: 16px;
       margin-top: 0;
       margin-bottom: 16px;
-      border-bottom: 1px solid var(--border-dark);
+      border-bottom: 1px solid var(--border-color);
       padding-bottom: 8px;
-    }
-    body.light-theme .panel h2 {
-      border-bottom-color: var(--border-light);
+      color: var(--text-primary);
     }
     .setting-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .setting-item:last-child {
+      border-bottom: none;
     }
     .setting-info {
       display: flex;
@@ -61,11 +65,13 @@
     }
     .setting-name {
       font-weight: 600;
-      font-size: 13px;
+      font-size: 13.5px;
+      color: var(--text-primary);
     }
     .setting-desc {
-      font-size: 11px;
-      color: var(--text-secondary-dark);
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      margin-top: 2px;
     }
     .log-table {
       width: 100%;
@@ -75,10 +81,8 @@
     .log-table th, .log-table td {
       padding: 10px;
       text-align: left;
-      border-bottom: 1px solid var(--border-dark);
-    }
-    body.light-theme .log-table th, body.light-theme .log-table td {
-      border-bottom-color: var(--border-light);
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
     }
     .badge {
       display: inline-block;
@@ -95,59 +99,53 @@
 
     .btn-action {
       padding: 8px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--border-dark);
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-primary-dark);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--btn-secondary-bg);
+      color: var(--text-primary);
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       margin-right: 8px;
       transition: var(--transition-fast);
-    }
-    body.light-theme .btn-action {
-      border-color: var(--border-light);
-      color: var(--text-primary-light);
-      background: rgba(0, 0, 0, 0.04);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     .btn-action:hover {
       background: var(--primary-accent);
-      color: white;
+      color: #ffffff;
       border-color: var(--primary-accent);
     }
     .nav-tabs {
       display: flex;
       gap: 12px;
       margin-bottom: 20px;
-      border-bottom: 1px solid var(--border-dark);
+      border-bottom: 1px solid var(--border-color);
       padding-bottom: 12px;
-    }
-    body.light-theme .nav-tabs {
-      border-bottom-color: var(--border-light);
     }
     .tab-btn {
       padding: 10px 20px;
       border-radius: 8px;
       border: 1px solid transparent;
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-secondary-dark);
+      background: var(--btn-secondary-bg);
+      color: var(--text-secondary);
       font-family: var(--font-heading);
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       transition: var(--transition-fast);
-    }
-    body.light-theme .tab-btn {
-      color: var(--text-secondary-light);
-      background: rgba(0, 0, 0, 0.04);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .tab-btn:hover {
-      color: var(--text-primary-dark);
-      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      background: var(--chip-hover-bg);
     }
     .tab-btn.active {
       background: var(--primary-accent);
-      color: white;
+      color: #ffffff;
       border-color: var(--primary-accent);
     }
     .tab-section {
@@ -157,28 +155,23 @@
       display: block;
     }
 
-    /* Responsive Mobile Breakpoints */
     @media (max-width: 768px) {
       body {
         padding: 20px 12px;
       }
-
       .header {
         flex-direction: column;
         align-items: flex-start;
         gap: 16px;
       }
-
       .nav-tabs {
         flex-wrap: wrap;
         gap: 8px;
       }
-
       .tab-btn {
         padding: 8px 14px;
         font-size: 13px;
       }
-
       .panel {
         padding: 16px;
       }
@@ -189,25 +182,28 @@
   <div class="header">
     <div class="title-area">
       <h1>Privacy Guard Settings & Audit Log</h1>
-      <p>Local-First Ad & Tracker Blocking Options & Verifiable Logs</p>
+      <p>Local First Ad & Tracker Blocking Options & Verifiable Logs</p>
     </div>
     <div>
-      <button id="themeToggleBtn" class="btn-action">Toggle Theme</button>
-      <a href="https://github.com/wachanga173/Peter" target="_blank" class="btn-action" style="text-decoration: none;">GitHub Repo</a>
+      <button id="themeToggleBtn" class="btn-action">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        Toggle Theme
+      </button>
+      <a href="https://github.com/wachanga173/aibrowser" target="_blank" class="btn-action" style="text-decoration: none;">GitHub Repo</a>
     </div>
   </div>
 
   <div class="nav-tabs">
     <button id="tabBtnSettings" class="tab-btn active" data-tab="settings">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Settings & Rules
     </button>
     <button id="tabBtnActivity" class="tab-btn" data-tab="activity-log">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       Activity & Audit Log
     </button>
     <button id="tabBtnLegal" class="tab-btn" data-tab="privacy-terms">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       Terms & Privacy Policy
     </button>
   </div>
@@ -238,25 +234,50 @@
         <input type="checkbox" id="filterHeuristic" checked>
       </div>
 
-      <h2 style="margin-top: 24px;">Autonomous Action & Native Host Controls</h2>
+      <h2 style="margin-top: 24px;">Browser AI Agent & Local Intelligence</h2>
       <div class="setting-item">
         <div class="setting-info">
-          <span class="setting-name">Human Gate Enforcement</span>
-          <span class="setting-desc">Require click tokens for sensitive actions</span>
+          <span class="setting-name">In-Page Agent Highlighting</span>
+          <span class="setting-desc">Allow AI Agent to highlight key insights and answers directly on active webpage</span>
         </div>
-        <input type="checkbox" id="gateEnforced" checked disabled>
+        <input type="checkbox" id="agentHighlightEnabled" checked>
+      </div>
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-name">On-Device Semantic Extraction</span>
+          <span class="setting-desc">Analyze DOM hierarchy, forms, and metadata strictly on-device with zero server transmission</span>
+        </div>
+        <input type="checkbox" id="agentSemanticEnabled" checked>
       </div>
 
-      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+      <h2 style="margin-top: 24px;">Browser RAM & Memory Analytics</h2>
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-name">Background Tab Auto-Sleeper</span>
+          <span class="setting-desc">Automatically suspend idle background tabs to minimize Chromium memory footprint</span>
+        </div>
+        <input type="checkbox" id="tabAutoSuspend" checked>
+      </div>
+
+      <div style="margin-top: 14px; background: var(--card-bg-subtle); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span id="optionsRamUsageTitle" style="font-size: 12px; font-weight: 600;">System Memory Profile</span>
+          <button id="optionsOptimizeBtn" class="btn-action" style="padding: 4px 10px; font-size: 11px; margin: 0;">Reclaim Inactive RAM</button>
+        </div>
+        <div style="font-size: 11.5px; color: var(--text-secondary);" id="optionsMemorySummary">Measuring system memory metrics and open tabs allocation...</div>
+      </div>
+
+      <h2 style="margin-top: 24px;">Native Host Companion Diagnostics</h2>
+      <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
         <div style="display: flex; gap: 8px;">
           <button id="btnTestVector" class="btn-action" style="flex: 1;">Vector Search</button>
           <button id="btnCheckSession" class="btn-action" style="flex: 1;">Session Status</button>
-          <button id="btnTriggerGate" class="btn-action" style="flex: 1; border-color: var(--warning-amber); color: var(--warning-amber);">Trigger Human Gate</button>
         </div>
-        <div id="nativeHostOutput" style="font-size: 11px; padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 6px; display: none; word-break: break-all; white-space: pre-wrap;"></div>
+        <div id="nativeHostOutput" style="font-size: 11px; padding: 10px; background: var(--code-bg); border-radius: 8px; display: none; word-break: break-all; white-space: pre-wrap; border: 1px solid var(--border-color); color: var(--text-primary);"></div>
       </div>
     </div>
   </div>
+
 
   <!-- Activity & Audit Log Tab Section -->
   <div id="activityLogSection" class="tab-section">
@@ -268,7 +289,7 @@
           <button id="clearLogBtn" class="btn-action" style="color: var(--danger-red);">Clear Log</button>
         </div>
       </div>
-      <p style="font-size: 11px; color: var(--text-secondary-dark); margin-top: 0;">Logged exclusively on your local device via <code>chrome.storage.local</code>.</p>
+      <p style="font-size: 11px; color: var(--text-secondary); margin-top: 0;">Logged exclusively on your local device via <code>chrome.storage.local</code>.</p>
 
       <div style="max-height: 450px; overflow-y: auto;">
         <table class="log-table">
@@ -281,7 +302,7 @@
           </thead>
           <tbody id="logTableBody">
             <tr>
-              <td colspan="3" style="text-align: center; color: var(--text-secondary-dark);">No activity recorded yet.</td>
+              <td colspan="3" style="text-align: center; color: var(--text-secondary);">No activity recorded yet.</td>
             </tr>
           </tbody>
         </table>
@@ -296,17 +317,18 @@
       
       <div style="margin-bottom: 20px; line-height: 1.6; font-size: 13px;">
         <h3 style="margin-top: 0; color: var(--primary-accent);">1. Verifiable Zero-Telemetry Data Sovereignty</h3>
-        <p style="color: var(--text-secondary-dark);">Privacy AI Guard operates under a strict, non-negotiable architectural framework: <strong>Zero outbound data transmission</strong>. All DOM parsing, ad/tracker filtering, local vector indexing, and AI prompt processing execute 100% locally on your computer. Zero metrics, URLs, or prompts leave your device.</p>
+        <p style="color: var(--text-secondary);">Privacy Guard operates under a strict, non-negotiable architectural framework: <strong>Zero outbound data transmission</strong>. All DOM parsing, ad/tracker filtering, local vector indexing, and AI prompt processing execute 100% locally on your computer. Zero metrics, URLs, or prompts leave your device.</p>
         
         <h3 style="color: var(--primary-accent); margin-top: 16px;">2. Local Storage & Encryption at Rest</h3>
-        <p style="color: var(--text-secondary-dark);">All logs, blocking metrics, and local vector embeddings are stored strictly in local storage (<code>chrome.storage.local</code>) or local data directories. Vectors are encrypted at rest using keys derived from your operating system's native keychain.</p>
+        <p style="color: var(--text-secondary);">All logs, blocking metrics, and local vector embeddings are stored strictly in local storage (<code>chrome.storage.local</code>) or local data directories. Vectors are encrypted at rest using keys derived from your operating system's native keychain.</p>
         
-        <h3 style="color: var(--primary-accent); margin-top: 16px;">3. Human Confirmation Gate Enforcement</h3>
-        <p style="color: var(--text-secondary-dark);">Sensitive actions (such as form submission or external navigation) require an explicit, single-use user click confirmation token. Autonomous AI cannot execute state-changing actions without explicit human approval.</p>
+        <h3 style="color: var(--primary-accent); margin-top: 16px;">3. Direct Action Validation</h3>
+        <p style="color: var(--text-secondary);">All browser actions execute within strict schema allowlists ensuring safe, sandboxed interaction with web elements.</p>
 
-        <h3 style="color: var(--primary-accent); margin-top: 16px;">4. Full Documentation & Legal Framework</h3>
-        <p style="color: var(--text-secondary-dark);">Review our complete open-source codebase, verification build scripts, and legal framework:</p>
+        <h3 style="color: var(--primary-accent); margin-top: 16px;">4. Full Documentation & Licensing Framework</h3>
+        <p style="color: var(--text-secondary);">Review our complete codebase documentation, verification build scripts, and licensing agreements:</p>
         <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+          <a href="https://github.com/wachanga173/aibrowser/blob/main/LICENSE" target="_blank" class="btn-action" style="text-decoration: none;">License Agreement</a>
           <a href="https://github.com/wachanga173/aibrowser/blob/main/PRIVACY_POLICY.md" target="_blank" class="btn-action" style="text-decoration: none;">Privacy Policy Document</a>
           <a href="https://github.com/wachanga173/aibrowser/blob/main/TERMS_OF_SERVICE.md" target="_blank" class="btn-action" style="text-decoration: none;">Terms of Service Document</a>
           <a href="https://github.com/wachanga173/aibrowser" target="_blank" class="btn-action" style="text-decoration: none;">GitHub Security Audit Repo</a>
@@ -314,6 +336,7 @@
       </div>
     </div>
   </div>
+
 
   <script src="options.js"></script>
 </body>
