@@ -135,7 +135,16 @@ export class BrowserAIAgent {
   }
 
   private classifyIntent(prompt: string): string {
-    const p = prompt.toLowerCase();
+    const p = prompt.toLowerCase().trim();
+    if (/^(hi|hello|hey|greetings|good\s*(morning|afternoon|evening)|howdy)\b/i.test(p) || 
+        p.includes('who are you') || 
+        p.includes('what are you') || 
+        p.includes('what can you do') || 
+        p.includes('introduce yourself') || 
+        p.includes('what is privacy guard') || 
+        p === 'help') {
+      return 'CONVERSATIONAL_IDENTITY';
+    }
     if (!p || p === 'summarize' || p.includes('summarize') || p.includes('summary') || p.includes('tl;dr') || p.includes('overview')) {
       return 'SUMMARIZE';
     }
@@ -184,6 +193,8 @@ export class BrowserAIAgent {
 
   private executeLocalNLP(prompt: string, intent: string, page: PageMetadata): string {
     switch (intent) {
+      case 'CONVERSATIONAL_IDENTITY':
+        return this.generateConversationalResponse(prompt, page);
       case 'SUMMARIZE':
         return this.generateStructuredSummary(page);
       case 'KEY_TAKEAWAYS':
@@ -203,6 +214,22 @@ export class BrowserAIAgent {
         return this.answerSpecificQuestion(prompt, page);
     }
   }
+
+  private generateConversationalResponse(prompt: string, page: PageMetadata): string {
+    let output = `### Privacy AI Browser Assistant\n\n`;
+    output += `Hello! I am **Privacy Guard**, your local-first, on-device browser AI assistant and privacy engine.\n\n`;
+    output += `I run **100% locally** on your machine with **zero telemetry** and zero cloud data sharing. Your active browsing and questions never leave your device.\n\n`;
+    output += `### What I Can Do On This Page\n`;
+    output += `• **Summarize**: Synthesize "${page.title || page.domain}" into an executive brief.\n`;
+    output += `• **Extract Takeaways**: Pull the core takeaways and actionable steps.\n`;
+    output += `• **Answer Any Question**: Ask me about specific topics or facts on this page.\n`;
+    output += `• **Live Highlighting**: Click **Highlight** below to scroll to and highlight key facts on your active tab.\n`;
+    output += `• **Read Aloud**: Click **Read Aloud** to listen to any response.\n`;
+    output += `• **Free RAM**: Use the RAM manager above to suspend idle background tabs.\n\n`;
+    output += `*Select a quick action chip above or type any question about this page to begin.*`;
+    return output;
+  }
+
 
   private generateStructuredSummary(page: PageMetadata): string {
     const sentences = splitIntoSentences(page.rawText);

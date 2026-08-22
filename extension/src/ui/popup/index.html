@@ -41,13 +41,13 @@
     .shield-icon {
       width: 36px;
       height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+      border-radius: 8px;
+      background: var(--primary-accent) !important;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+      box-shadow: 0 2px 8px var(--primary-accent-glow);
       transition: var(--transition-fast);
       flex-shrink: 0;
     }
@@ -78,9 +78,10 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #10b981;
+      background: var(--primary-accent);
       display: inline-block;
     }
+
 
     .header-actions {
       display: flex;
@@ -172,28 +173,28 @@
     }
 
     input:checked + .slider {
-      background-color: #10b981;
-      border-color: #059669;
+      background-color: var(--primary-accent);
+      border-color: var(--primary-accent-hover);
     }
 
     input:checked + .slider:before {
       transform: translateX(18px);
     }
 
-    /* Memory Analytics Card */
-    .memory-card {
-      padding: 12px;
+    /* RAM & System Stats Card */
+    .ram-card {
+      padding: 12px 14px;
       margin-bottom: 10px;
     }
 
-    .memory-header {
+    .ram-header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
+      align-items: center;
+      margin-bottom: 10px;
     }
 
-    .memory-title {
+    .ram-title {
       font-size: 12px;
       font-weight: 600;
       display: flex;
@@ -205,29 +206,28 @@
 
     .ram-badge {
       font-size: 9.5px;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      padding: 3px 8px;
+      padding: 2px 7px;
       border-radius: 6px;
+      background: var(--card-bg-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
     }
 
     .ram-optimal {
-      background: rgba(16, 185, 129, 0.15);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--text-primary);
     }
 
     .ram-moderate {
-      background: rgba(245, 158, 11, 0.15);
       color: #f59e0b;
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-color: rgba(245, 158, 11, 0.3);
     }
 
     .ram-heavy {
-      background: rgba(239, 68, 68, 0.15);
       color: #ef4444;
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-color: rgba(239, 68, 68, 0.3);
     }
 
     .ram-meter-wrapper {
@@ -237,7 +237,7 @@
     .ram-meter-track {
       width: 100%;
       height: 6px;
-      background: var(--border-subtle);
+      background: var(--card-bg-subtle);
       border-radius: 6px;
       overflow: hidden;
       margin-bottom: 4px;
@@ -246,10 +246,11 @@
 
     .ram-meter-fill {
       height: 100%;
-      background: linear-gradient(90deg, #10b981 0%, #0284c7 70%, #ef4444 100%);
+      background: var(--primary-accent);
       border-radius: 6px;
       transition: width 0.4s ease;
     }
+
 
 
     .ram-meter-labels {
@@ -319,15 +320,16 @@
 
     .optimize-feedback {
       font-size: 10.5px;
-      color: #10b981;
+      color: var(--text-primary);
       text-align: center;
       margin-top: 6px;
-      font-weight: 600;
-      padding: 4px;
+      font-weight: 500;
+      padding: 5px 8px;
       border-radius: 6px;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: var(--card-bg-subtle);
+      border: 1px solid var(--border-color);
     }
+
 
     /* Agent Card */
     .agent-card {
@@ -625,14 +627,15 @@
         <strong id="updateHeaderTitle" style="color: var(--primary-accent); font-size: 12px; font-weight: 700;">Update Available</strong>
         <div id="updateVersionText" style="font-size: 10.5px; color: var(--text-secondary);">New release ready</div>
       </div>
-      <button id="updateNowBtn" style="padding: 6px 12px; font-size: 11px; border: none; background: #0284c7; color: white; border-radius: 6px; font-weight: 600; cursor: pointer; transition: var(--transition-fast);">Update Now</button>
+      <button id="updateNowBtn" style="padding: 6px 12px; font-size: 11px; border: none; background: var(--primary-accent); color: white; border-radius: 6px; font-weight: 600; cursor: pointer; transition: var(--transition-fast);">Update Now</button>
     </div>
 
     <!-- Live Progress Bar Track -->
     <div id="updateProgressContainer" style="display: none; width: 100%; flex-direction: column; gap: 4px;">
       <div style="width: 100%; height: 6px; background: var(--border-color); border-radius: 6px; overflow: hidden;">
-        <div id="updateProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%); transition: width 0.3s ease; border-radius: 6px;"></div>
+        <div id="updateProgressBar" style="width: 0%; height: 100%; background: var(--primary-accent); transition: width 0.3s ease; border-radius: 6px;"></div>
       </div>
+
       <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-secondary);">
         <span id="updateStepStatus">Downloading update archive...</span>
         <strong id="updatePercentLabel" style="color: var(--text-primary); font-family: 'JetBrains Mono', monospace;">0%</strong>
@@ -751,12 +754,13 @@
 
     <!-- Prompt Box -->
     <div class="prompt-box">
-      <textarea id="aiPromptInput" class="prompt-textarea" placeholder="Ask AI Agent or select an action above..." rows="2"></textarea>
+      <textarea id="aiPromptInput" class="prompt-textarea" placeholder="Ask about this page, or type hi / who are you..." rows="2"></textarea>
       <button id="askAiBtn" class="btn-agent-submit">
         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        Ask Agent
+        Ask Assistant
       </button>
     </div>
+
 
     <!-- AI Response Display -->
     <div id="aiResponseArea" class="ai-response-container">

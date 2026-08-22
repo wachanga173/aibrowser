@@ -244,18 +244,21 @@ function runTestSuite() {
   const summaryResult = agent.executeLocalNLP('', 'SUMMARIZE', samplePage);
   const takeawaysResult = agent.executeLocalNLP('', 'KEY_TAKEAWAYS', samplePage);
   const qaResult = agent.answerSpecificQuestion('What does Privacy Guard provide?', samplePage);
+  const greetingResult = agent.executeLocalNLP('hi who are you', 'CONVERSATIONAL_IDENTITY', samplePage);
 
   if (
     summaryResult.includes('Executive Summary') &&
     takeawaysResult.includes('Key Takeaways') &&
-    qaResult.includes('Privacy Guard provides local-first ad blocking')
+    qaResult.includes('Privacy Guard provides local-first ad blocking') &&
+    greetingResult.includes('Privacy AI Browser Assistant')
   ) {
-    console.log('  [PASSED]: Intelligent Browser AI Agent generated structured summaries, takeaways, and QA matches locally.\n');
+    console.log('  [PASSED]: Intelligent Browser AI Agent generated structured summaries, takeaways, QA matches, and conversational responses locally.\n');
     passed++;
   } else {
     console.error('  [FAILED]: Browser AI Agent NLP engine failed to generate structured response.\n');
     failed++;
   }
+
 
   // Summary
   console.log('----------------------------------------------------');

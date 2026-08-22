@@ -98,17 +98,21 @@
     }
     .badge {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
+      padding: 2px 7px;
+      border-radius: 4px;
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
+      letter-spacing: 0.3px;
+      background: var(--card-bg-subtle);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
     }
-    .badge-ad { background: rgba(2, 132, 199, 0.18); color: var(--primary-accent); }
-    .badge-tracker { background: rgba(14, 165, 233, 0.18); color: var(--info-cyan); }
+    .badge-ad { color: var(--primary-accent); border-color: rgba(37, 99, 235, 0.3); }
+    .badge-tracker { color: var(--primary-accent); border-color: rgba(37, 99, 235, 0.3); }
+    .badge-fingerprinting { color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); }
+    .badge-action { color: var(--text-primary); }
 
-    .badge-fingerprinting { background: rgba(239, 68, 68, 0.2); color: var(--danger-red); }
-    .badge-action { background: rgba(34, 197, 94, 0.2); color: var(--shield-green); }
 
     .btn-action {
       padding: 8px 14px;
