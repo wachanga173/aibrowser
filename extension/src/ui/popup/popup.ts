@@ -440,32 +440,42 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data && data.tag_name) {
           const latestTag = data.tag_name;
           const currentManifestVersion = chrome.runtime.getManifest().version;
-          if (latestTag.replace('v', '') !== currentManifestVersion) {
-            updateBanner.style.display = 'flex';
-            if (updateVersionText) updateVersionText.textContent = `Version ${latestTag} ready to install`;
+          
+          chrome.storage.local.get('dismissed_update_version', (storageRes) => {
+            const dismissed = storageRes && storageRes.dismissed_update_version;
+            if (latestTag.replace('v', '') !== currentManifestVersion && dismissed !== latestTag) {
+              updateBanner.style.display = 'flex';
+              if (updateVersionText) updateVersionText.textContent = `Version ${latestTag} available`;
 
-            if (updateNowBtn) {
-              updateNowBtn.onclick = () => {
-                updateNowBtn.disabled = true;
-                updateNowBtn.textContent = 'Updating...';
-                if (updateVersionText) updateVersionText.textContent = 'Applying update in-place...';
+              if (updateNowBtn) {
+                updateNowBtn.onclick = () => {
+                  updateNowBtn.disabled = true;
+                  updateNowBtn.textContent = 'Updating...';
+                  if (updateVersionText) updateVersionText.textContent = 'Downloading update package...';
 
-                chrome.runtime.sendMessage({
-                  type: 'PERFORM_IN_PLACE_UPDATE',
-                  version: latestTag
-                }, (_resp) => {
-                  if (updateVersionText) updateVersionText.textContent = 'Update applied! Reloading...';
-                  setTimeout(() => {
-                    if (chrome.runtime && chrome.runtime.reload) {
-                      chrome.runtime.reload();
-                    } else {
-                      window.location.reload();
-                    }
-                  }, 1000);
-                });
-              };
+                  const downloadUrl = `https://github.com/wachanga173/aibrowser/releases/latest/download/chrome-extension.zip`;
+                  if (chrome.downloads && chrome.downloads.download) {
+                    chrome.downloads.download({ url: downloadUrl, filename: 'chrome-extension.zip', conflictAction: 'overwrite' });
+                  }
+
+                  chrome.storage.local.set({ dismissed_update_version: latestTag });
+
+                  chrome.runtime.sendMessage({
+                    type: 'PERFORM_IN_PLACE_UPDATE',
+                    version: latestTag
+                  }, () => {
+                    if (updateVersionText) updateVersionText.textContent = 'Package ready! Run update-extension.bat';
+                    setTimeout(() => {
+                      updateBanner.style.display = 'none';
+                      if (chrome.runtime && chrome.runtime.reload) {
+                        chrome.runtime.reload();
+                      }
+                    }, 2000);
+                  });
+                };
+              }
             }
-          }
+          });
         }
       })
       .catch(() => {});
@@ -473,4 +483,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   checkForUpdates();
 });
+
 
