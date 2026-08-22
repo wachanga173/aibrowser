@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy AI Guard - Auto-Update Setup</title>
+  <link rel="stylesheet" href="../../../design-system/tokens.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0a0e1a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .setup-container {
+      max-width: 580px;
+      width: 100%;
+    }
+
+    .setup-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      border-radius: 16px;
+      padding: 36px 32px;
+      backdrop-filter: blur(12px);
+    }
+
+    .setup-badge {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .setup-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .setup-desc {
+      font-size: 13.5px;
+      color: #94a3b8;
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+
+    .steps-list {
+      list-style: none;
+      counter-reset: step-counter;
+      margin-bottom: 28px;
+    }
+
+    .step-item {
+      counter-increment: step-counter;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    }
+
+    .step-item:last-child {
+      border-bottom: none;
+    }
+
+    .step-number {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 8px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-label {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 3px;
+    }
+
+    .step-detail {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px 20px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      margin-bottom: 10px;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0369a1, #0284c7);
+      box-shadow: 0 4px 16px rgba(14, 165, 233, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(148, 163, 184, 0.14);
+      color: #e2e8f0;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #059669, #10b981);
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #047857, #059669);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+    }
+
+    /* Status feedback */
+    .verify-status {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .verify-status.success {
+      display: block;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      color: #10b981;
+    }
+
+    .verify-status.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .verify-status.checking {
+      display: block;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+    }
+
+    .security-note {
+      margin-top: 20px;
+      padding: 12px 14px;
+      background: rgba(148, 163, 184, 0.05);
+      border-radius: 8px;
+      font-size: 11.5px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .security-note strong {
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="setup-container">
+    <div class="setup-card">
+      <div class="setup-badge">One-Time Setup</div>
+      <h1 class="setup-title">Enable Automatic Updates</h1>
+      <p class="setup-desc">
+        To update the extension with one click, a small companion program needs to be installed on your computer. This only needs to be done once -- after setup, all future updates happen automatically from the extension popup.
+      </p>
+
+      <ol class="steps-list">
+        <li class="step-item">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-label">Download the setup script</div>
+            <div class="step-detail">Click the button below to download the setup file. It will be saved to your Downloads folder.</div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-label">Move it to your extension folder</div>
+            <div class="step-detail">Place the downloaded <code style="color: #38bdf8;">setup-native-host.bat</code> file in the same folder where you extracted the extension.</div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-label">Run the setup script</div>
+            <div class="step-detail">Double-click the file to run it. A terminal window will appear and complete the setup automatically.</div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <div class="step-label">Verify the connection</div>
+            <div class="step-detail">Come back here and click "Verify Setup" to confirm everything is working.</div>
+          </div>
+        </li>
+      </ol>
+
+      <a id="downloadSetupBtn" href="https://github.com/wachanga173/aibrowser/releases/latest/download/setup-native-host.bat" class="btn-primary" download>
+        Download Setup Script
+      </a>
+
+      <button id="verifySetupBtn" class="btn-secondary" type="button">
+        Verify Setup
+      </button>
+
+      <div id="verifyStatus" class="verify-status"></div>
+
+      <div class="security-note">
+        <strong>What does this install?</strong> A small local program (~2 MB) that allows the extension to download and apply updates to itself. It runs only when you click "Update Now" in the popup. No data is collected or sent anywhere -- all operations are local. The source code is fully open on GitHub.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const verifyBtn = document.getElementById('verifySetupBtn');
+    const verifyStatus = document.getElementById('verifyStatus');
+
+    verifyBtn.addEventListener('click', () => {
+      verifyStatus.className = 'verify-status checking';
+      verifyStatus.textContent = 'Checking connection to native host...';
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Checking...';
+
+      chrome.runtime.sendMessage({ type: 'PING_NATIVE_HOST' }, (response) => {
+        verifyBtn.disabled = false;
+
+        if (chrome.runtime.lastError) {
+          verifyStatus.className = 'verify-status error';
+          verifyStatus.textContent = 'Could not reach the extension background service. Please reload the extension and try again.';
+          verifyBtn.textContent = 'Verify Setup';
+          return;
+        }
+
+        if (response && response.success) {
+          verifyStatus.className = 'verify-status success';
+          verifyStatus.textContent = 'Setup verified successfully! Automatic updates are now enabled. You can close this tab.';
+          verifyBtn.textContent = 'Verified';
+          verifyBtn.className = 'btn-primary btn-success';
+          verifyBtn.onclick = () => window.close();
+        } else {
+          const errorDetail = (response && response.error) || 'Native host not responding.';
+          verifyStatus.className = 'verify-status error';
+          verifyStatus.textContent = `Setup not detected: ${errorDetail} Please make sure you ran the setup script from your extension folder.`;
+          verifyBtn.textContent = 'Retry Verification';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

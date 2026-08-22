@@ -125,6 +125,28 @@ export function sendNativeValidatePath(targetPath) {
   });
 }
 
+export function sendNativeAutoUpdate(version = 'latest') {
+  return new Promise((resolve) => {
+    if (!chrome.runtime.sendNativeMessage) {
+      resolve({ success: false, error: 'Native messaging not available. Install the native host companion to enable automatic updates.' });
+      return;
+    }
+    chrome.runtime.sendNativeMessage(
+      NATIVE_HOST_NAME,
+      { version: 1, type: "auto_update_in_place", payload: { version } },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          resolve({ success: false, error: chrome.runtime.lastError.message || 'Native host connection failed' });
+        } else if (!response || !response.payload) {
+          resolve({ success: false, error: 'No response from native host' });
+        } else {
+          resolve(response.payload);
+        }
+      }
+    );
+  });
+}
+
 // ── Prompt Injection Safety Guard (port of classifier.py) ────────────────
 const INJECTION_PATTERNS = [
   /ignore\s+(all\s+|the\s+)?(previous|prior|instructions)/i,

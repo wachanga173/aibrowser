@@ -6,6 +6,8 @@ import {
   sendNativeVectorInsert,
   sendNativeCheckSession,
   sendNativeValidatePath,
+  sendNativeAutoUpdate,
+  sendNativePing,
   scanPromptInjection
 } from './native-bridge.js';
 
@@ -896,22 +898,43 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       case 'PERFORM_IN_PLACE_UPDATE': {
-        try {
-          sendNativeMessage({
-            version: 1,
-            type: 'auto_update_in_place',
-            payload: { version: message.version || 'latest' }
-          }).catch(() => {});
-
-          sendResponse({ success: true, message: 'In-place update initiated.' });
-        } catch (updateErr) {
-          sendResponse({ success: true, message: 'In-place update dispatched.' });
-        }
+        sendNativeAutoUpdate(message.version || 'latest')
+          .then((result) => {
+            if (result && result.success) {
+              sendResponse({ success: true, message: result.message || 'In-place update completed successfully.' });
+            } else {
+              sendResponse({ success: false, error: (result && result.error) || 'Update failed with unknown error.' });
+            }
+          })
+          .catch((err) => {
+            sendResponse({ success: false, error: err.message || 'Native host communication failed.' });
+          });
         break;
       }
       case 'HUMAN_CONFIRMATION_GRANTED': {
         const token = message.token || generateUserClickToken(message.actionId || 'action_req');
         sendResponse({ success: true, token });
+        break;
+      }
+      case 'PING_NATIVE_HOST': {
+        sendNativePing()
+          .then((result) => {
+            if (result && result.payload && result.payload.status === 'pong') {
+              sendResponse({ success: true });
+            } else if (result && result.payload && result.payload.status === 'simulated_local') {
+              sendResponse({ success: false, error: result.payload.error || 'Native host not installed.' });
+            } else {
+              sendResponse({ success: true });
+            }
+          })
+          .catch((err) => {
+            sendResponse({ success: false, error: err.message || 'Native host not reachable.' });
+          });
+        break;
+      }
+      case 'OPEN_SETUP_PAGE': {
+        chrome.tabs.create({ url: chrome.runtime.getURL('src/ui/setup/index.html') });
+        sendResponse({ success: true });
         break;
       }
       default:

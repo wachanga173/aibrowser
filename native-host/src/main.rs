@@ -91,26 +91,57 @@ fn main() -> io::Result<()> {
                 },
                 "auto_update_in_place" => {
                     let version = msg.payload.get("version").and_then(|v| v.as_str()).unwrap_or("latest");
-                    let update_cmd = format!(
-                        "powershell -NoProfile -ExecutionPolicy Bypass -Command \"node scripts/update-in-place.js\""
-                    );
-                    let status = std::process::Command::new("powershell")
-                        .args(&["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "node scripts/update-in-place.js"])
-                        .output();
 
-                    match status {
-                        Ok(out) if out.status.success() => serde_json::json!({
-                            "success": true,
-                            "version": version,
-                            "message": "In-place update executed successfully"
-                        }),
-                        Ok(out) => serde_json::json!({
+                    // Try to read project root from config.json (written by setup-native-host.bat)
+                    // Config location: alongside the binary in %LOCALAPPDATA%\PrivacyAIGuard\config.json
+                    let config_root = std::env::current_exe()
+                        .ok()
+                        .and_then(|exe| exe.parent().map(|p| p.join("config.json")))
+                        .and_then(|config_path| std::fs::read_to_string(&config_path).ok())
+                        .and_then(|contents| serde_json::from_str::<Value>(&contents).ok())
+                        .and_then(|cfg| cfg.get("project_root").and_then(|v| v.as_str()).map(PathBuf::from));
+
+                    // Fallback: derive from binary location (for dev setups where binary is in native-host/target/release/)
+                    let project_root = config_root.or_else(|| {
+                        std::env::current_exe()
+                            .ok()
+                            .and_then(|exe| exe.parent()?.parent()?.parent()?.parent().map(|p| p.to_path_buf()))
+                    });
+
+                    match project_root {
+                        Some(root) => {
+                            let script_path = root.join("scripts").join("update-in-place.js");
+                            if !script_path.exists() {
+                                serde_json::json!({
+                                    "success": false,
+                                    "error": format!("Update script not found at: {}", script_path.display())
+                                })
+                            } else {
+                                let status = std::process::Command::new("node")
+                                    .arg(&script_path)
+                                    .current_dir(&root)
+                                    .output();
+
+                                match status {
+                                    Ok(out) if out.status.success() => serde_json::json!({
+                                        "success": true,
+                                        "version": version,
+                                        "message": "In-place update executed successfully"
+                                    }),
+                                    Ok(out) => serde_json::json!({
+                                        "success": false,
+                                        "error": String::from_utf8_lossy(&out.stderr).to_string()
+                                    }),
+                                    Err(err) => serde_json::json!({
+                                        "success": false,
+                                        "error": err.to_string()
+                                    })
+                                }
+                            }
+                        },
+                        None => serde_json::json!({
                             "success": false,
-                            "error": String::from_utf8_lossy(&out.stderr).to_string()
-                        }),
-                        Err(err) => serde_json::json!({
-                            "success": false,
-                            "error": err.to_string()
+                            "error": "Could not determine project root. Please run setup-native-host.bat again."
                         })
                     }
                 },

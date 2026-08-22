@@ -218,7 +218,7 @@ function runTestSuite() {
     failed++;
   }
 
-  // Test 11: Intelligent Browser AI Agent Local NLP Processing
+  // Test 11: Intelligent Browser AI Agent Local NLP Processing & Semantic Comprehension
   console.log('Test 11: Intelligent Browser AI Agent Local NLP Engine...');
   const { BrowserAIAgent } = require('../extension/src/background/agent-engine.js');
   const agent = new BrowserAIAgent();
@@ -246,16 +246,28 @@ function runTestSuite() {
   const qaResult = agent.answerSpecificQuestion('What does Privacy Guard provide?', samplePage);
   const greetingResult = agent.executeLocalNLP('hi who are you', 'CONVERSATIONAL_IDENTITY', samplePage);
 
+  // Semantic intent and sentiment verification
+  const goodIntent = agent.classifyIntent('good');
+  const thanksIntent = agent.classifyIntent('thanks');
+  const evalIntent = agent.classifyIntent('is this good?');
+  const sentimentResult = agent.executeLocalNLP('good', goodIntent, samplePage);
+  const evalResult = agent.executeLocalNLP('is this good?', evalIntent, samplePage);
+
   if (
     summaryResult.includes('Executive Summary') &&
     takeawaysResult.includes('Key Takeaways') &&
     qaResult.includes('Privacy Guard provides local-first ad blocking') &&
-    greetingResult.includes('Privacy AI Browser Assistant')
+    greetingResult.includes('Privacy AI Browser Assistant') &&
+    goodIntent === 'SENTIMENT_POSITIVE' &&
+    thanksIntent === 'CONVERSATIONAL_GRATITUDE' &&
+    evalIntent === 'PAGE_EVALUATION' &&
+    sentimentResult.includes('Conversational Feedback') &&
+    evalResult.includes('Page Evaluation')
   ) {
-    console.log('  [PASSED]: Intelligent Browser AI Agent generated structured summaries, takeaways, QA matches, and conversational responses locally.\n');
+    console.log('  [PASSED]: Intelligent Browser AI Agent generated structured summaries, takeaways, QA matches, word-sentiment, and evaluative responses locally.\n');
     passed++;
   } else {
-    console.error('  [FAILED]: Browser AI Agent NLP engine failed to generate structured response.\n');
+    console.error('  [FAILED]: Browser AI Agent NLP engine failed semantic intent / structured response validation.\n');
     failed++;
   }
 

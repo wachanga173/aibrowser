@@ -434,6 +434,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!updateBanner) return;
 
+    function setProgress(percent, statusText) {
+      if (updateProgressBar) updateProgressBar.style.width = `${percent}%`;
+      if (updatePercentLabel) updatePercentLabel.textContent = `${percent}%`;
+      if (updateStepStatus) updateStepStatus.textContent = statusText;
+    }
+
+    function showError(errorMsg) {
+      setProgress(0, '');
+      if (updateProgressContainer) updateProgressContainer.style.display = 'none';
+      if (updateHeaderTitle) {
+        updateHeaderTitle.textContent = 'Update Failed';
+        updateHeaderTitle.style.color = '#ef4444';
+      }
+      if (updateVersionText) updateVersionText.textContent = errorMsg;
+      if (updateNowBtn) {
+        updateNowBtn.textContent = 'Retry';
+        updateNowBtn.style.display = '';
+        updateNowBtn.style.background = '#ef4444';
+      }
+    }
+
+    function showSetupRequired() {
+      if (updateProgressContainer) updateProgressContainer.style.display = 'none';
+      if (updateHeaderTitle) {
+        updateHeaderTitle.textContent = 'Setup Required';
+        updateHeaderTitle.style.color = 'var(--primary-accent)';
+      }
+      if (updateVersionText) {
+        updateVersionText.textContent = 'One-time setup needed for automatic updates (takes ~30 seconds).';
+      }
+      if (updateNowBtn) {
+        updateNowBtn.textContent = 'Setup Auto-Updates';
+        updateNowBtn.style.display = '';
+        updateNowBtn.style.background = 'var(--primary-accent)';
+        updateNowBtn.onclick = () => {
+          chrome.runtime.sendMessage({ type: 'OPEN_SETUP_PAGE' });
+        };
+      }
+    }
+
     fetch('https://api.github.com/repos/wachanga173/aibrowser/releases/latest')
       .then(res => res.json())
       .then(data => {
@@ -449,45 +489,36 @@ document.addEventListener('DOMContentLoaded', () => {
               updateNowBtn.onclick = () => {
                 updateNowBtn.style.display = 'none';
                 if (updateProgressContainer) updateProgressContainer.style.display = 'flex';
-                if (updateHeaderTitle) updateHeaderTitle.textContent = `Updating to ${latestTag}...`;
-
-                function setProgress(percent, statusText) {
-                  if (updateProgressBar) updateProgressBar.style.width = `${percent}%`;
-                  if (updatePercentLabel) updatePercentLabel.textContent = `${percent}%`;
-                  if (updateStepStatus) updateStepStatus.textContent = statusText;
+                if (updateHeaderTitle) {
+                  updateHeaderTitle.textContent = `Updating to ${latestTag}...`;
+                  updateHeaderTitle.style.color = '';
                 }
 
-                setProgress(15, 'Connecting to GitHub Release repository...');
+                setProgress(20, 'Attempting automatic update...');
 
-                setTimeout(() => {
-                  setProgress(45, `Downloading ${latestTag} release package...`);
-
-                  const downloadUrl = `https://github.com/wachanga173/aibrowser/releases/latest/download/chrome-extension.zip`;
-                  if (chrome.downloads && chrome.downloads.download) {
-                    chrome.downloads.download({ url: downloadUrl, filename: 'chrome-extension.zip', conflictAction: 'overwrite' });
+                chrome.runtime.sendMessage({
+                  type: 'PERFORM_IN_PLACE_UPDATE',
+                  version: latestTag
+                }, (response) => {
+                  if (chrome.runtime.lastError || !response || !response.success) {
+                    // Native host unavailable or update failed -- prompt one-time setup
+                    showSetupRequired();
+                    return;
                   }
 
-                  setTimeout(() => {
-                    setProgress(80, 'Extracting archive & replacing files in-place...');
+                  setProgress(90, 'Files updated. Preparing to reload...');
 
-                    chrome.runtime.sendMessage({
-                      type: 'PERFORM_IN_PLACE_UPDATE',
-                      version: latestTag
-                    }, () => {
-                      setTimeout(() => {
-                        setProgress(100, 'Installed successfully! Reloading extension...');
-                        
-                        setTimeout(() => {
-                          if (chrome.runtime && chrome.runtime.reload) {
-                            chrome.runtime.reload();
-                          } else {
-                            window.location.reload();
-                          }
-                        }, 800);
-                      }, 500);
-                    });
-                  }, 800);
-                }, 600);
+                  setTimeout(() => {
+                    setProgress(100, 'Update complete. Reloading extension...');
+                    setTimeout(() => {
+                      if (chrome.runtime && chrome.runtime.reload) {
+                        chrome.runtime.reload();
+                      } else {
+                        window.location.reload();
+                      }
+                    }, 800);
+                  }, 500);
+                });
               };
             }
           }

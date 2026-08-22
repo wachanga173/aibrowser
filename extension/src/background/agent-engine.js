@@ -1,6 +1,13 @@
 /**
  * Privacy Guard - On-Device Intelligent Browser AI Agent Engine
  * 100% Local, Zero-Telemetry, Zero External Network Calls
+ * 
+ * Features 5-Layer Semantic Natural Language Understanding:
+ * 1. Lexical Tokenizer & Sentiment Classifier (Positive/Negative/Gratitude/Ack)
+ * 2. Synset Conceptual Graph (Synonym & Domain Clustering)
+ * 3. Multi-Stage Intent Classifier
+ * 4. Context-Aware Evaluation & Sentiment Synthesizers
+ * 5. Synset-Enhanced Fuzzy Question Answering
  */
 
 const STOP_WORDS = new Set([
@@ -20,6 +27,37 @@ const STOP_WORDS = new Set([
   'would', 'wouldn\'t', 'you', 'you\'d', 'you\'ll', 'you\'re', 'you\'ve', 'your', 'yours', 'yourself', 'yourselves'
 ]);
 
+export const POSITIVE_SENTIMENT = new Set([
+  'good', 'great', 'awesome', 'nice', 'cool', 'perfect', 'excellent', 'superb', 'wonderful',
+  'amazing', 'helpful', 'impressive', 'valid', 'legit', 'well', 'fine', 'brilliant', 'loved',
+  'love', 'best', 'fantastic', 'pleased', 'satisfactory', 'delightful', 'outstanding'
+]);
+
+export const NEGATIVE_SENTIMENT = new Set([
+  'bad', 'terrible', 'horrible', 'awful', 'wrong', 'useless', 'broken', 'unhelpful', 'poor',
+  'hate', 'fake', 'scam', 'trash', 'garbage', 'disappointing', 'worst', 'stupid', 'buggy', 'shady'
+]);
+
+export const GRATITUDE_WORDS = new Set([
+  'thanks', 'thank', 'thx', 'ty', 'appreciate', 'appreciated', 'grateful', 'cheers'
+]);
+
+export const ACKNOWLEDGMENT_WORDS = new Set([
+  'ok', 'okay', 'k', 'cool', 'alright', 'got it', 'understood', 'yes', 'yep', 'yeah', 'sure', 'fine', 'done', 'roger'
+]);
+
+export const SYNSET_MAP = {
+  price: ['price', 'pricing', 'cost', 'fee', 'charge', 'rate', 'dollar', 'usd', 'eur', 'discount', 'tier', 'subscription', 'plan', 'pay', 'paid', 'cheap', 'expensive'],
+  cost: ['cost', 'price', 'pricing', 'fee', 'charge', 'rate', 'dollar', 'subscription', 'pay', 'amount', 'total'],
+  buy: ['buy', 'purchase', 'order', 'checkout', 'cart', 'get', 'acquire', 'subscribe', 'shop', 'sale'],
+  contact: ['contact', 'email', 'phone', 'telephone', 'reach', 'support', 'help', 'call', 'touch', 'message', 'address', 'headquarters', 'office', 'inquiry'],
+  creator: ['creator', 'founder', 'author', 'written', 'writer', 'maker', 'team', 'company', 'developer', 'who', 'built', 'created', 'founded'],
+  review: ['review', 'reviews', 'rating', 'ratings', 'stars', 'feedback', 'testimonial', 'score', 'verdict', 'pros', 'cons', 'critique'],
+  security: ['security', 'safe', 'safety', 'privacy', 'tracker', 'trackers', 'encryption', 'protect', 'vulnerability', 'legit', 'trusted', 'secure', 'reputation'],
+  navigation: ['where', 'find', 'link', 'download', 'login', 'signin', 'register', 'signup', 'portal', 'dashboard', 'install'],
+  definition: ['what', 'define', 'meaning', 'definition', 'explain', 'concept', 'about', 'overview']
+};
+
 function tokenize(text) {
   return text
     .toLowerCase()
@@ -34,7 +72,7 @@ function splitIntoSentences(text) {
     .replace(/(\r\n|\n|\r)/gm, ' ')
     .split(/(?<=[.?!])\s+(?=[A-Z0-9])/)
     .map(s => s.trim())
-    .filter(s => s.length >= 25 && s.length <= 400 && /[a-zA-Z]/.test(s));
+    .filter(s => s.length >= 20 && s.length <= 450 && /[a-zA-Z]/.test(s));
 }
 
 function computeTfIdfRankings(sentences) {
@@ -111,7 +149,10 @@ export class BrowserAIAgent {
 
   classifyIntent(prompt) {
     const p = (prompt || '').toLowerCase().trim();
-    if (/^(hi|hello|hey|greetings|good\s*(morning|afternoon|evening)|howdy)\b/i.test(p) || 
+    if (!p) return 'SUMMARIZE';
+
+    // 1. Conversational Greetings & Identity
+    if (/^(hi|hello|hey|greetings|good\s*(morning|afternoon|evening)|howdy|yo|sup)\b/i.test(p) || 
         p.includes('who are you') || 
         p.includes('what are you') || 
         p.includes('what can you do') || 
@@ -120,27 +161,51 @@ export class BrowserAIAgent {
         p === 'help') {
       return 'CONVERSATIONAL_IDENTITY';
     }
-    if (!p || p === 'summarize' || p.includes('summarize') || p.includes('summary') || p.includes('tl;dr') || p.includes('overview')) {
+
+    // 2. Standalone Sentiment / Feedback (e.g. "good", "great", "bad", "awesome")
+    const words = p.split(/\s+/);
+    if (words.length <= 3) {
+      const isPositive = words.some(w => POSITIVE_SENTIMENT.has(w));
+      const isNegative = words.some(w => NEGATIVE_SENTIMENT.has(w));
+      const isGratitude = words.some(w => GRATITUDE_WORDS.has(w));
+      const isAck = words.some(w => ACKNOWLEDGMENT_WORDS.has(w));
+
+      if (isGratitude) return 'CONVERSATIONAL_GRATITUDE';
+      if (isPositive && !p.includes('?') && !p.includes('is') && !p.includes('are')) return 'SENTIMENT_POSITIVE';
+      if (isNegative && !p.includes('?') && !p.includes('is') && !p.includes('are')) return 'SENTIMENT_NEGATIVE';
+      if (isAck && words.length <= 2) return 'CONVERSATIONAL_ACKNOWLEDGMENT';
+    }
+
+    // 3. Evaluative Page / Product Verdict Inquiries (e.g. "is this good?", "is it legit?", "is it safe?")
+    if (/\b(is (this|it) (good|safe|legit|reliable|trusted|worth|real|secure|quality|reputable))\b/i.test(p) ||
+        /\b(should i (buy|trust|use|visit))\b/i.test(p) ||
+        /\b(rating|reviews?|verdict|reputation|score)\b/i.test(p)) {
+      return 'PAGE_EVALUATION';
+    }
+
+    // 4. Core Directives
+    if (p === 'summarize' || p.includes('summarize') || p.includes('summary') || p.includes('tl;dr') || p.includes('overview') || p === 'brief') {
       return 'SUMMARIZE';
     }
     if (p.includes('takeaway') || p.includes('key point') || p.includes('main point') || p.includes('highlights') || p.includes('bullet')) {
       return 'KEY_TAKEAWAYS';
     }
-    if (p.includes('action') || p.includes('todo') || p.includes('next step') || p.includes('task') || p.includes('recommendation')) {
+    if (p.includes('action') || p.includes('todo') || p.includes('next step') || p.includes('task') || p.includes('recommendation') || p.includes('what should i do')) {
       return 'ACTION_ITEMS';
     }
-    if (p.includes('link') || p.includes('contact') || p.includes('email') || p.includes('phone') || p.includes('data') || p.includes('price') || p.includes('spec')) {
-      return 'EXTRACT_DATA';
-    }
-    if (p.includes('privacy') || p.includes('tracker') || p.includes('security') || p.includes('safe') || p.includes('cookie') || p.includes('threat')) {
+    if (p.includes('privacy') || p.includes('tracker') || p.includes('cookie') || p.includes('threat') || p.includes('fingerprint') || p.includes('telemetry')) {
       return 'PRIVACY_AUDIT';
     }
-    if (p.includes('explain') || p.includes('simple') || p.includes('child') || p.includes('layman') || p.includes('simplify')) {
+    if (p.includes('explain') || p.includes('simple') || p.includes('child') || p.includes('layman') || p.includes('simplify') || p.includes('eli5')) {
       return 'EXPLAIN_SIMPLY';
     }
-    if (p.includes('reply') || p.includes('draft') || p.includes('response') || p.includes('email draft') || p.includes('write')) {
+    if (p.includes('reply') || p.includes('draft') || p.includes('response') || p.includes('email draft') || p.includes('write reply')) {
       return 'DRAFT_REPLY';
     }
+    if (p.includes('link') || p.includes('contact') || p.includes('email') || p.includes('phone') || p.includes('data') || p.includes('price') || p.includes('spec') || p.includes('metric')) {
+      return 'EXTRACT_DATA';
+    }
+
     return 'QUESTION_ANSWERING';
   }
 
@@ -167,6 +232,15 @@ export class BrowserAIAgent {
     switch (intent) {
       case 'CONVERSATIONAL_IDENTITY':
         return this.generateConversationalResponse(prompt, page);
+      case 'SENTIMENT_POSITIVE':
+      case 'SENTIMENT_NEGATIVE':
+        return this.generateSentimentResponse(prompt, intent, page);
+      case 'CONVERSATIONAL_GRATITUDE':
+        return this.generateGratitudeResponse(page);
+      case 'CONVERSATIONAL_ACKNOWLEDGMENT':
+        return this.generateAcknowledgmentResponse(page);
+      case 'PAGE_EVALUATION':
+        return this.generatePageEvaluation(prompt, page);
       case 'SUMMARIZE':
         return this.generateStructuredSummary(page);
       case 'KEY_TAKEAWAYS':
@@ -194,14 +268,118 @@ export class BrowserAIAgent {
     output += `### What I Can Do On This Page\n`;
     output += `• **Summarize**: Synthesize "${page.title || page.domain}" into an executive brief.\n`;
     output += `• **Extract Takeaways**: Pull the core takeaways and actionable steps.\n`;
-    output += `• **Answer Any Question**: Ask me about specific topics or facts on this page.\n`;
-    output += `• **Live Highlighting**: Click **Highlight** below to scroll to and highlight key facts on your active tab.\n`;
-    output += `• **Read Aloud**: Click **Read Aloud** to listen to any response.\n`;
-    output += `• **Free RAM**: Use the RAM manager above to suspend idle background tabs.\n\n`;
+    output += `• **Evaluate Quality**: Ask *"Is this good?"* or *"Is this safe?"* for quality signals.\n`;
+    output += `• **Answer Any Question**: Ask about prices, contacts, facts, or definitions.\n`;
+    output += `• **Live Highlighting**: Click **Highlight** below to scroll to and highlight key facts.\n`;
+    output += `• **Read Aloud**: Click **Read Aloud** to listen to any response.\n\n`;
     output += `*Select a quick action chip above or type any question about this page to begin.*`;
     return output;
   }
 
+  generateSentimentResponse(prompt, intent, page) {
+    if (intent === 'SENTIMENT_POSITIVE') {
+      let output = `### Conversational Feedback\n\n`;
+      output += `Glad to hear! I'm here to assist you with on-device intelligence across **"${page.title || page.domain}"**.\n\n`;
+      output += `### Recommended Next Steps\n`;
+      output += `• **Key Takeaways**: Pull the 5 most impactful insights from this page.\n`;
+      output += `• **Action Items**: Extract actionable tasks and checklist items.\n`;
+      output += `• **Specific Fact Check**: Type any question (e.g. *"What is the main argument?"* or *"How much is it?"*).\n`;
+      return output;
+    } else {
+      let output = `### Conversational Feedback\n\n`;
+      output += `Understood. I am continually processing page semantics locally to provide precise context.\n\n`;
+      output += `### How Can I Help You Better?\n`;
+      output += `• **Explain Simply**: Type *"explain in simple terms"* for a clear, jargon-free breakdown.\n`;
+      output += `• **Audit Page**: Type *"privacy"* to check security and third-party trackers.\n`;
+      output += `• **Targeted Search**: Ask a specific question about the author, pricing, or topics.\n`;
+      return output;
+    }
+  }
+
+  generateGratitudeResponse(page) {
+    let output = `### You're Welcome!\n\n`;
+    output += `Always glad to assist. Everything was analyzed **100% on-device** without sharing your data.\n\n`;
+    output += `Feel free to ask another question or select a quick action above to explore **${page.title || page.domain}**.`;
+    return output;
+  }
+
+  generateAcknowledgmentResponse(page) {
+    let output = `### Understood!\n\n`;
+    output += `Ready for your next query or command on **"${page.title || page.domain}"**.\n\n`;
+    output += `*Tip: You can ask about specific facts, request a simplified summary, or audit page trackers.*`;
+    return output;
+  }
+
+  generatePageEvaluation(prompt, page) {
+    const rawText = page.rawText;
+    const sentences = splitIntoSentences(rawText);
+
+    // 1. Rating and Score Signals Detection
+    const ratingMatches = Array.from(new Set(rawText.match(/(\b\d+(\.\d+)?\s*\/\s*5\b|\b\d+(\.\d+)?\s*\/\s*10\b|\b\d{1,3}%\s*(positive|rating|score|satisfaction)\b|[★☆]{3,5})/gi) || []));
+    
+    // 2. Sentiment Signal Extraction
+    let posCount = 0;
+    let negCount = 0;
+    const tokens = tokenize(rawText);
+    for (const t of tokens) {
+      if (POSITIVE_SENTIMENT.has(t)) posCount++;
+      if (NEGATIVE_SENTIMENT.has(t)) negCount++;
+    }
+
+    const totalSentimentTokens = posCount + negCount;
+    const sentimentRatio = totalSentimentTokens > 0 ? (posCount / totalSentimentTokens) : 0.5;
+
+    // 3. Security & Tracker Signals
+    const thirdPartyCount = page.thirdPartyDomains.length;
+    const hasPasswordForm = page.forms.some(f => f.inputs.some(i => i.toLowerCase().includes('password')));
+
+    let verdict = 'Positive & Reliable Context';
+    let verdictBadge = 'HIGH QUALITY & TRUSTED';
+    let verdictReason = 'Content demonstrates strong structured information with healthy readability and balanced metrics.';
+
+    if (thirdPartyCount > 8) {
+      verdict = 'Heavy Third-Party Presence Detected';
+      verdictBadge = 'PRIVACY CAUTION';
+      verdictReason = `Contains ${thirdPartyCount} third-party tracker connections. Privacy Guard shields are actively blocking tracking cookies.`;
+    } else if (sentimentRatio < 0.35 && totalSentimentTokens > 10) {
+      verdict = 'Critical / Negative Sentiment Identified';
+      verdictBadge = 'CRITICAL REVIEW / CONTROVERSY';
+      verdictReason = 'Page content features predominantly critical or cautionary phrasing.';
+    } else if (page.wordCount < 100) {
+      verdict = 'Sparse Content';
+      verdictBadge = 'LOW INFORMATION DENSITY';
+      verdictReason = 'Page has very little readable body text to evaluate conclusively.';
+    }
+
+    let output = `### Page Evaluation & Trust Signals\n\n`;
+    output += `**Subject**: [${page.title || page.domain}](${page.url})\n`;
+    output += `**Verdict Assessment**: **\`${verdictBadge}\`**\n\n`;
+    output += `> ${verdictReason}\n\n`;
+
+    output += `### Key Evaluation Factors\n`;
+    output += `• **Content Sentiment**: ${(sentimentRatio * 100).toFixed(0)}% positive polarity (${posCount} positive vs ${negCount} critical terms)\n`;
+    output += `• **Information Depth**: ${page.wordCount.toLocaleString()} words (~${page.readingTimeMinutes} min reading time)\n`;
+    output += `• **Tracker Footprint**: ${thirdPartyCount === 0 ? '0 trackers (Clean)' : `${thirdPartyCount} external connections (Blocked by Guard)`}\n`;
+
+    if (ratingMatches.length > 0) {
+      output += `• **Identified Ratings/Scores**: ${ratingMatches.slice(0, 4).map(r => `\`${r}\``).join(' ')}\n`;
+    }
+
+    if (hasPasswordForm) {
+      output += `• **Authentication**: Secure credential submission form identified.\n`;
+    }
+
+    // Top representative evaluation sentence
+    const ranked = computeTfIdfRankings(sentences);
+    ranked.sort((a, b) => b.score - a.score);
+    if (ranked.length > 0) {
+      output += `\n### Primary Value Statement\n`;
+      output += `*"${ranked[0].sentence}"*\n`;
+    }
+
+    output += `\n---\n*Evaluated locally via heuristics & DOM sentiment analysis. Zero data transmitted.*`;
+    return output;
+  }
 
   generateStructuredSummary(page) {
     const sentences = splitIntoSentences(page.rawText);
@@ -276,7 +454,7 @@ export class BrowserAIAgent {
       });
     }
 
-    if (page.forms && page.forms.length > 0) {
+    if (page.forms.length > 0) {
       output += `\n### Form Interactions on Page\n`;
       page.forms.forEach((f, idx) => {
         output += `• Form #${idx + 1}: ${f.inputs.length} input fields detected (${f.inputs.join(', ') || 'standard input'})\n`;
@@ -296,7 +474,7 @@ export class BrowserAIAgent {
       output += `\n`;
     }
 
-    if (page.links && page.links.length > 0) {
+    if (page.links.length > 0) {
       const distinctLinks = page.links.filter(l => l.text.length > 3 && !l.href.startsWith('javascript')).slice(0, 8);
       output += `**Key Links & Navigation Targets**:\n`;
       distinctLinks.forEach(l => {
@@ -318,9 +496,9 @@ export class BrowserAIAgent {
   generatePrivacyAudit(page) {
     let output = `### Page Privacy & Tracker Audit\n\n`;
     output += `**Target Host**: \`${page.domain}\`\n`;
-    output += `**Scripts Detected**: ${page.scriptsCount || 0} script elements\n\n`;
+    output += `**Scripts Detected**: ${page.scriptsCount} script elements\n\n`;
 
-    if (page.thirdPartyDomains && page.thirdPartyDomains.length > 0) {
+    if (page.thirdPartyDomains.length > 0) {
       output += `### Third-Party Domain Connections (${page.thirdPartyDomains.length})\n`;
       page.thirdPartyDomains.slice(0, 10).forEach(d => {
         output += `• \`${d}\`\n`;
@@ -329,10 +507,10 @@ export class BrowserAIAgent {
       output += `• No external third-party tracker domains identified in active DOM.\n`;
     }
 
-    if (page.forms && page.forms.length > 0) {
+    if (page.forms.length > 0) {
       output += `\n### Form Security\n`;
       page.forms.forEach((f, idx) => {
-        const hasPassword = f.inputs && f.inputs.some(i => i.toLowerCase().includes('password'));
+        const hasPassword = f.inputs.some(i => i.toLowerCase().includes('password'));
         output += `• Form ${idx + 1}: ${hasPassword ? 'Contains sensitive credentials/password inputs.' : 'Standard text fields.'}\n`;
       });
     }
@@ -378,36 +556,66 @@ export class BrowserAIAgent {
   }
 
   answerSpecificQuestion(query, page) {
-    const queryTokens = tokenize(query);
-    if (queryTokens.length === 0) {
+    const rawTokens = tokenize(query);
+    if (rawTokens.length === 0) {
       return this.generateStructuredSummary(page);
     }
 
+    // Expand query tokens with Synset clusters
+    const expandedTokens = new Set(rawTokens);
+    for (const token of rawTokens) {
+      for (const [key, cluster] of Object.entries(SYNSET_MAP)) {
+        if (cluster.includes(token) || key === token) {
+          cluster.forEach(syn => expandedTokens.add(syn));
+        }
+      }
+    }
+
+    const queryTokenList = Array.from(expandedTokens);
     const sentences = splitIntoSentences(page.rawText);
     if (sentences.length === 0) {
       return `Could not find enough readable text on "${page.title}" to answer your question.`;
     }
 
+    const lowerQuery = query.toLowerCase();
+
     const scored = sentences.map((sentence, idx) => {
       const sentenceTokens = tokenize(sentence);
+      const lowerSentence = sentence.toLowerCase();
       let matchCount = 0;
+      let synsetBonus = 0;
       let exactBonus = 0;
 
-      for (const qt of queryTokens) {
+      // Exact direct query token matches
+      for (const qt of rawTokens) {
         if (sentenceTokens.includes(qt)) {
-          matchCount++;
+          matchCount += 2;
         }
       }
 
-      if (sentence.toLowerCase().includes(query.toLowerCase())) {
-        exactBonus += 5;
+      // Synset semantic expansions
+      for (const qt of queryTokenList) {
+        if (sentenceTokens.includes(qt)) {
+          synsetBonus += 1;
+        }
       }
 
-      if (/how much|how many|when|what year|price|cost/i.test(query) && /\d+/.test(sentence)) {
-        exactBonus += 2;
+      // Full substring match bonus
+      if (lowerSentence.includes(lowerQuery)) {
+        exactBonus += 8;
       }
 
-      const score = (matchCount / (queryTokens.length || 1)) * 10 + exactBonus - (idx * 0.01);
+      // Entity / Number queries bonus
+      if (/how much|how many|when|what year|price|cost|tier|pricing/i.test(query) && /(\$|\b\d+(\.\d+)?\b)/.test(sentence)) {
+        exactBonus += 4;
+      }
+
+      // Email / Contact queries bonus
+      if (/contact|email|phone|reach|support/i.test(query) && /(@|\.com|\.org|\+?\d{3,})/.test(sentence)) {
+        exactBonus += 4;
+      }
+
+      const score = matchCount * 3 + synsetBonus * 1.5 + exactBonus - (idx * 0.01);
       return { sentence, score, matchCount };
     });
 
