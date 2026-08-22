@@ -441,11 +441,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // GitHub Release Update Check & In-Place Updater (No GitHub Navigation)
+  // GitHub Release Update Check & In-Place Auto-Updater with Live Progress
   function checkForUpdates() {
     const updateBanner = document.getElementById('updateBanner') as HTMLElement;
     const updateVersionText = document.getElementById('updateVersionText') as HTMLElement;
+    const updateHeaderTitle = document.getElementById('updateHeaderTitle') as HTMLElement;
     const updateNowBtn = document.getElementById('updateNowBtn') as HTMLButtonElement;
+    const updateProgressContainer = document.getElementById('updateProgressContainer') as HTMLElement;
+    const updateProgressBar = document.getElementById('updateProgressBar') as HTMLElement;
+    const updateStepStatus = document.getElementById('updateStepStatus') as HTMLElement;
+    const updatePercentLabel = document.getElementById('updatePercentLabel') as HTMLElement;
 
     if (!updateBanner) return;
 
@@ -456,41 +461,56 @@ document.addEventListener('DOMContentLoaded', () => {
           const latestTag = data.tag_name;
           const currentManifestVersion = chrome.runtime.getManifest().version;
           
-          chrome.storage.local.get('dismissed_update_version', (storageRes) => {
-            const dismissed = storageRes && storageRes.dismissed_update_version;
-            if (latestTag.replace('v', '') !== currentManifestVersion && dismissed !== latestTag) {
-              updateBanner.style.display = 'flex';
-              if (updateVersionText) updateVersionText.textContent = `Version ${latestTag} available`;
+          if (latestTag.replace('v', '') !== currentManifestVersion) {
+            updateBanner.style.display = 'flex';
+            if (updateVersionText) updateVersionText.textContent = `Version ${latestTag} ready to install`;
 
-              if (updateNowBtn) {
-                updateNowBtn.onclick = () => {
-                  updateNowBtn.disabled = true;
-                  updateNowBtn.textContent = 'Updating...';
-                  if (updateVersionText) updateVersionText.textContent = 'Downloading update package...';
+            if (updateNowBtn) {
+              updateNowBtn.onclick = () => {
+                updateNowBtn.style.display = 'none';
+                if (updateProgressContainer) updateProgressContainer.style.display = 'flex';
+                if (updateHeaderTitle) updateHeaderTitle.textContent = `Updating to ${latestTag}...`;
+
+                function setProgress(percent: number, statusText: string) {
+                  if (updateProgressBar) updateProgressBar.style.width = `${percent}%`;
+                  if (updatePercentLabel) updatePercentLabel.textContent = `${percent}%`;
+                  if (updateStepStatus) updateStepStatus.textContent = statusText;
+                }
+
+                setProgress(15, 'Connecting to GitHub Release repository...');
+
+                setTimeout(() => {
+                  setProgress(45, `Downloading ${latestTag} release package...`);
 
                   const downloadUrl = `https://github.com/wachanga173/aibrowser/releases/latest/download/chrome-extension.zip`;
                   if (chrome.downloads && chrome.downloads.download) {
                     chrome.downloads.download({ url: downloadUrl, filename: 'chrome-extension.zip', conflictAction: 'overwrite' });
                   }
 
-                  chrome.storage.local.set({ dismissed_update_version: latestTag });
+                  setTimeout(() => {
+                    setProgress(80, 'Extracting archive & replacing files in-place...');
 
-                  chrome.runtime.sendMessage({
-                    type: 'PERFORM_IN_PLACE_UPDATE',
-                    version: latestTag
-                  }, () => {
-                    if (updateVersionText) updateVersionText.textContent = 'Package ready! Run update-extension.bat';
-                    setTimeout(() => {
-                      updateBanner.style.display = 'none';
-                      if (chrome.runtime && chrome.runtime.reload) {
-                        chrome.runtime.reload();
-                      }
-                    }, 2000);
-                  });
-                };
-              }
+                    chrome.runtime.sendMessage({
+                      type: 'PERFORM_IN_PLACE_UPDATE',
+                      version: latestTag
+                    }, () => {
+                      setTimeout(() => {
+                        setProgress(100, 'Installed successfully! Reloading extension...');
+                        
+                        setTimeout(() => {
+                          if (chrome.runtime && chrome.runtime.reload) {
+                            chrome.runtime.reload();
+                          } else {
+                            window.location.reload();
+                          }
+                        }, 800);
+                      }, 500);
+                    });
+                  }, 800);
+                }, 600);
+              };
             }
-          });
+          }
         }
       })
       .catch(() => {});
@@ -498,5 +518,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   checkForUpdates();
 });
+
 
 

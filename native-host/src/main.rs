@@ -89,8 +89,34 @@ fn main() -> io::Result<()> {
                         Err(err) => serde_json::json!({ "valid": false, "error": err })
                     }
                 },
+                "auto_update_in_place" => {
+                    let version = msg.payload.get("version").and_then(|v| v.as_str()).unwrap_or("latest");
+                    let update_cmd = format!(
+                        "powershell -NoProfile -ExecutionPolicy Bypass -Command \"node scripts/update-in-place.js\""
+                    );
+                    let status = std::process::Command::new("powershell")
+                        .args(&["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "node scripts/update-in-place.js"])
+                        .output();
+
+                    match status {
+                        Ok(out) if out.status.success() => serde_json::json!({
+                            "success": true,
+                            "version": version,
+                            "message": "In-place update executed successfully"
+                        }),
+                        Ok(out) => serde_json::json!({
+                            "success": false,
+                            "error": String::from_utf8_lossy(&out.stderr).to_string()
+                        }),
+                        Err(err) => serde_json::json!({
+                            "success": false,
+                            "error": err.to_string()
+                        })
+                    }
+                },
                 _ => serde_json::json!({ "error": "unsupported_message_type" })
             };
+
 
             let response = serde_json::json!({
                 "version": 1,
