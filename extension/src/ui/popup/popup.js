@@ -132,32 +132,47 @@ document.addEventListener('DOMContentLoaded', () => {
   if (optimizeRamBtn) {
     optimizeRamBtn.addEventListener('click', () => {
       optimizeRamBtn.disabled = true;
-      optimizeRamBtn.textContent = 'Freeing Memory...';
+      optimizeRamBtn.textContent = 'Suspending Inactive Tabs...';
 
       chrome.runtime.sendMessage({ type: 'OPTIMIZE_TABS_RAM' }, (res) => {
         optimizeRamBtn.disabled = false;
-        optimizeRamBtn.innerHTML = `
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-          Free Inactive Tabs RAM
-        `;
 
         if (res && res.success) {
+          optimizeRamBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Memory Reclaimed!
+          `;
+
           if (optimizeFeedback) {
             optimizeFeedback.style.display = 'block';
             if (res.discardedCount > 0) {
-              optimizeFeedback.textContent = `Freed ~${res.estimatedMemoryFreedMB} MB across ${res.discardedCount} background tab(s)`;
+              optimizeFeedback.textContent = `Suspended ${res.discardedCount} idle background tab(s) - Reclaimed ~${res.estimatedMemoryFreedMB} MB RAM.`;
             } else {
-              optimizeFeedback.textContent = 'All background tabs already optimized.';
+              optimizeFeedback.textContent = 'All background tabs are already in sleep mode.';
             }
             setTimeout(() => {
               optimizeFeedback.style.display = 'none';
-            }, 3500);
+            }, 4000);
           }
+
+          setTimeout(() => {
+            optimizeRamBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              Free Inactive Tabs RAM
+            `;
+          }, 2500);
+
           loadMemoryAnalytics();
+        } else {
+          optimizeRamBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Free Inactive Tabs RAM
+          `;
         }
       });
     });
   }
+
 
   chrome.storage.local.get(['theme', 'blockingEnabled', 'blockedCountToday'], (data) => {
     if (data.theme) applyTheme(data.theme);
