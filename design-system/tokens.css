@@ -2,17 +2,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap');
 
 :root {
-  /* Common Accent Colors */
-  --primary-accent: #818cf8;
-  --primary-accent-hover: #6366f1;
-  --primary-accent-glow: rgba(129, 140, 248, 0.35);
+  /* Common Accent Colors (Cobalt & Cyan Precision - Zero Purple) */
+  --primary-accent: #0284c7;
+  --primary-accent-hover: #0369a1;
+  --primary-accent-glow: rgba(2, 132, 199, 0.3);
 
   --shield-green: #10b981;
   --shield-green-glow: rgba(16, 185, 129, 0.35);
   
   --warning-amber: #f59e0b;
   --danger-red: #ef4444;
-  --info-cyan: #06b6d4;
+  --info-cyan: #0ea5e9;
 
   /* Typography */
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -35,46 +35,46 @@
 html.dark-theme,
 body.dark-theme,
 [data-theme="dark"] {
-  --bg-gradient: linear-gradient(145deg, #0f172a 0%, #090d16 100%);
-  --bg-surface: #0f172a;
-  --bg-surface-elevated: #1e293b;
-  --card-bg: rgba(30, 41, 59, 0.85);
-  --card-bg-hover: rgba(51, 65, 85, 0.95);
-  --card-bg-subtle: rgba(255, 255, 255, 0.06);
+  --bg-gradient: linear-gradient(145deg, #0b0f19 0%, #06080e 100%);
+  --bg-surface: #0b0f19;
+  --bg-surface-elevated: #111827;
+  --card-bg: #111827;
+  --card-bg-hover: #1f2937;
+  --card-bg-subtle: rgba(255, 255, 255, 0.04);
   
-  --border-color: #334155;
-  --border-color-hover: #818cf8;
-  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-color: #1f2937;
+  --border-color-hover: #0ea5e9;
+  --border-subtle: rgba(255, 255, 255, 0.06);
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
 
-  --input-bg: #0b1120;
-  --input-border: #334155;
-  --input-text: #f8fafc;
-  --input-focus-border: var(--primary-accent);
+  --input-bg: #030712;
+  --input-border: #374151;
+  --input-text: #f9fafb;
+  --input-focus-border: #0ea5e9;
 
-  --chip-bg: #1e293b;
-  --chip-text: #e2e8f0;
-  --chip-border: #334155;
-  --chip-hover-bg: #6366f1;
+  --chip-bg: #1f2937;
+  --chip-text: #e5e7eb;
+  --chip-border: #374151;
+  --chip-hover-bg: #0284c7;
   --chip-hover-text: #ffffff;
 
-  --btn-secondary-bg: #1e293b;
-  --btn-secondary-border: #334155;
-  --btn-secondary-text: #f1f5f9;
+  --btn-secondary-bg: #1f2937;
+  --btn-secondary-border: #374151;
+  --btn-secondary-text: #f3f4f6;
   
-  --btn-hover-bg: #6366f1;
-  --btn-hover-border: #6366f1;
+  --btn-hover-bg: #0284c7;
+  --btn-hover-border: #0284c7;
   --btn-hover-text: #ffffff;
 
-  --code-bg: #090d16;
+  --code-bg: #030712;
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
   --scrollbar-track: rgba(0, 0, 0, 0.2);
 
-  background: #0f172a !important;
-  color: #f8fafc !important;
+  background: #0b0f19 !important;
+  color: #f9fafb !important;
 }
 
 /* Light Theme Palette */
@@ -89,7 +89,7 @@ body.light-theme,
   --card-bg-subtle: #f1f5f9;
 
   --border-color: #cbd5e1;
-  --border-color-hover: #6366f1;
+  --border-color-hover: #0284c7;
   --border-subtle: #e2e8f0;
 
   --text-primary: #0f172a;
@@ -99,20 +99,20 @@ body.light-theme,
   --input-bg: #ffffff;
   --input-border: #cbd5e1;
   --input-text: #0f172a;
-  --input-focus-border: #6366f1;
+  --input-focus-border: #0284c7;
 
   --chip-bg: #f1f5f9;
   --chip-text: #1e293b;
   --chip-border: #cbd5e1;
-  --chip-hover-bg: #6366f1;
+  --chip-hover-bg: #0284c7;
   --chip-hover-text: #ffffff;
 
   --btn-secondary-bg: #f8fafc;
   --btn-secondary-border: #cbd5e1;
   --btn-secondary-text: #0f172a;
 
-  --btn-hover-bg: #6366f1;
-  --btn-hover-border: #4f46e5;
+  --btn-hover-bg: #0284c7;
+  --btn-hover-border: #0369a1;
   --btn-hover-text: #ffffff;
 
   --code-bg: #f1f5f9;

@@ -246,10 +246,11 @@
 
     .ram-meter-fill {
       height: 100%;
-      background: linear-gradient(90deg, #10b981 0%, #818cf8 70%, #ef4444 100%);
+      background: linear-gradient(90deg, #10b981 0%, #0284c7 70%, #ef4444 100%);
       border-radius: 6px;
       transition: width 0.4s ease;
     }
+
 
     .ram-meter-labels {
       display: flex;
@@ -358,10 +359,11 @@
       letter-spacing: 0.5px;
       padding: 2px 7px;
       border-radius: 6px;
-      background: rgba(129, 140, 248, 0.15);
+      background: rgba(2, 132, 199, 0.15);
       color: var(--primary-accent);
-      border: 1px solid rgba(129, 140, 248, 0.3);
+      border: 1px solid rgba(2, 132, 199, 0.3);
     }
+
 
     /* Quick Action Chips */
     .quick-chips-wrapper {
@@ -436,7 +438,7 @@
       width: 100%;
       padding: 8px 12px;
       border-radius: 8px;
-      background: #6366f1;
+      background: #0284c7;
       color: #ffffff !important;
       border: none;
       font-family: 'Outfit', sans-serif;
@@ -451,7 +453,7 @@
     }
 
     .btn-agent-submit:hover:not(:disabled) {
-      background: #4f46e5 !important;
+      background: #0369a1 !important;
       color: #ffffff !important;
       box-shadow: 0 4px 14px var(--primary-accent-glow);
     }
@@ -460,6 +462,7 @@
       opacity: 0.6;
       cursor: not-allowed;
     }
+
 
     /* AI Response Section */
     .ai-response-container {
@@ -616,13 +619,14 @@
 </head>
 <body class="dark-theme" data-theme="dark">
   <!-- Update Notification Banner -->
-  <div id="updateBanner" style="display: none; background: rgba(129, 140, 248, 0.15); border: 1px solid var(--primary-accent); padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 11px; justify-content: space-between; align-items: center;">
+  <div id="updateBanner" style="display: none; background: rgba(2, 132, 199, 0.12); border: 1px solid var(--primary-accent); padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 11px; justify-content: space-between; align-items: center;">
     <div>
       <strong style="color: var(--primary-accent);">Update Available</strong>
       <div id="updateVersionText" style="font-size: 10px; color: var(--text-secondary);">New release ready</div>
     </div>
-    <button id="updateNowBtn" style="padding: 5px 10px; font-size: 10px; border: none; background: #6366f1; color: white; border-radius: 6px; font-weight: 600; cursor: pointer; transition: var(--transition-fast);">Update Now</button>
+    <button id="updateNowBtn" style="padding: 5px 10px; font-size: 10px; border: none; background: #0284c7; color: white; border-radius: 6px; font-weight: 600; cursor: pointer; transition: var(--transition-fast);">Update Now</button>
   </div>
+
 
   <!-- Header -->
   <div class="header">
