@@ -43,7 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Theme Management
   function applyTheme(theme: string) {
     currentTheme = theme === 'light' ? 'light' : 'dark';
-    document.body.className = currentTheme === 'light' ? 'light-theme' : 'dark-theme';
+    const themeClass = currentTheme === 'light' ? 'light-theme' : 'dark-theme';
+    document.documentElement.className = themeClass;
+    document.body.className = themeClass;
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    document.body.setAttribute('data-theme', currentTheme);
+
     if (themeIconSun && themeIconMoon) {
       if (currentTheme === 'light') {
         themeIconSun.style.display = 'none';
@@ -54,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+
 
   // Load Status and Protection State
   function updatePopupUI() {

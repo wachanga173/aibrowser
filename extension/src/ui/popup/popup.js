@@ -42,7 +42,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyTheme(theme) {
     currentTheme = theme === 'light' ? 'light' : 'dark';
-    document.body.className = currentTheme === 'light' ? 'light-theme' : 'dark-theme';
+    const themeClass = currentTheme === 'light' ? 'light-theme' : 'dark-theme';
+    document.documentElement.className = themeClass;
+    document.body.className = themeClass;
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    document.body.setAttribute('data-theme', currentTheme);
+
     if (themeIconSun && themeIconMoon) {
       if (currentTheme === 'light') {
         themeIconSun.style.display = 'none';
@@ -53,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+
 
   function updatePopupUI() {
     chrome.runtime.sendMessage({ type: 'GET_STATUS' }, (response) => {

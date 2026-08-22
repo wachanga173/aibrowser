@@ -26,8 +26,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyTheme(theme) {
     currentTheme = theme === 'light' ? 'light' : 'dark';
-    document.body.className = currentTheme === 'light' ? 'light-theme' : 'dark-theme';
+    const themeClass = currentTheme === 'light' ? 'light-theme' : 'dark-theme';
+    document.documentElement.className = themeClass;
+    document.body.className = themeClass;
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    document.body.setAttribute('data-theme', currentTheme);
   }
+
 
   function switchTab(tabName) {
     tabBtnSettings?.classList.remove('active');
