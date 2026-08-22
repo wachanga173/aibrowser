@@ -10,6 +10,8 @@
     "build:production": "node scripts/build-production-release.js",
     "lint:telemetry": "node scripts/check-no-telemetry.js",
     "test": "node scripts/run-tests.js",
+    "update": "node scripts/update-in-place.js",
     "verify:release": "npm run lint:telemetry && npm run build:production && npm run test"
   }
 }
+

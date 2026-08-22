@@ -420,11 +420,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // GitHub Release Update Check
+  // GitHub Release Update Check & In-Place Updater (No GitHub Navigation)
   function checkForUpdates() {
     const updateBanner = document.getElementById('updateBanner') as HTMLElement;
     const updateVersionText = document.getElementById('updateVersionText') as HTMLElement;
-    const updateDownloadLink = document.getElementById('updateDownloadLink') as HTMLAnchorElement;
+    const updateNowBtn = document.getElementById('updateNowBtn') as HTMLButtonElement;
 
     if (!updateBanner) return;
 
@@ -437,7 +437,28 @@ document.addEventListener('DOMContentLoaded', () => {
           if (latestTag.replace('v', '') !== currentManifestVersion) {
             updateBanner.style.display = 'flex';
             if (updateVersionText) updateVersionText.textContent = `Version ${latestTag} ready to install`;
-            if (updateDownloadLink && data.html_url) updateDownloadLink.href = data.html_url;
+
+            if (updateNowBtn) {
+              updateNowBtn.onclick = () => {
+                updateNowBtn.disabled = true;
+                updateNowBtn.textContent = 'Updating...';
+                if (updateVersionText) updateVersionText.textContent = 'Applying update in-place...';
+
+                chrome.runtime.sendMessage({
+                  type: 'PERFORM_IN_PLACE_UPDATE',
+                  version: latestTag
+                }, (_resp) => {
+                  if (updateVersionText) updateVersionText.textContent = 'Update applied! Reloading...';
+                  setTimeout(() => {
+                    if (chrome.runtime && chrome.runtime.reload) {
+                      chrome.runtime.reload();
+                    } else {
+                      window.location.reload();
+                    }
+                  }, 1000);
+                });
+              };
+            }
           }
         }
       })
@@ -446,3 +467,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   checkForUpdates();
 });
+

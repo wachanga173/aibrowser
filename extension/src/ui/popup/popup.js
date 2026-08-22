@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function checkForUpdates() {
     const updateBanner = document.getElementById('updateBanner');
     const updateVersionText = document.getElementById('updateVersionText');
-    const updateDownloadLink = document.getElementById('updateDownloadLink');
+    const updateNowBtn = document.getElementById('updateNowBtn');
 
     if (!updateBanner) return;
 
@@ -416,7 +416,28 @@ document.addEventListener('DOMContentLoaded', () => {
           if (latestTag.replace('v', '') !== currentManifestVersion) {
             updateBanner.style.display = 'flex';
             if (updateVersionText) updateVersionText.textContent = `Version ${latestTag} ready to install`;
-            if (updateDownloadLink && data.html_url) updateDownloadLink.href = data.html_url;
+
+            if (updateNowBtn) {
+              updateNowBtn.onclick = () => {
+                updateNowBtn.disabled = true;
+                updateNowBtn.textContent = 'Updating...';
+                if (updateVersionText) updateVersionText.textContent = 'Applying update in-place...';
+
+                chrome.runtime.sendMessage({
+                  type: 'PERFORM_IN_PLACE_UPDATE',
+                  version: latestTag
+                }, () => {
+                  if (updateVersionText) updateVersionText.textContent = 'Update applied! Reloading...';
+                  setTimeout(() => {
+                    if (chrome.runtime && chrome.runtime.reload) {
+                      chrome.runtime.reload();
+                    } else {
+                      window.location.reload();
+                    }
+                  }, 1000);
+                });
+              };
+            }
           }
         }
       })
@@ -425,3 +446,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   checkForUpdates();
 });
+

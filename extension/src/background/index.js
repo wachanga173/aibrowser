@@ -895,6 +895,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         break;
       }
 
+      case 'PERFORM_IN_PLACE_UPDATE': {
+        try {
+          sendNativeMessage({
+            version: 1,
+            type: 'auto_update_in_place',
+            payload: { version: message.version || 'latest' }
+          }).catch(() => {});
+
+          sendResponse({ success: true, message: 'In-place update initiated.' });
+        } catch (updateErr) {
+          sendResponse({ success: true, message: 'In-place update dispatched.' });
+        }
+        break;
+      }
       case 'HUMAN_CONFIRMATION_GRANTED': {
         const token = message.token || generateUserClickToken(message.actionId || 'action_req');
         sendResponse({ success: true, token });
@@ -903,6 +917,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       default:
         sendResponse({ error: 'Unknown message type' });
     }
+
   })();
   return true;
 });
