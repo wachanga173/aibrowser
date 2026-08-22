@@ -22,16 +22,21 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install MinGW Cross-Compiler (for Windows binary on Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64
+
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-pc-windows-msvc
+          targets: x86_64-pc-windows-gnu
 
       - name: Cross-Compile Native Host Binary (Windows)
         run: |
           cd native-host
-          cargo build --release --target x86_64-pc-windows-msvc --bin native_host_binary
-          cp target/x86_64-pc-windows-msvc/release/native_host_binary.exe ../native_host_binary.exe
+          cargo build --release --target x86_64-pc-windows-gnu --bin native_host_binary
+          cp target/x86_64-pc-windows-gnu/release/native_host_binary.exe ../native_host_binary.exe
           echo "Native host binary compiled successfully"
 
       - name: Compute Dynamic Release Version
