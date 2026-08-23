@@ -1,45 +1,88 @@
 document.addEventListener('DOMContentLoaded', () => {
   const verifyBtn = document.getElementById('verifySetupBtn');
   const verifyStatus = document.getElementById('verifyStatus');
+  const copyCmdBtn = document.getElementById('copyCmdBtn');
+  const cmdInput = document.getElementById('cmdInput');
 
-  if (!verifyBtn || !verifyStatus) return;
+  let pollInterval = null;
+  let isVerified = false;
 
-  verifyBtn.addEventListener('click', () => {
-    verifyStatus.className = 'verify-status checking';
-    verifyStatus.textContent = 'Checking connection to native host...';
-    verifyBtn.disabled = true;
-    verifyBtn.textContent = 'Checking...';
+  function setStatus(type, message) {
+    if (!verifyStatus) return;
+    verifyStatus.className = `verify-status ${type}`;
+    verifyStatus.textContent = message;
+    verifyStatus.style.display = 'block';
+  }
+
+  function checkConnection(isManual = false) {
+    if (isVerified) return;
 
     if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) {
-      verifyBtn.disabled = false;
-      verifyStatus.className = 'verify-status error';
-      verifyStatus.textContent = 'Extension context not available. Please ensure the extension is installed and open this page from the extension.';
-      verifyBtn.textContent = 'Verify Setup';
+      if (isManual) {
+        setStatus('error', 'Extension context not detected. If you opened this file directly, please open it via the extension popup or reload the extension at chrome://extensions.');
+      }
       return;
     }
 
+    if (isManual && verifyBtn) {
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Checking...';
+      setStatus('checking', 'Connecting to native messaging host...');
+    }
+
     chrome.runtime.sendMessage({ type: 'PING_NATIVE_HOST' }, (response) => {
-      verifyBtn.disabled = false;
+      if (verifyBtn && isManual) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify Setup';
+      }
 
       if (chrome.runtime.lastError) {
-        verifyStatus.className = 'verify-status error';
-        verifyStatus.textContent = 'Could not reach the extension background service. Please reload the extension from chrome://extensions and try again.';
-        verifyBtn.textContent = 'Verify Setup';
+        if (isManual) {
+          setStatus('error', 'Could not reach extension background service. Please reload the extension from chrome://extensions and try again.');
+        }
         return;
       }
 
       if (response && response.success) {
-        verifyStatus.className = 'verify-status success';
-        verifyStatus.textContent = 'Setup verified successfully! Automatic updates and native companion features are now active. You can close this tab.';
-        verifyBtn.textContent = 'Verified';
-        verifyBtn.className = 'btn-primary btn-success';
-        verifyBtn.onclick = () => window.close();
-      } else {
-        const errorDetail = (response && response.error) || 'Native host not responding.';
-        verifyStatus.className = 'verify-status error';
-        verifyStatus.textContent = `Setup not detected: ${errorDetail} Please ensure you ran the downloaded setup-native-host.bat script.`;
-        verifyBtn.textContent = 'Retry Verification';
+        isVerified = true;
+        if (pollInterval) clearInterval(pollInterval);
+
+        setStatus('success', 'Native Companion Host connected and verified! Automatic updates and offline intelligence are active.');
+        if (verifyBtn) {
+          verifyBtn.textContent = 'Verified (Ready)';
+          verifyBtn.className = 'btn-primary btn-success';
+          verifyBtn.disabled = false;
+          verifyBtn.onclick = () => window.close();
+        }
+      } else if (isManual) {
+        const errorDetail = (response && response.error) || 'Host not responding.';
+        setStatus('error', `Setup not detected: ${errorDetail} Run the setup script or copy the one-line command below.`);
       }
     });
-  });
+  }
+
+  if (verifyBtn) {
+    verifyBtn.addEventListener('click', () => {
+      checkConnection(true);
+    });
+  }
+
+  if (copyCmdBtn && cmdInput) {
+    copyCmdBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(cmdInput.value).then(() => {
+        copyCmdBtn.textContent = 'Copied to Clipboard';
+        setTimeout(() => {
+          copyCmdBtn.textContent = 'Copy Command';
+        }, 2500);
+      });
+    });
+  }
+
+  // Initial check & auto-poll every 2.5 seconds
+  checkConnection(false);
+  pollInterval = setInterval(() => {
+    if (!isVerified) {
+      checkConnection(false);
+    }
+  }, 2500);
 });

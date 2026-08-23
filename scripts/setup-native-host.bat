@@ -7,15 +7,23 @@ echo  One-time setup for automatic extension updates
 echo ====================================================
 echo.
 
-REM Determine the extension directory (where this script is located)
+REM Determine the extension directory (where this script is located or common install paths)
 SET SCRIPT_DIR=%~dp0
 SET PROJECT_ROOT=%SCRIPT_DIR%
 
-REM If run from scripts/ subfolder, go up one level
+REM If run from scripts/ subfolder or external Downloads folder, scan standard locations
 if exist "%SCRIPT_DIR%extension\manifest.json" (
     SET PROJECT_ROOT=%SCRIPT_DIR%
 ) else if exist "%SCRIPT_DIR%..\extension\manifest.json" (
-    SET PROJECT_ROOT=%SCRIPT_DIR%..\ 
+    SET PROJECT_ROOT=%SCRIPT_DIR%..\
+) else if exist "%USERPROFILE%\OneDrive\visual code\GitHub\ai\extension\manifest.json" (
+    SET PROJECT_ROOT=%USERPROFILE%\OneDrive\visual code\GitHub\ai\
+) else if exist "%USERPROFILE%\Downloads\ai\extension\manifest.json" (
+    SET PROJECT_ROOT=%USERPROFILE%\Downloads\ai\
+) else if exist "%USERPROFILE%\Downloads\chrome-extension\manifest.json" (
+    SET PROJECT_ROOT=%USERPROFILE%\Downloads\chrome-extension\
+) else if exist "%LOCALAPPDATA%\PrivacyAIGuard\extension\manifest.json" (
+    SET PROJECT_ROOT=%LOCALAPPDATA%\PrivacyAIGuard\
 )
 
 SET INSTALL_DIR=%LOCALAPPDATA%\PrivacyAIGuard

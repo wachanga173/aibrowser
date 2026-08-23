@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy AI Guard - Auto-Update Setup</title>
+  <title>Privacy AI Guard - One-Time Companion Setup</title>
   <link rel="stylesheet" href="../../../design-system/tokens.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -20,16 +20,17 @@
     }
 
     .setup-container {
-      max-width: 580px;
+      max-width: 620px;
       width: 100%;
     }
 
     .setup-card {
       background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.18);
       border-radius: 16px;
       padding: 36px 32px;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
     }
 
     .setup-badge {
@@ -49,7 +50,7 @@
       font-size: 22px;
       font-weight: 700;
       color: #f1f5f9;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       line-height: 1.3;
     }
 
@@ -57,57 +58,67 @@
       font-size: 13.5px;
       color: #94a3b8;
       line-height: 1.65;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
-    .steps-list {
-      list-style: none;
-      counter-reset: step-counter;
-      margin-bottom: 28px;
+    /* Option tabs / sections */
+    .option-box {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
     }
 
-    .step-item {
-      counter-increment: step-counter;
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 14px 0;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
-    }
-
-    .step-item:last-child {
-      border-bottom: none;
-    }
-
-    .step-number {
-      flex-shrink: 0;
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(56, 189, 248, 0.12);
-      color: #38bdf8;
-      font-size: 12px;
-      font-weight: 700;
-      border-radius: 8px;
-    }
-
-    .step-content {
-      flex: 1;
-    }
-
-    .step-label {
-      font-size: 13.5px;
+    .option-title {
+      font-size: 14px;
       font-weight: 600;
-      color: #e2e8f0;
-      margin-bottom: 3px;
+      color: #f8fafc;
+      margin-bottom: 8px;
     }
 
-    .step-detail {
-      font-size: 12px;
-      color: #64748b;
+    .option-desc {
+      font-size: 12.5px;
+      color: #94a3b8;
       line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .cmd-wrapper {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .cmd-input {
+      flex: 1;
+      background: rgba(10, 14, 26, 0.8);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 8px;
+      color: #38bdf8;
+      padding: 10px 12px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .btn-copy {
+      flex-shrink: 0;
+      padding: 10px 16px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-copy:hover {
+      background: rgba(56, 189, 248, 0.25);
+      color: #ffffff;
     }
 
     .btn-primary {
@@ -158,42 +169,40 @@
     }
 
     .btn-success {
-      background: linear-gradient(135deg, #059669, #10b981);
-    }
-
-    .btn-success:hover {
-      background: linear-gradient(135deg, #047857, #059669);
+      background: linear-gradient(135deg, #059669, #10b981) !important;
+      color: #ffffff !important;
       box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
     }
 
     /* Status feedback */
     .verify-status {
       margin-top: 16px;
-      padding: 12px 16px;
+      padding: 14px 16px;
       border-radius: 10px;
       font-size: 13px;
       font-weight: 500;
       display: none;
+      line-height: 1.5;
     }
 
     .verify-status.success {
       display: block;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
       color: #10b981;
     }
 
     .verify-status.error {
       display: block;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
       color: #ef4444;
     }
 
     .verify-status.checking {
       display: block;
       background: rgba(56, 189, 248, 0.08);
-      border: 1px solid rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.2);
       color: #38bdf8;
     }
 
@@ -216,45 +225,29 @@
   <div class="setup-container">
     <div class="setup-card">
       <div class="setup-badge">One-Time Setup</div>
-      <h1 class="setup-title">Enable Automatic Updates</h1>
+      <h1 class="setup-title">Enable Automatic Updates & Companion</h1>
       <p class="setup-desc">
-        To update the extension with one click, a small companion program needs to be installed on your computer. This only needs to be done once -- after setup, all future updates happen automatically from the extension popup.
+        To allow the extension to update itself and run local zero-telemetry AI features, a small local helper binary runs locally. Choose either method below:
       </p>
 
-      <ol class="steps-list">
-        <li class="step-item">
-          <div class="step-number">1</div>
-          <div class="step-content">
-            <div class="step-label">Download the setup script</div>
-            <div class="step-detail">Click the button below to download the setup file. It will be saved to your Downloads folder.</div>
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-number">2</div>
-          <div class="step-content">
-            <div class="step-label">Move it to your extension folder</div>
-            <div class="step-detail">Place the downloaded <code style="color: #38bdf8;">setup-native-host.bat</code> file in the same folder where you extracted the extension.</div>
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-number">3</div>
-          <div class="step-content">
-            <div class="step-label">Run the setup script</div>
-            <div class="step-detail">Double-click the file to run it. A terminal window will appear and complete the setup automatically.</div>
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-number">4</div>
-          <div class="step-content">
-            <div class="step-label">Verify the connection</div>
-            <div class="step-detail">Come back here and click "Verify Setup" to confirm everything is working.</div>
-          </div>
-        </li>
-      </ol>
+      <!-- Quick PowerShell Setup -->
+      <div class="option-box">
+        <div class="option-title">Option A: Quick 1-Step Command (Recommended)</div>
+        <div class="option-desc">Open PowerShell and paste this command. It downloads and installs the companion automatically in seconds:</div>
+        <div class="cmd-wrapper">
+          <input id="cmdInput" class="cmd-input" type="text" readonly value="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Invoke-Expression (Invoke-RestMethod 'https://raw.githubusercontent.com/wachanga173/aibrowser/main/scripts/install-native-host.ps1' -ErrorAction SilentlyContinue || (Invoke-WebRequest 'https://raw.githubusercontent.com/wachanga173/aibrowser/main/scripts/setup-native-host.bat' -OutFile setup.bat; .\setup.bat))&quot;">
+          <button id="copyCmdBtn" class="btn-copy" type="button">Copy Command</button>
+        </div>
+      </div>
 
-      <a id="downloadSetupBtn" href="https://github.com/wachanga173/aibrowser/releases/latest/download/setup-native-host.bat" class="btn-primary" download>
-        Download Setup Script
-      </a>
+      <!-- Manual Download Setup -->
+      <div class="option-box">
+        <div class="option-title">Option B: Download Setup Script</div>
+        <div class="option-desc">Download the batch script and double-click to run it on your computer:</div>
+        <a id="downloadSetupBtn" href="https://raw.githubusercontent.com/wachanga173/aibrowser/main/scripts/setup-native-host.bat" class="btn-primary" download>
+          Download setup-native-host.bat
+        </a>
+      </div>
 
       <button id="verifySetupBtn" class="btn-secondary" type="button">
         Verify Setup
@@ -263,7 +256,7 @@
       <div id="verifyStatus" class="verify-status"></div>
 
       <div class="security-note">
-        <strong>What does this install?</strong> A small local program (~2 MB) that allows the extension to download and apply updates to itself. It runs only when you click "Update Now" in the popup. No data is collected or sent anywhere -- all operations are local. The source code is fully open on GitHub.
+        <strong>Zero Telemetry Assurance:</strong> The companion binary runs completely locally, does not open network ports, and does not collect or transmit telemetry. Source code is open source on GitHub.
       </div>
     </div>
   </div>
