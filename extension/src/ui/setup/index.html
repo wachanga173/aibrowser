@@ -268,40 +268,6 @@
     </div>
   </div>
 
-  <script>
-    const verifyBtn = document.getElementById('verifySetupBtn');
-    const verifyStatus = document.getElementById('verifyStatus');
-
-    verifyBtn.addEventListener('click', () => {
-      verifyStatus.className = 'verify-status checking';
-      verifyStatus.textContent = 'Checking connection to native host...';
-      verifyBtn.disabled = true;
-      verifyBtn.textContent = 'Checking...';
-
-      chrome.runtime.sendMessage({ type: 'PING_NATIVE_HOST' }, (response) => {
-        verifyBtn.disabled = false;
-
-        if (chrome.runtime.lastError) {
-          verifyStatus.className = 'verify-status error';
-          verifyStatus.textContent = 'Could not reach the extension background service. Please reload the extension and try again.';
-          verifyBtn.textContent = 'Verify Setup';
-          return;
-        }
-
-        if (response && response.success) {
-          verifyStatus.className = 'verify-status success';
-          verifyStatus.textContent = 'Setup verified successfully! Automatic updates are now enabled. You can close this tab.';
-          verifyBtn.textContent = 'Verified';
-          verifyBtn.className = 'btn-primary btn-success';
-          verifyBtn.onclick = () => window.close();
-        } else {
-          const errorDetail = (response && response.error) || 'Native host not responding.';
-          verifyStatus.className = 'verify-status error';
-          verifyStatus.textContent = `Setup not detected: ${errorDetail} Please make sure you ran the setup script from your extension folder.`;
-          verifyBtn.textContent = 'Retry Verification';
-        }
-      });
-    });
-  </script>
+  <script src="setup.js"></script>
 </body>
 </html>
