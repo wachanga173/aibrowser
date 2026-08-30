@@ -38,9 +38,24 @@ function checkHeuristicThresholds() {
       domain: window.location.hostname
     });
   }
-}
+(function injectCosmeticStyles() {
+  const css = '.adsbox, .ad-banner, .ad-wrapper, .ad_box, .ad_banner, .ad_wrapper, .ad-container, .ad_container, .ad-slot, .ad_slot, .ad-placeholder, .ad-unit, .ad-placement, .adsbygoogle, .sponsored-post, [class*="adsbox"], [class*="ad-banner"], [class*="ad-wrapper"], [id*="google_ads_iframe"], [id*="ad-wrapper"], [id*="ad-banner"] { display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; width: 0 !important; pointer-events: none !important; }';
+  function apply() {
+    const parent = document.head || document.documentElement;
+    if (parent && !document.getElementById('privacy-guard-cosmetic-style')) {
+      const style = document.createElement('style');
+      style.id = 'privacy-guard-cosmetic-style';
+      style.textContent = css;
+      parent.appendChild(style);
+    }
+  }
+  apply();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', apply);
+  }
+})();
 
-const AD_PATTERN_REGEX = /(?:google-analytics\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net\/[^/]+\/fbevents\.js|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
+const AD_PATTERN_REGEX = /(?:google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|criteo\.net|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|segment\.com|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|revcontent\.com|mgid\.com|content-ad\.net|zemanta\.com|ntv\.io|sharethrough\.com|3lift\.com|triplelift\.com|applovin\.com|supersonicads\.com|ironsrc\.com|vungle\.com|chartboost\.com|inmobi\.com|rayjump\.com|mintegral\.com|fyber\.com|smaato\.net|adroll\.com|casalemedia\.com|teads\.tv|spotxchange\.com|freewheel\.tv|tremorhub\.com|connatix\.com|bluekai\.com|id5-sync\.com|crwdcntrl\.net|imrworldwide\.com|rlcdn\.com|adsrvr\.org|agkn\.com|tapad\.com|drawbrid\.ge|sc-static\.net|amplitude\.com|mixpanel\.com|mxpnl\.com|fullstory\.com|heapanalytics\.com|crazyegg\.com|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
 
 // ── First-party safe domains (borrowed from uBlock Origin approach) ──────
 // These domains must never be blocked so Videos, Images, Maps work correctly.

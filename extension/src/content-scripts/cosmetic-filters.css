@@ -1,0 +1,31 @@
+/* Privacy AI Browser Guard — Cosmetic Ad & Tracker Filtering Stylesheet */
+.adsbox,
+.ad-banner,
+.ad-wrapper,
+.ad_box,
+.ad_banner,
+.ad_wrapper,
+.ad-container,
+.ad_container,
+.ad-slot,
+.ad_slot,
+.ad-placeholder,
+.ad-unit,
+.ad-placement,
+.adsbygoogle,
+.sponsored-post,
+[class*="adsbox"],
+[class*="ad-banner"],
+[class*="ad-wrapper"],
+[class*="ad_wrapper"],
+[id*="google_ads_iframe"],
+[id*="ad-wrapper"],
+[id*="ad-banner"],
+[id*="adsbox"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  pointer-events: none !important;
+}
