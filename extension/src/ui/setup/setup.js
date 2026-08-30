@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let pollInterval = null;
   let isVerified = false;
 
+  const currentExtId = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) ? chrome.runtime.id : '';
+  if (cmdInput && currentExtId) {
+    cmdInput.value = `powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest 'https://raw.githubusercontent.com/wachanga173/aibrowser/main/scripts/setup-native-host.bat' -OutFile setup.bat; .\\setup.bat ${currentExtId}"`;
+  }
+
   function setStatus(type, message) {
     if (!verifyStatus) return;
     verifyStatus.className = `verify-status ${type}`;

@@ -10,18 +10,24 @@ echo.
 REM Determine the extension directory (where this script is located or common install paths)
 SET SCRIPT_DIR=%~dp0
 SET PROJECT_ROOT=%SCRIPT_DIR%
+SET EXT_ID=%~1
+if "%EXT_ID%"=="" (
+    SET EXT_ID=bfpgbmbifggaefbiiggefaknhjafikig
+)
 
-REM If run from scripts/ subfolder or external Downloads folder, scan standard locations
-if exist "%SCRIPT_DIR%extension\manifest.json" (
+REM If run directly inside the extracted extension folder or standard locations
+if exist "%SCRIPT_DIR%manifest.json" (
+    SET PROJECT_ROOT=%SCRIPT_DIR%
+) else if exist "%SCRIPT_DIR%extension\manifest.json" (
     SET PROJECT_ROOT=%SCRIPT_DIR%
 ) else if exist "%SCRIPT_DIR%..\extension\manifest.json" (
     SET PROJECT_ROOT=%SCRIPT_DIR%..\
+) else if exist "%USERPROFILE%\Downloads\chrome-extension\manifest.json" (
+    SET PROJECT_ROOT=%USERPROFILE%\Downloads\chrome-extension\
 ) else if exist "%USERPROFILE%\OneDrive\visual code\GitHub\ai\extension\manifest.json" (
     SET PROJECT_ROOT=%USERPROFILE%\OneDrive\visual code\GitHub\ai\
 ) else if exist "%USERPROFILE%\Downloads\ai\extension\manifest.json" (
     SET PROJECT_ROOT=%USERPROFILE%\Downloads\ai\
-) else if exist "%USERPROFILE%\Downloads\chrome-extension\manifest.json" (
-    SET PROJECT_ROOT=%USERPROFILE%\Downloads\chrome-extension\
 ) else if exist "%LOCALAPPDATA%\PrivacyAIGuard\extension\manifest.json" (
     SET PROJECT_ROOT=%LOCALAPPDATA%\PrivacyAIGuard\
 )
@@ -62,15 +68,20 @@ if defined LOCAL_BINARY (
     )
 )
 
-echo [3/4] Registering native messaging host...
+echo [3/4] Registering native messaging host for extension ID: %EXT_ID%...
 
 REM Resolve the extension directory to an absolute path for config
 pushd "%PROJECT_ROOT%"
 SET ABS_PROJECT_ROOT=%CD%
 popd
 
+if exist "%ABS_PROJECT_ROOT%\manifest.json" (
+    SET EXT_DIR=%ABS_PROJECT_ROOT%
+) else (
+    SET EXT_DIR=%ABS_PROJECT_ROOT%\extension
+)
+
 REM Write the native host manifest (Chrome Native Messaging format)
-REM Must use forward slashes in the path for the JSON
 SET BINARY_PATH_ESCAPED=%BINARY_PATH:\=\\%
 
 > "%MANIFEST_PATH%" (
@@ -80,6 +91,8 @@ SET BINARY_PATH_ESCAPED=%BINARY_PATH:\=\\%
     echo   "path": "%BINARY_PATH_ESCAPED%",
     echo   "type": "stdio",
     echo   "allowed_origins": [
+    echo     "chrome-extension://%EXT_ID%/",
+    echo     "chrome-extension://bfpgbmbifggaefbiiggefaknhjafikig/",
     echo     "chrome-extension://*/"
     echo   ]
     echo }
@@ -87,10 +100,11 @@ SET BINARY_PATH_ESCAPED=%BINARY_PATH:\=\\%
 
 REM Write config file so native host knows where the extension lives
 SET ABS_PROJECT_ESCAPED=%ABS_PROJECT_ROOT:\=\\%
+SET EXT_DIR_ESCAPED=%EXT_DIR:\=\\%
 
 > "%CONFIG_PATH%" (
     echo {
-    echo   "extension_dir": "%ABS_PROJECT_ESCAPED%\\extension",
+    echo   "extension_dir": "%EXT_DIR_ESCAPED%",
     echo   "project_root": "%ABS_PROJECT_ESCAPED%"
     echo }
 )
