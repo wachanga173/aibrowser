@@ -19,12 +19,23 @@ document.addEventListener('DOMContentLoaded', () => {
     verifyStatus.style.display = 'block';
   }
 
+  function getExtensionsUrl() {
+    const ua = (navigator.userAgent || '').toLowerCase();
+    if ((navigator).brave) return 'brave://extensions';
+    if (ua.includes('edg/')) return 'edge://extensions';
+    if (ua.includes('opr/') || ua.includes('opera')) return 'opera://extensions';
+    if (ua.includes('firefox')) return 'about:addons';
+    return 'chrome://extensions';
+  }
+
   function checkConnection(isManual = false) {
     if (isVerified) return;
 
+    const extPageUrl = getExtensionsUrl();
+
     if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) {
       if (isManual) {
-        setStatus('error', 'Extension context not detected. If you opened this file directly, please open it via the extension popup or reload the extension at chrome://extensions.');
+        setStatus('error', `Extension context not detected. If you opened this file directly, please open it via the extension popup or reload the extension at ${extPageUrl}.`);
       }
       return;
     }
@@ -43,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (chrome.runtime.lastError) {
         if (isManual) {
-          setStatus('error', 'Could not reach extension background service. Please reload the extension from chrome://extensions and try again.');
+          setStatus('error', `Could not reach extension background service. Please reload the extension from ${extPageUrl} and try again.`);
         }
         return;
       }

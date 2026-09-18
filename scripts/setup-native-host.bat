@@ -24,6 +24,12 @@ if exist "%SCRIPT_DIR%manifest.json" (
     SET PROJECT_ROOT=%SCRIPT_DIR%..\
 ) else if exist "%USERPROFILE%\Downloads\chrome-extension\manifest.json" (
     SET PROJECT_ROOT=%USERPROFILE%\Downloads\chrome-extension\
+) else if exist "%USERPROFILE%\Downloads\brave-extension\manifest.json" (
+    SET PROJECT_ROOT=%USERPROFILE%\Downloads\brave-extension\
+) else if exist "%USERPROFILE%\Downloads\edge-extension\manifest.json" (
+    SET PROJECT_ROOT=%USERPROFILE%\Downloads\edge-extension\
+) else if exist "%USERPROFILE%\Downloads\chromium-extension\manifest.json" (
+    SET PROJECT_ROOT=%USERPROFILE%\Downloads\chromium-extension\
 ) else if exist "%USERPROFILE%\OneDrive\visual code\GitHub\ai\extension\manifest.json" (
     SET PROJECT_ROOT=%USERPROFILE%\OneDrive\visual code\GitHub\ai\
 ) else if exist "%USERPROFILE%\Downloads\ai\extension\manifest.json" (
@@ -109,9 +115,12 @@ SET EXT_DIR_ESCAPED=%EXT_DIR:\=\\%
     echo }
 )
 
-REM Register with Chrome and Firefox
+REM Register with Chrome, Edge, Brave, Opera, and Firefox
 REG ADD "HKCU\Software\Google\Chrome\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f >nul 2>&1
 REG ADD "HKCU\Software\Microsoft\Edge\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f >nul 2>&1
+REG ADD "HKCU\Software\BraveSoftware\Brave-Browser\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f >nul 2>&1
+REG ADD "HKCU\Software\Opera Software\Opera Stable\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f >nul 2>&1
+REG ADD "HKCU\Software\Opera Software\Opera GX Stable\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f >nul 2>&1
 REG ADD "HKCU\Software\Mozilla\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f >nul 2>&1
 
 echo [4/4] Verifying installation...

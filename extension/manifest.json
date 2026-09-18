@@ -49,6 +49,7 @@
         "src/content-scripts/main-world.js"
       ],
       "run_at": "document_start",
+      "all_frames": true,
       "match_about_blank": true,
       "world": "MAIN"
     },
@@ -63,6 +64,7 @@
         "src/content-scripts/cosmetic-filters.css"
       ],
       "run_at": "document_start",
+      "all_frames": true,
       "match_about_blank": true
     }
   ],

@@ -1,23 +1,26 @@
 /**
- * Main World Content Script — Popup Trap
- * Executes directly in page JS execution context (world: "MAIN") without CSP inline script violations.
+ * Main World Content Script — Popup Trap & Multi-Link Defense
+ * Executes directly in page JS execution context (world: "MAIN") across all frames.
  *
  * Defense layers:
- *   1. Known ad URL pattern matching (static blocklist)
- *   2. Parasitic popup detection — blocks window.open() that piggybacks on a user's anchor click
- *   3. Rate-limited burst detection — blocks rapid-fire window.open() calls (>1 within 1s)
- *   4. Programmatic anchor click interception — blocks injected auto-click hijacks
+ *   1. Known ad URL pattern matching (static blocklist covering major popunder/rotator networks)
+ *   2. Suspicious redirect domain heuristic (cheap TLDs + high entropy/randomized SLDs)
+ *   3. Strict user-gesture verification (blocks unsolicited window.open and blank-popunders)
+ *   4. Multi-link burst suppression (at most 1 window per user gesture; rapid fire suppressed)
+ *   5. Parasitic popup detection (window.open differing from user-clicked anchor)
+ *   6. Programmatic anchor click interception (blocks hidden/off-DOM anchor clicks)
+ *   7. Synthetic event neutralization (blocks dispatchEvent click injection)
  */
 
 (function () {
   if (typeof window === 'undefined') return;
 
-  // ── Known ad URL patterns (static blocklist) ──────────────────────────
+  // ── Known ad & popunder URL patterns ─────────────────────────────────
 
-  const AD_PATTERN_REGEX = /(?:google-analytics\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net\/[^/]+\/fbevents\.js|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
+  const AD_PATTERN_REGEX = /(?:google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|criteo\.net|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|segment\.com|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|revcontent\.com|mgid\.com|content-ad\.net|zemanta\.com|ntv\.io|sharethrough\.com|3lift\.com|triplelift\.com|applovin\.com|supersonicads\.com|ironsrc\.com|vungle\.com|chartboost\.com|inmobi\.com|rayjump\.com|mintegral\.com|fyber\.com|smaato\.net|adroll\.com|casalemedia\.com|teads\.tv|spotxchange\.com|freewheel\.tv|tremorhub\.com|connatix\.com|bluekai\.com|id5-sync\.com|crwdcntrl\.net|imrworldwide\.com|rlcdn\.com|adsrvr\.org|agkn\.com|tapad\.com|drawbrid\.ge|sc-static\.net|amplitude\.com|mixpanel\.com|mxpnl\.com|fullstory\.com|heapanalytics\.com|crazyegg\.com|popads|popcash|propellerads|adsterra|exoclick|clickadu|hilltopads|trafficjunky|monetag|yllix|richpush|pushground|zeropark|galaksion|trafficstars|adxad|admaven|revenuehits|bidvertiser|clickorience|smarturl|adf\.ly|ouo\.io|shrinkearn|highcpmgate|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
 
-  // ── First-party safe domains (borrowed from uBlock Origin approach) ──
-  // These domains must never be blocked so Videos, Images, Maps work.
+  // ── First-party safe domains (must never be blocked) ─────────────────
+
   const SAFE_DOMAIN_SUFFIXES = [
     'youtube.com', 'youtu.be', 'ytimg.com', 'googlevideo.com',
     'google.com', 'google.co.uk', 'google.ca', 'google.com.au',
@@ -25,13 +28,14 @@
     'googleapis.com', 'googleusercontent.com', 'gstatic.com', 'ggpht.com',
     'facebook.com', 'fbcdn.net', 'instagram.com', 'cdninstagram.com',
     'bing.com', 'vimeo.com', 'dailymotion.com', 'twitch.tv',
-    'openstreetmap.org'
+    'openstreetmap.org', 'github.com', 'microsoft.com'
   ];
 
   function isSafeUrl(url: string): boolean {
     try {
       const hostname = new URL(url).hostname.toLowerCase();
-      for (const safe of SAFE_DOMAIN_SUFFIXES) {
+      for (let i = 0; i < SAFE_DOMAIN_SUFFIXES.length; i++) {
+        const safe = SAFE_DOMAIN_SUFFIXES[i];
         if (hostname === safe || hostname.endsWith('.' + safe)) return true;
       }
       return false;
@@ -40,46 +44,50 @@
     }
   }
 
-  function isKnownAdUrl(url?: string | URL): boolean {
+  function isKnownAdUrl(url?: string | URL | null): boolean {
     if (!url) return false;
     const u = url.toString();
     if (/\.(png|jpe?g|gif|webp|svg|avif|bmp|ico|tiff|pdf)(\?.*)?$/i.test(u)) {
       return false;
     }
-    // Never block first-party safe domains
     if (isSafeUrl(u)) return false;
     return AD_PATTERN_REGEX.test(u);
   }
 
   // ── Suspicious auto-generated redirect domain heuristic ────────────────
-  // Streaming sites open throwaway domains like "unfortunatelyejectinflected.com"
-  // that are long concatenated words with no hyphens, digits, or subdomains.
-  // These exist solely to redirect through ad chains.
 
-  const COMMON_TLDS = new Set([
+  const SUSPICIOUS_TLDS = new Set([
     'com', 'net', 'org', 'io', 'co', 'info', 'xyz', 'online', 'site',
-    'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link'
+    'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip'
   ]);
 
-  function isSuspiciousRedirectDomain(url: string): boolean {
-    try {
-      const hostname = new URL(url).hostname.toLowerCase();
-      // Skip safe domains
-      if (isSafeUrl(url)) return false;
+  const SUSPICIOUS_KEYWORDS = /(?:click|track|pop|jump|direct|rotat|gate|redir|offer|bonus|prize|reward|promot|adserver)/i;
 
-      // Extract the registrable domain (strip subdomains by taking last 2 parts)
+  function isSuspiciousRedirectDomain(url?: string | URL | null): boolean {
+    if (!url) return false;
+    try {
+      const urlStr = url.toString();
+      if (isSafeUrl(urlStr)) return false;
+
+      const hostname = new URL(urlStr).hostname.toLowerCase();
       const parts = hostname.split('.');
       if (parts.length < 2) return false;
+
       const tld = parts[parts.length - 1];
-      const sld = parts[parts.length - 2]; // second-level domain
+      const sld = parts[parts.length - 2];
 
-      // Only check common cheap TLDs used by ad redirect domains
-      if (!COMMON_TLDS.has(tld)) return false;
+      if (!SUSPICIOUS_TLDS.has(tld)) return false;
 
-      // Heuristic: the SLD is 20+ chars, all lowercase letters, no hyphens or digits
-      // This catches "unfortunatelyejectinflected", "watchmoviestreamfree", etc.
-      if (sld.length >= 20 && /^[a-z]+$/.test(sld)) {
+      // Long concatenated lowercase string (e.g. "unfortunatelyejectinflected")
+      if (sld.length >= 18 && /^[a-z]+$/.test(sld)) {
         return true;
+      }
+
+      // Suspicious keywords paired with cheap generic TLDs
+      if (['xyz', 'top', 'icu', 'click', 'site', 'link', 'live', 'online', 'club', 'buzz'].includes(tld)) {
+        if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld)) {
+          return true;
+        }
       }
 
       return false;
@@ -88,71 +96,104 @@
     }
   }
 
-  // ── User click tracking ───────────────────────────────────────────────
-  // Track the currently active user click event to detect parasitic popups.
-  // When the user clicks on an anchor, any window.open() call during that
-  // same synchronous event dispatch is almost certainly a hijack.
+  // ── User interaction tracking ─────────────────────────────────────────
 
+  const USER_GESTURE_TIMEOUT_MS = 350;
+  let lastTrustedUserActionTime = 0;
   let activeUserClickAnchor: HTMLAnchorElement | null = null;
-  let activeUserClickTimestamp: number = 0;
+  let openCallsDuringCurrentAction = 0;
 
-  // Capture phase listener to set the anchor context before page scripts run
-  document.addEventListener('click', (event: MouseEvent) => {
-    const anchor = (event.target as HTMLElement)?.closest?.('a') as HTMLAnchorElement | null;
-    activeUserClickAnchor = anchor;
-    activeUserClickTimestamp = Date.now();
+  function recordTrustedAction(event: Event) {
+    if (event.isTrusted) {
+      lastTrustedUserActionTime = Date.now();
+      openCallsDuringCurrentAction = 0;
+      const target = event.target as HTMLElement | null;
+      activeUserClickAnchor = target && target.closest ? target.closest('a') : null;
 
-    // Clear the context after the synchronous event dispatch completes.
-    // Using setTimeout(0) defers cleanup to after all synchronous handlers finish.
-    setTimeout(() => {
-      activeUserClickAnchor = null;
-      activeUserClickTimestamp = 0;
-    }, 0);
-  }, true);
-
-  // Also track mousedown — some hijack scripts trigger on mousedown
-  document.addEventListener('mousedown', (event: MouseEvent) => {
-    const anchor = (event.target as HTMLElement)?.closest?.('a') as HTMLAnchorElement | null;
-    if (anchor) {
-      activeUserClickAnchor = anchor;
-      activeUserClickTimestamp = Date.now();
       setTimeout(() => {
-        if (activeUserClickTimestamp && Date.now() - activeUserClickTimestamp > 50) {
-          activeUserClickAnchor = null;
-          activeUserClickTimestamp = 0;
-        }
-      }, 100);
+        activeUserClickAnchor = null;
+      }, 0);
+    }
+  }
+
+  // Capture user interactions in the capture phase (before page handlers run)
+  document.addEventListener('click', recordTrustedAction, true);
+  document.addEventListener('pointerup', recordTrustedAction, true);
+  document.addEventListener('mouseup', recordTrustedAction, true);
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      recordTrustedAction(e);
     }
   }, true);
 
-  // ── Burst detection state ─────────────────────────────────────────────
-  // Sliding window of window.open() call timestamps within the last 1 second.
+  // ── Synthetic Event Neutralization ────────────────────────────────────
+  // Block untrusted (synthetic) click events attempting to simulate link navigation
+  document.addEventListener('click', (event: MouseEvent) => {
+    if (!event.isTrusted) {
+      const anchor = (event.target as HTMLElement | null)?.closest?.('a');
+      if (anchor && (anchor.target === '_blank' || anchor.target === '_new' || isKnownAdUrl(anchor.href))) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    }
+  }, true);
 
-  const BURST_WINDOW_MS = 1000;
-  const BURST_THRESHOLD = 1; // Block after more than 1 call within the window
+  // ── Dummy No-op Window Object ──────────────────────────────────────────
+  // Prevents script exceptions when a blocked window.open call is neutralised
+  function createNoopWindow(): Window {
+    const noop = () => {};
+    const dummy: any = {
+      closed: true,
+      document: {
+        write: noop,
+        writeln: noop,
+        open: noop,
+        close: noop,
+        getElementById: () => null,
+        querySelector: () => null
+      },
+      location: {
+        href: '',
+        replace: noop,
+        assign: noop,
+        reload: noop
+      },
+      focus: noop,
+      blur: noop,
+      close: noop,
+      postMessage: noop,
+      addEventListener: noop,
+      removeEventListener: noop,
+      setTimeout: () => 0,
+      clearTimeout: noop,
+      setInterval: () => 0,
+      clearInterval: noop
+    };
+    return dummy as Window;
+  }
+
+  // ── Sliding Window Burst Detection ────────────────────────────────────
+
+  const BURST_WINDOW_MS = 1500;
   const openCallTimestamps: number[] = [];
-  let burstCooldownUntil: number = 0;
+  let burstCooldownUntil = 0;
 
   function isInBurst(): boolean {
     const now = Date.now();
-
-    // Still in cooldown from a previous burst
     if (now < burstCooldownUntil) return true;
 
-    // Prune timestamps outside the sliding window
     while (openCallTimestamps.length > 0 && openCallTimestamps[0] < now - BURST_WINDOW_MS) {
       openCallTimestamps.shift();
     }
 
-    return openCallTimestamps.length > BURST_THRESHOLD;
+    // Block if more than 1 call has already occurred within the sliding window
+    return openCallTimestamps.length >= 1;
   }
 
-  function recordOpenCall(): void {
+  function recordOpenCall() {
     const now = Date.now();
     openCallTimestamps.push(now);
-
-    // If we just exceeded the burst threshold, enter cooldown
-    if (openCallTimestamps.length > BURST_THRESHOLD) {
+    if (openCallTimestamps.length >= 2) {
       burstCooldownUntil = now + BURST_WINDOW_MS;
     }
   }
@@ -162,65 +203,89 @@
   const originalOpen = window.open;
 
   window.open = function (url?: string | URL, target?: string | null, features?: string): Window | null {
-    const urlStr = url ? url.toString() : '';
+    const urlStr = url ? url.toString().trim() : '';
     const targetStr = target ? target.toString() : '_blank';
     const isNewTab = !targetStr || targetStr === '_blank' || targetStr === '_new';
+    const isBlank = !urlStr || urlStr === 'about:blank' || urlStr === 'javascript:void(0)';
+    const hasRecentUserGesture = Date.now() - lastTrustedUserActionTime <= USER_GESTURE_TIMEOUT_MS;
 
-    // Layer 1: Known ad URL — block unconditionally
-    if (urlStr && isNewTab && isKnownAdUrl(urlStr)) {
-      return null;
+    // Defense 1: Block unprompted / background window.open (no trusted gesture)
+    if (!hasRecentUserGesture) {
+      return createNoopWindow();
     }
 
-    // Layer 1.5: Suspicious auto-generated redirect domain
-    // Block if opened during a user click (parasitic popup) or no user click context
-    if (urlStr && isNewTab && isSuspiciousRedirectDomain(urlStr)) {
-      return null;
+    // Defense 2: Multi-link burst suppression — allow at most 1 window per user gesture
+    if (openCallsDuringCurrentAction >= 1) {
+      return createNoopWindow();
     }
 
-    // Layer 2: Parasitic popup detection — if the user is clicking an anchor
-    // and a script calls window.open() during that click, it is a hijack.
-    // The user intended to navigate to the anchor's href, not open an extra tab.
+    // Defense 3: Known ad or tracker URL
+    if (urlStr && isKnownAdUrl(urlStr)) {
+      return createNoopWindow();
+    }
+
+    // Defense 4: Suspicious auto-generated redirect domain
+    if (urlStr && isSuspiciousRedirectDomain(urlStr)) {
+      return createNoopWindow();
+    }
+
+    // Defense 5: Parasitic popup detection
+    // If the user clicked a specific anchor, any window.open to a DIFFERENT url is parasitic
     if (urlStr && isNewTab && activeUserClickAnchor) {
-      const anchorHref = activeUserClickAnchor.href || '';
-      // If the window.open URL differs from the anchor the user clicked, it is parasitic.
-      // If it matches, it might be the site's own navigation handler — allow it.
-      if (urlStr !== anchorHref) {
-        return null;
+      const anchorHref = (activeUserClickAnchor.href || '').trim();
+      if (anchorHref && urlStr !== anchorHref && !anchorHref.startsWith('javascript:')) {
+        return createNoopWindow();
       }
     }
 
-    // Layer 3: Burst detection — rate-limit rapid-fire window.open() calls
-    if (urlStr && isNewTab) {
-      recordOpenCall();
+    // Defense 6: Sliding window rate limit
+    if (isNewTab) {
       if (isInBurst()) {
-        return null;
+        return createNoopWindow();
       }
+      recordOpenCall();
+      openCallsDuringCurrentAction++;
     }
 
     return originalOpen.apply(this, [url, target, features] as any);
   };
 
-  // ── Intercepted HTMLAnchorElement.click() ──────────────────────────────
-  // Catches scripts that create a temporary <a target="_blank"> element and
-  // programmatically call .click() on it during a user's real click event.
+  // ── Intercepted HTMLAnchorElement.prototype.click ──────────────────────
 
   const originalAnchorClick = HTMLAnchorElement.prototype.click;
 
   HTMLAnchorElement.prototype.click = function (this: HTMLAnchorElement): void {
-    // If we are inside a user click event and this anchor is NOT the one
-    // the user actually clicked, treat it as a hijack injection.
-    if (activeUserClickAnchor && this !== activeUserClickAnchor) {
-      const href = this.href || '';
-      const target = this.target || '';
+    const href = (this.href || '').trim();
+    const target = this.target || '';
+    const isNewTab = target === '_blank' || target === '_new';
+    const hasRecentUserGesture = Date.now() - lastTrustedUserActionTime <= USER_GESTURE_TIMEOUT_MS;
 
-      // Only block if it would open a new tab
-      if (target === '_blank' || target === '_new') {
-        // Check if this anchor is even in the DOM — injected ad anchors are
-        // often created in-memory and never attached to the document.
-        if (!document.contains(this) || isKnownAdUrl(href)) {
-          return; // Suppress the hijack click entirely
-        }
+    // Layer 1: Programmatically clicked anchor that is NOT the anchor the user physically clicked
+    if (activeUserClickAnchor && this !== activeUserClickAnchor) {
+      if (isNewTab || !document.contains(this) || isKnownAdUrl(href) || isSuspiciousRedirectDomain(href)) {
+        return;
       }
+    }
+
+    // Layer 2: Off-DOM anchor programmatic click without user gesture
+    if (!document.contains(this)) {
+      if (!hasRecentUserGesture || isKnownAdUrl(href) || isSuspiciousRedirectDomain(href)) {
+        return;
+      }
+    }
+
+    // Layer 3: Anchor points to known ad URL
+    if (isKnownAdUrl(href) || isSuspiciousRedirectDomain(href)) {
+      return;
+    }
+
+    // Layer 4: Burst protection on programmatic multi-clicks
+    if (isNewTab && openCallsDuringCurrentAction >= 1) {
+      return;
+    }
+
+    if (isNewTab) {
+      openCallsDuringCurrentAction++;
     }
 
     return originalAnchorClick.apply(this);

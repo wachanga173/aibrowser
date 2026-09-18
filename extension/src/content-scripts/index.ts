@@ -1,7 +1,7 @@
 /**
- * Content Script (Isolated World) — Heuristic Fingerprinting, DOM Monitoring & Click Hijack Detection
- * Runs in browser context to detect canvas fingerprinting, excessive navigator property reads,
- * and dynamically injected ad anchors that auto-open new tabs.
+ * Content Script (Isolated World) — Heuristic Fingerprinting, DOM Monitoring & Click Hijack Defense
+ * Runs across all frames in browser context to detect canvas fingerprinting, excessive navigator property reads,
+ * dynamically injected ad anchors, and transparent click-hijack overlay wrappers.
  */
 
 let navigatorReadCount = 0;
@@ -37,7 +37,6 @@ if (typeof HTMLCanvasElement !== 'undefined') {
 
 function checkHeuristicThresholds() {
   if (canvasOperationCount >= 2 || navigatorReadCount >= 8) {
-    // Notify background worker of fingerprinting attempt
     chrome.runtime.sendMessage({
       type: 'RECORD_HEURISTIC_BLOCK',
       url: window.location.href,
@@ -46,10 +45,27 @@ function checkHeuristicThresholds() {
   }
 }
 
-const AD_PATTERN_REGEX = /(?:google-analytics\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net\/[^/]+\/fbevents\.js|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
+// ── Inject Cosmetic Styles to Hide Common Ad Slots ───────────────────
+(function injectCosmeticStyles() {
+  const css = '.adsbox, .ad-banner, .ad-wrapper, .ad_box, .ad_banner, .ad_wrapper, .ad-container, .ad_container, .ad-slot, .ad_slot, .ad-placeholder, .ad-unit, .ad-placement, .adsbygoogle, .sponsored-post, [class*="adsbox"], [class*="ad-banner"], [class*="ad-wrapper"], [id*="google_ads_iframe"], [id*="ad-wrapper"], [id*="ad-banner"] { display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; width: 0 !important; pointer-events: none !important; }';
+  function apply() {
+    const parent = document.head || document.documentElement;
+    if (parent && !document.getElementById('privacy-guard-cosmetic-style')) {
+      const style = document.createElement('style');
+      style.id = 'privacy-guard-cosmetic-style';
+      style.textContent = css;
+      parent.appendChild(style);
+    }
+  }
+  apply();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', apply);
+  }
+})();
 
-// ── First-party safe domains (borrowed from uBlock Origin approach) ──────
-// These domains must never be blocked so Videos, Images, Maps work correctly.
+const AD_PATTERN_REGEX = /(?:google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|criteo\.net|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|segment\.com|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|revcontent\.com|mgid\.com|content-ad\.net|zemanta\.com|ntv\.io|sharethrough\.com|3lift\.com|triplelift\.com|applovin\.com|supersonicads\.com|ironsrc\.com|vungle\.com|chartboost\.com|inmobi\.com|rayjump\.com|mintegral\.com|fyber\.com|smaato\.net|adroll\.com|casalemedia\.com|teads\.tv|spotxchange\.com|freewheel\.tv|tremorhub\.com|connatix\.com|bluekai\.com|id5-sync\.com|crwdcntrl\.net|imrworldwide\.com|rlcdn\.com|adsrvr\.org|agkn\.com|tapad\.com|drawbrid\.ge|sc-static\.net|amplitude\.com|mixpanel\.com|mxpnl\.com|fullstory\.com|heapanalytics\.com|crazyegg\.com|popads|popcash|propellerads|adsterra|exoclick|clickadu|hilltopads|trafficjunky|monetag|yllix|richpush|pushground|zeropark|galaksion|trafficstars|adxad|admaven|revenuehits|bidvertiser|clickorience|smarturl|adf\.ly|ouo\.io|shrinkearn|highcpmgate|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
+
+// ── First-party safe domains ──────────────────────────────────────────
 const SAFE_DOMAIN_SUFFIXES = [
   'youtube.com', 'youtu.be', 'ytimg.com', 'googlevideo.com',
   'google.com', 'google.co.uk', 'google.ca', 'google.com.au',
@@ -57,7 +73,7 @@ const SAFE_DOMAIN_SUFFIXES = [
   'googleapis.com', 'googleusercontent.com', 'gstatic.com', 'ggpht.com',
   'facebook.com', 'fbcdn.net', 'instagram.com', 'cdninstagram.com',
   'bing.com', 'vimeo.com', 'dailymotion.com', 'twitch.tv',
-  'openstreetmap.org'
+  'openstreetmap.org', 'github.com', 'microsoft.com'
 ];
 
 function isSafeUrl(urlStr: string): boolean {
@@ -77,14 +93,11 @@ function isAdUrlPattern(urlStr: string): boolean {
   if (/\.(png|jpe?g|gif|webp|svg|avif|bmp|ico|tiff|pdf)(\?.*)?$/i.test(urlStr)) {
     return false;
   }
-  // Never block first-party safe domains
   if (isSafeUrl(urlStr)) return false;
   return AD_PATTERN_REGEX.test(urlStr);
 }
 
-// Window open interception is natively executed in MAIN world via main-world.js
-
-// Intercept window.open calls in isolated content script context
+// ── Intercept window.open in isolated content script context ─────────
 if (typeof window !== 'undefined') {
   const originalWindowOpen = window.open;
   window.open = function (url?: string | URL, target?: string, features?: string) {
@@ -102,55 +115,36 @@ if (typeof window !== 'undefined') {
   };
 }
 
-// ── Enhanced click hijack detection ─────────────────────────────────────
-// Track the user's actual click target so we can distinguish user-intended
-// navigations from parasitic ad link clicks.
-
-let userClickedAnchorHref: string | null = null;
+// ── Click hijack detection & intent tracking ─────────────────────────
 
 if (typeof document !== 'undefined') {
-  // Capture the user's intended anchor on click (capture phase, runs first)
   document.addEventListener('click', (event: MouseEvent) => {
     const anchor = (event.target as HTMLElement)?.closest?.('a') as HTMLAnchorElement | null;
     if (anchor && anchor.href) {
-      userClickedAnchorHref = anchor.href;
-
-      // Report the user's intended URL to the background service worker
-      // so the tab-burst detector can preserve user-intended navigation.
       chrome.runtime.sendMessage({
         type: 'USER_CLICK_INTENT',
         url: anchor.href,
         target: anchor.target || ''
       });
-    } else {
-      userClickedAnchorHref = null;
-    }
 
-    // Block clicks on anchors pointing to known ad URLs
-    if (anchor && anchor.href && isAdUrlPattern(anchor.href)) {
-      if (anchor.target === '_blank' || event.ctrlKey || event.shiftKey || event.metaKey) {
-        event.preventDefault();
-        event.stopPropagation();
-        chrome.runtime.sendMessage({
-          type: 'RECORD_HEURISTIC_BLOCK',
-          url: anchor.href,
-          domain: anchor.href,
-          category: 'Ad'
-        });
+      if (isAdUrlPattern(anchor.href)) {
+        if (anchor.target === '_blank' || event.ctrlKey || event.shiftKey || event.metaKey) {
+          event.preventDefault();
+          event.stopPropagation();
+          chrome.runtime.sendMessage({
+            type: 'RECORD_HEURISTIC_BLOCK',
+            url: anchor.href,
+            domain: anchor.href,
+            category: 'Ad'
+          });
+        }
       }
     }
-
-    // Clear the intent after the synchronous event dispatch completes
-    setTimeout(() => {
-      userClickedAnchorHref = null;
-    }, 0);
   }, true);
 
-  // Also intercept mousedown — some hijack scripts trigger on mousedown
   document.addEventListener('mousedown', (event: MouseEvent) => {
     const anchor = (event.target as HTMLElement)?.closest?.('a') as HTMLAnchorElement | null;
     if (anchor && anchor.href) {
-      // Report intent early so the background knows before the tab is created
       chrome.runtime.sendMessage({
         type: 'USER_CLICK_INTENT',
         url: anchor.href,
@@ -160,10 +154,7 @@ if (typeof document !== 'undefined') {
   }, true);
 }
 
-// ── MutationObserver: Detect dynamically injected ad anchors ────────────
-// Ad scripts frequently create <a target="_blank" href="adUrl"> elements,
-// append them to the DOM, programmatically click them, then remove them.
-// This observer catches such elements as they are inserted.
+// ── MutationObserver: Injected Anchors & Transparent Click Overlays ──
 
 if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') {
   const recentlyInjectedAnchors = new WeakSet<HTMLAnchorElement>();
@@ -172,45 +163,55 @@ if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') 
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
-
         const element = node as HTMLElement;
 
-        // Check if the added node itself is a suspicious anchor
+        // Check if the node is an anchor
         if (element.tagName === 'A') {
           checkSuspiciousAnchor(element as HTMLAnchorElement);
         }
 
-        // Check child anchors (e.g., a wrapper div containing the ad anchor)
+        // Check child anchors
         const childAnchors = element.querySelectorAll?.('a[target="_blank"], a[target="_new"]');
         if (childAnchors) {
           childAnchors.forEach((a) => checkSuspiciousAnchor(a as HTMLAnchorElement));
         }
+
+        // Check for invisible/transparent full-screen click-hijack overlay wrappers
+        checkSuspiciousOverlay(element);
       }
     }
   });
 
+  function checkSuspiciousOverlay(el: HTMLElement): void {
+    if (!el.style) return;
+    try {
+      const zIndex = parseInt(el.style.zIndex || '0', 10);
+      const isFixedOrAbsolute = el.style.position === 'fixed' || el.style.position === 'absolute';
+      const isTransparent = el.style.opacity === '0' || el.style.backgroundColor === 'transparent';
+
+      // If a script injects a massive transparent element with huge z-index over the viewport
+      if (isFixedOrAbsolute && zIndex >= 9999 && isTransparent) {
+        el.style.pointerEvents = 'none';
+        el.style.display = 'none';
+      }
+    } catch {}
+  }
+
   function checkSuspiciousAnchor(anchor: HTMLAnchorElement): void {
     if (!anchor.href) return;
     const target = anchor.target || '';
-
-    // Only care about anchors that open new tabs
     if (target !== '_blank' && target !== '_new') return;
 
-    // If the anchor points to a known ad URL, neutralize it immediately
     if (isAdUrlPattern(anchor.href)) {
       neutralizeAnchor(anchor);
       return;
     }
 
-    // Track this anchor — if it is programmatically clicked within 100ms
-    // of being injected, it is almost certainly an ad hijack.
     recentlyInjectedAnchors.add(anchor);
 
-    // Override its click method to detect programmatic clicks
     const originalClick = anchor.click;
     anchor.click = function () {
       if (recentlyInjectedAnchors.has(anchor)) {
-        // Programmatic click on a just-injected anchor — block it
         neutralizeAnchor(anchor);
         chrome.runtime.sendMessage({
           type: 'RECORD_HEURISTIC_BLOCK',
@@ -223,10 +224,8 @@ if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') 
       return originalClick.apply(this);
     };
 
-    // After 200ms, the anchor is no longer considered "recently injected"
     setTimeout(() => {
       recentlyInjectedAnchors.delete(anchor);
-      // Restore the original click method if the anchor is still in the DOM
       if (document.contains(anchor)) {
         anchor.click = originalClick;
       }
@@ -237,14 +236,12 @@ if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') 
     anchor.removeAttribute('href');
     anchor.removeAttribute('target');
     anchor.style.pointerEvents = 'none';
-    // Remove from DOM if it is hidden (ad anchors are often invisible)
     const rect = anchor.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0 || anchor.style.display === 'none' || anchor.style.visibility === 'hidden') {
       anchor.remove();
     }
   }
 
-  // Start observing once the DOM is available
   if (document.documentElement) {
     observer.observe(document.documentElement, { childList: true, subtree: true });
   } else {

@@ -1,11 +1,13 @@
 /**
- * Content Script (Isolated World, JavaScript for Unpacked Loading)
- * Heuristic Fingerprinting, DOM Monitoring & Click Hijack Detection
+ * Content Script (Isolated World) — Heuristic Fingerprinting, DOM Monitoring & Click Hijack Defense
+ * Runs across all frames in browser context to detect canvas fingerprinting, excessive navigator property reads,
+ * dynamically injected ad anchors, and transparent click-hijack overlay wrappers.
  */
 
 let navigatorReadCount = 0;
 let canvasOperationCount = 0;
 
+// Intercept navigator property queries
 const NAVIGATOR_PROPS = ['userAgent', 'plugins', 'languages', 'hardwareConcurrency', 'deviceMemory', 'platform'];
 
 NAVIGATOR_PROPS.forEach(prop => {
@@ -18,9 +20,12 @@ NAVIGATOR_PROPS.forEach(prop => {
         return original;
       }
     });
-  } catch (e) {}
+  } catch (e) {
+    // Ignore non-configurable properties
+  }
 });
 
+// Intercept HTMLCanvasElement methods
 if (typeof HTMLCanvasElement !== 'undefined') {
   const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
   HTMLCanvasElement.prototype.toDataURL = function (...args) {
@@ -38,6 +43,9 @@ function checkHeuristicThresholds() {
       domain: window.location.hostname
     });
   }
+}
+
+// ── Inject Cosmetic Styles to Hide Common Ad Slots ───────────────────
 (function injectCosmeticStyles() {
   const css = '.adsbox, .ad-banner, .ad-wrapper, .ad_box, .ad_banner, .ad_wrapper, .ad-container, .ad_container, .ad-slot, .ad_slot, .ad-placeholder, .ad-unit, .ad-placement, .adsbygoogle, .sponsored-post, [class*="adsbox"], [class*="ad-banner"], [class*="ad-wrapper"], [id*="google_ads_iframe"], [id*="ad-wrapper"], [id*="ad-banner"] { display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; width: 0 !important; pointer-events: none !important; }';
   function apply() {
@@ -55,10 +63,9 @@ function checkHeuristicThresholds() {
   }
 })();
 
-const AD_PATTERN_REGEX = /(?:google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|criteo\.net|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|segment\.com|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|revcontent\.com|mgid\.com|content-ad\.net|zemanta\.com|ntv\.io|sharethrough\.com|3lift\.com|triplelift\.com|applovin\.com|supersonicads\.com|ironsrc\.com|vungle\.com|chartboost\.com|inmobi\.com|rayjump\.com|mintegral\.com|fyber\.com|smaato\.net|adroll\.com|casalemedia\.com|teads\.tv|spotxchange\.com|freewheel\.tv|tremorhub\.com|connatix\.com|bluekai\.com|id5-sync\.com|crwdcntrl\.net|imrworldwide\.com|rlcdn\.com|adsrvr\.org|agkn\.com|tapad\.com|drawbrid\.ge|sc-static\.net|amplitude\.com|mixpanel\.com|mxpnl\.com|fullstory\.com|heapanalytics\.com|crazyegg\.com|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
+const AD_PATTERN_REGEX = /(?:google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|criteo\.net|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|segment\.com|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|revcontent\.com|mgid\.com|content-ad\.net|zemanta\.com|ntv\.io|sharethrough\.com|3lift\.com|triplelift\.com|applovin\.com|supersonicads\.com|ironsrc\.com|vungle\.com|chartboost\.com|inmobi\.com|rayjump\.com|mintegral\.com|fyber\.com|smaato\.net|adroll\.com|casalemedia\.com|teads\.tv|spotxchange\.com|freewheel\.tv|tremorhub\.com|connatix\.com|bluekai\.com|id5-sync\.com|crwdcntrl\.net|imrworldwide\.com|rlcdn\.com|adsrvr\.org|agkn\.com|tapad\.com|drawbrid\.ge|sc-static\.net|amplitude\.com|mixpanel\.com|mxpnl\.com|fullstory\.com|heapanalytics\.com|crazyegg\.com|popads|popcash|propellerads|adsterra|exoclick|clickadu|hilltopads|trafficjunky|monetag|yllix|richpush|pushground|zeropark|galaksion|trafficstars|adxad|admaven|revenuehits|bidvertiser|clickorience|smarturl|adf\.ly|ouo\.io|shrinkearn|highcpmgate|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
 
-// ── First-party safe domains (borrowed from uBlock Origin approach) ──────
-// These domains must never be blocked so Videos, Images, Maps work correctly.
+// ── First-party safe domains ──────────────────────────────────────────
 const SAFE_DOMAIN_SUFFIXES = [
   'youtube.com', 'youtu.be', 'ytimg.com', 'googlevideo.com',
   'google.com', 'google.co.uk', 'google.ca', 'google.com.au',
@@ -66,7 +73,7 @@ const SAFE_DOMAIN_SUFFIXES = [
   'googleapis.com', 'googleusercontent.com', 'gstatic.com', 'ggpht.com',
   'facebook.com', 'fbcdn.net', 'instagram.com', 'cdninstagram.com',
   'bing.com', 'vimeo.com', 'dailymotion.com', 'twitch.tv',
-  'openstreetmap.org'
+  'openstreetmap.org', 'github.com', 'microsoft.com'
 ];
 
 function isSafeUrl(urlStr) {
@@ -86,13 +93,11 @@ function isAdUrlPattern(urlStr) {
   if (/\.(png|jpe?g|gif|webp|svg|avif|bmp|ico|tiff|pdf)(\?.*)?$/i.test(urlStr)) {
     return false;
   }
-  // Never block first-party safe domains
   if (isSafeUrl(urlStr)) return false;
   return AD_PATTERN_REGEX.test(urlStr);
 }
 
-// Window open interception is natively executed in MAIN world via main-world.js
-
+// ── Intercept window.open in isolated content script context ─────────
 if (typeof window !== 'undefined') {
   const originalWindowOpen = window.open;
   window.open = function (url, target, features) {
@@ -110,45 +115,35 @@ if (typeof window !== 'undefined') {
   };
 }
 
-// ── Enhanced click hijack detection ─────────────────────────────────────
-
-let userClickedAnchorHref = null;
+// ── Click hijack detection & intent tracking ─────────────────────────
 
 if (typeof document !== 'undefined') {
-  document.addEventListener('click', function (event) {
-    const anchor = event.target && event.target.closest ? event.target.closest('a') : null;
+  document.addEventListener('click', (event) => {
+    const anchor = (event.target && event.target.closest) ? event.target.closest('a') : null;
     if (anchor && anchor.href) {
-      userClickedAnchorHref = anchor.href;
-
       chrome.runtime.sendMessage({
         type: 'USER_CLICK_INTENT',
         url: anchor.href,
         target: anchor.target || ''
       });
-    } else {
-      userClickedAnchorHref = null;
-    }
 
-    if (anchor && anchor.href && isAdUrlPattern(anchor.href)) {
-      if (anchor.target === '_blank' || event.ctrlKey || event.shiftKey || event.metaKey) {
-        event.preventDefault();
-        event.stopPropagation();
-        chrome.runtime.sendMessage({
-          type: 'RECORD_HEURISTIC_BLOCK',
-          url: anchor.href,
-          domain: anchor.href,
-          category: 'Ad'
-        });
+      if (isAdUrlPattern(anchor.href)) {
+        if (anchor.target === '_blank' || event.ctrlKey || event.shiftKey || event.metaKey) {
+          event.preventDefault();
+          event.stopPropagation();
+          chrome.runtime.sendMessage({
+            type: 'RECORD_HEURISTIC_BLOCK',
+            url: anchor.href,
+            domain: anchor.href,
+            category: 'Ad'
+          });
+        }
       }
     }
-
-    setTimeout(function () {
-      userClickedAnchorHref = null;
-    }, 0);
   }, true);
 
-  document.addEventListener('mousedown', function (event) {
-    const anchor = event.target && event.target.closest ? event.target.closest('a') : null;
+  document.addEventListener('mousedown', (event) => {
+    const anchor = (event.target && event.target.closest) ? event.target.closest('a') : null;
     if (anchor && anchor.href) {
       chrome.runtime.sendMessage({
         type: 'USER_CLICK_INTENT',
@@ -159,34 +154,52 @@ if (typeof document !== 'undefined') {
   }, true);
 }
 
-// ── MutationObserver: Detect dynamically injected ad anchors ────────────
+// ── MutationObserver: Injected Anchors & Transparent Click Overlays ──
 
 if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') {
   const recentlyInjectedAnchors = new WeakSet();
 
-  const observer = new MutationObserver(function (mutations) {
+  const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
-
         const element = node;
 
+        // Check if the node is an anchor
         if (element.tagName === 'A') {
           checkSuspiciousAnchor(element);
         }
 
-        const childAnchors = element.querySelectorAll ? element.querySelectorAll('a[target="_blank"], a[target="_new"]') : [];
+        // Check child anchors
+        const childAnchors = element.querySelectorAll ? element.querySelectorAll('a[target="_blank"], a[target="_new"]') : null;
         if (childAnchors) {
-          childAnchors.forEach(function (a) { checkSuspiciousAnchor(a); });
+          childAnchors.forEach((a) => checkSuspiciousAnchor(a));
         }
+
+        // Check for invisible/transparent full-screen click-hijack overlay wrappers
+        checkSuspiciousOverlay(element);
       }
     }
   });
 
+  function checkSuspiciousOverlay(el) {
+    if (!el.style) return;
+    try {
+      const zIndex = parseInt(el.style.zIndex || '0', 10);
+      const isFixedOrAbsolute = el.style.position === 'fixed' || el.style.position === 'absolute';
+      const isTransparent = el.style.opacity === '0' || el.style.backgroundColor === 'transparent';
+
+      // If a script injects a massive transparent element with huge z-index over the viewport
+      if (isFixedOrAbsolute && zIndex >= 9999 && isTransparent) {
+        el.style.pointerEvents = 'none';
+        el.style.display = 'none';
+      }
+    } catch (e) {}
+  }
+
   function checkSuspiciousAnchor(anchor) {
     if (!anchor.href) return;
     const target = anchor.target || '';
-
     if (target !== '_blank' && target !== '_new') return;
 
     if (isAdUrlPattern(anchor.href)) {
@@ -211,7 +224,7 @@ if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') 
       return originalClick.apply(this);
     };
 
-    setTimeout(function () {
+    setTimeout(() => {
       recentlyInjectedAnchors.delete(anchor);
       if (document.contains(anchor)) {
         anchor.click = originalClick;
@@ -232,7 +245,7 @@ if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') 
   if (document.documentElement) {
     observer.observe(document.documentElement, { childList: true, subtree: true });
   } else {
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', () => {
       observer.observe(document.documentElement, { childList: true, subtree: true });
     });
   }

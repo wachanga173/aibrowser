@@ -155,14 +155,16 @@ function isSafeDomain(url: string): boolean {
 
 const AD_DOMAIN_PATTERNS = [
   /google-analytics\.com/i,
+  /googletagmanager\.com/i,
   /doubleclick\.net/i,
   /googlesyndication\.com/i,
   /facebook\.net\/signals/i,
-  /connect\.facebook\.net\/[^/]+\/fbevents\.js/i,
+  /connect\.facebook\.net/i,
   /scorecardresearch\.com/i,
   /adservice\.google\.com/i,
   /adnxs\.com/i,
   /criteo\.com/i,
+  /criteo\.net/i,
   /taboola\.com/i,
   /outbrain\.com/i,
   /hotjar\.com/i,
@@ -174,6 +176,30 @@ const AD_DOMAIN_PATTERNS = [
   /rubiconproject\.com/i,
   /openx\.net/i,
   /quantserve\.com/i,
+  /popads/i,
+  /popcash/i,
+  /propellerads/i,
+  /adsterra/i,
+  /exoclick/i,
+  /clickadu/i,
+  /hilltopads/i,
+  /trafficjunky/i,
+  /monetag/i,
+  /yllix/i,
+  /richpush/i,
+  /pushground/i,
+  /zeropark/i,
+  /galaksion/i,
+  /trafficstars/i,
+  /adxad/i,
+  /admaven/i,
+  /revenuehits/i,
+  /bidvertiser/i,
+  /clickorience/i,
+  /adf\.ly/i,
+  /ouo\.io/i,
+  /shrinkearn/i,
+  /highcpmgate/i,
   /click_id=pop/i,
   /pop202/i,
   /popunder/i,
@@ -191,14 +217,13 @@ function isAdDomainUrl(url: string): boolean {
 }
 
 // ── Suspicious auto-generated redirect domain heuristic ──────────────────
-// Streaming sites redirect through throwaway domains like
-// "unfortunatelyejectinflected.com" that are 20+ char all-lowercase
-// concatenated dictionary words on cheap TLDs.
 
 const SUSPICIOUS_TLDS = new Set([
   'com', 'net', 'org', 'io', 'co', 'info', 'xyz', 'online', 'site',
-  'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link'
+  'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip'
 ]);
+
+const SUSPICIOUS_KEYWORDS = /(?:click|track|pop|jump|direct|rotat|gate|redir|offer|bonus|prize|reward|promot|adserver)/i;
 
 function isSuspiciousRedirectDomain(url: string): boolean {
   try {
@@ -209,7 +234,10 @@ function isSuspiciousRedirectDomain(url: string): boolean {
     const tld = parts[parts.length - 1];
     const sld = parts[parts.length - 2];
     if (!SUSPICIOUS_TLDS.has(tld)) return false;
-    if (sld.length >= 20 && /^[a-z]+$/.test(sld)) return true;
+    if (sld.length >= 18 && /^[a-z]+$/.test(sld)) return true;
+    if (['xyz', 'top', 'icu', 'click', 'site', 'link', 'live', 'online', 'club', 'buzz'].includes(tld)) {
+      if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld)) return true;
+    }
     return false;
   } catch {
     return false;
@@ -376,11 +404,24 @@ function checkAndCloseAdTab(tabId: number, url?: string) {
   }
 }
 
+const GLOBAL_TAB_BURST_WINDOW_MS = 1500;
+const GLOBAL_TAB_BURST_THRESHOLD = 2;
+const recentGlobalTabs: { tabId: number; timestamp: number; url: string }[] = [];
+
+function isGlobalTabBurst(tabId: number, url: string): boolean {
+  const now = Date.now();
+  while (recentGlobalTabs.length > 0 && recentGlobalTabs[0].timestamp < now - GLOBAL_TAB_BURST_WINDOW_MS) {
+    recentGlobalTabs.shift();
+  }
+  recentGlobalTabs.push({ tabId, timestamp: now, url });
+  return recentGlobalTabs.length > GLOBAL_TAB_BURST_THRESHOLD;
+}
+
 // Automatically close any newly spawned tabs navigating to ad domains, detect tab bursts,
 // or close orphan about:blank popups
 if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
   chrome.tabs.onCreated.addListener((tab) => {
-    const targetUrl = tab.pendingUrl || tab.url;
+    const targetUrl = tab.pendingUrl || tab.url || '';
 
     // Layer 1: Known ad domain — close immediately
     if (tab.id && targetUrl && isAdDomainUrl(targetUrl)) {
@@ -391,28 +432,23 @@ if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
       return;
     }
 
-    // Layer 2: Tab-burst detection — if an opener tab is spawning tabs rapidly
+    // Layer 2: Opener tab-burst detection
     if (tab.id && tab.openerTabId && targetUrl && targetUrl !== 'about:blank') {
       const wasBurst = handleTabBurst(tab.id, tab.openerTabId, targetUrl);
       if (wasBurst) return;
     }
 
-    // Layer 4: Register new opener-spawned tabs for redirect chain monitoring
-    if (tab.id && tab.openerTabId) {
-      redirectChainMap.set(tab.id, {
-        domains: targetUrl && targetUrl !== 'about:blank' ? [getBaseDomain(targetUrl) || ''] : [],
-        firstNavTime: Date.now(),
-        openerTabId: tab.openerTabId
+    // Layer 2.5: Global burst detection (covers popups opened with noopener or detached windows)
+    if (tab.id && isGlobalTabBurst(tab.id, targetUrl)) {
+      chrome.tabs.remove(tab.id, () => {
+        if (chrome.runtime.lastError) {}
       });
-      // Auto-expire tracking after the window elapses
-      const trackedTabId = tab.id;
-      setTimeout(() => {
-        redirectChainMap.delete(trackedTabId);
-      }, REDIRECT_CHAIN_WINDOW_MS + 500);
+      recordBlockedItem(targetUrl || 'global_tab_burst', 'Ad');
+      return;
     }
 
-    // Layer 3: Orphan about:blank popups — defer check to allow redirect chains
-    if (tab.id && tab.openerTabId && (!targetUrl || targetUrl === 'about:blank' || targetUrl === '')) {
+    // Layer 3: Orphan about:blank popups — track regardless of openerTabId
+    if (tab.id && (!targetUrl || targetUrl === 'about:blank' || targetUrl === '')) {
       spawnedAboutBlankTabs.add(tab.id);
       setTimeout(() => {
         if (spawnedAboutBlankTabs.has(tab.id!)) {
@@ -431,6 +467,19 @@ if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
           });
         }
       }, 500);
+    }
+
+    // Layer 4: Register all new tabs for redirect chain monitoring
+    if (tab.id) {
+      redirectChainMap.set(tab.id, {
+        domains: targetUrl && targetUrl !== 'about:blank' ? [getBaseDomain(targetUrl) || ''] : [],
+        firstNavTime: Date.now(),
+        openerTabId: tab.openerTabId || 0
+      });
+      const trackedTabId = tab.id;
+      setTimeout(() => {
+        redirectChainMap.delete(trackedTabId);
+      }, REDIRECT_CHAIN_WINDOW_MS + 500);
     }
   });
 }
@@ -458,6 +507,18 @@ if (typeof chrome !== 'undefined' && chrome.webNavigation) {
         checkAndCloseAdTab(details.tabId, details.url);
         // Feed redirect chain tracker
         trackRedirectChain(details.tabId, details.url);
+      }
+    });
+  }
+
+  // Automatically close top-level tabs that fail navigation due to DNR ad blocks
+  if (chrome.webNavigation.onErrorOccurred) {
+    chrome.webNavigation.onErrorOccurred.addListener((details) => {
+      if (details.frameId === 0 && details.tabId && details.error === 'net::ERR_BLOCKED_BY_CLIENT') {
+        chrome.tabs.remove(details.tabId, () => {
+          if (chrome.runtime.lastError) {}
+        });
+        recordBlockedItem(details.url, 'Ad');
       }
     });
   }
@@ -886,7 +947,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             try {
               const probeResults = await api.scripting.executeScript({
                 target: { tabId: activeTab.id },
-                func: () => {
+                func: async () => {
                   const perfMem = (window.performance as any)?.memory || {};
                   const domNodes = document.getElementsByTagName('*').length;
                   const scripts = document.scripts.length;
@@ -900,13 +961,40 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     totalHeap = Math.round(usedHeap * 1.4);
                   }
 
-                  const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
-                  const isEdge = navigator.userAgent.toLowerCase().includes('edg');
-                  const isBrave = (navigator as any).brave !== undefined;
-                  let engineName = 'Chrome';
-                  if (isFirefox) engineName = 'Firefox';
-                  else if (isEdge) engineName = 'Microsoft Edge';
-                  else if (isBrave) engineName = 'Brave';
+                  let engineName = 'Google Chrome';
+                  const ua = (navigator.userAgent || '').toLowerCase();
+
+                  // 1. Brave Detection (asynchronous verification)
+                  try {
+                    if ((navigator as any).brave && typeof (navigator as any).brave.isBrave === 'function') {
+                      const isB = await (navigator as any).brave.isBrave();
+                      if (isB) engineName = 'Brave';
+                    }
+                  } catch (e) {}
+
+                  // 2. User-Agent Client Hints brands (Chromium standard)
+                  if (engineName === 'Google Chrome') {
+                    try {
+                      const brands = (navigator as any).userAgentData?.brands;
+                      if (Array.isArray(brands)) {
+                        for (const b of brands) {
+                          const brand = (b.brand || '').toLowerCase();
+                          if (brand.includes('brave')) engineName = 'Brave';
+                          else if (brand.includes('edge') || brand.includes('microsoft edge')) engineName = 'Microsoft Edge';
+                          else if (brand.includes('opera')) engineName = 'Opera';
+                          else if (brand.includes('vivaldi')) engineName = 'Vivaldi';
+                        }
+                      }
+                    } catch (e) {}
+                  }
+
+                  // 3. User-Agent string fallback detection
+                  if (engineName === 'Google Chrome') {
+                    if (ua.includes('edg/')) engineName = 'Microsoft Edge';
+                    else if (ua.includes('opr/') || ua.includes('opera')) engineName = 'Opera';
+                    else if (ua.includes('vivaldi')) engineName = 'Vivaldi';
+                    else if (ua.includes('firefox')) engineName = 'Firefox';
+                  }
 
                   return {
                     usedJSHeapSize: usedHeap,

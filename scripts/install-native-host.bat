@@ -22,6 +22,10 @@ echo   ]>> "%MANIFEST_PATH%"
 echo }>> "%MANIFEST_PATH%"
 
 REG ADD "HKCU\Software\Google\Chrome\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f
+REG ADD "HKCU\Software\Microsoft\Edge\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f
+REG ADD "HKCU\Software\BraveSoftware\Brave-Browser\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f
+REG ADD "HKCU\Software\Opera Software\Opera Stable\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f
+REG ADD "HKCU\Software\Opera Software\Opera GX Stable\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f
 REG ADD "HKCU\Software\Mozilla\NativeMessagingHosts\%HOST_NAME%" /ve /d "%MANIFEST_PATH%" /f
 
-echo ✅ Native Messaging Host registered successfully in Windows Registry.
+echo [SUCCESS] Native Messaging Host registered successfully in Windows Registry.

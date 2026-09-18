@@ -49,6 +49,7 @@
       "matches": ["<all_urls>"],
       "js": ["src/content-scripts/main-world.js"],
       "run_at": "document_start",
+      "all_frames": true,
       "match_about_blank": true,
       "world": "MAIN"
     },
@@ -57,6 +58,7 @@
       "js": ["src/content-scripts/index.js"],
       "css": ["src/content-scripts/cosmetic-filters.css"],
       "run_at": "document_start",
+      "all_frames": true,
       "match_about_blank": true
     }
   ],
