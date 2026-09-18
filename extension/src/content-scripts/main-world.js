@@ -57,16 +57,13 @@
   // ── Suspicious auto-generated redirect domain heuristic ────────────────
 
   var SUSPICIOUS_TLDS = new Set([
-    'com', 'net', 'org', 'io', 'co', 'info', 'xyz', 'online', 'site',
-    'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip',
+    'xyz', 'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip',
     'pro', 'cc', 'ws', 'me', 'pw', 'monster', 'quest', 'space', 'surf', 'rest',
     'best', 'stream', 'win', 'bid', 'racing', 'date', 'faith', 'trade', 'review',
-    'party', 'gq', 'cf', 'ga', 'ml', 'tk', 'loan', 'download', 'app'
+    'party', 'gq', 'cf', 'ga', 'ml', 'tk', 'loan', 'download'
   ]);
 
   var SUSPICIOUS_KEYWORDS = /(?:click|track|pop|jump|direct|rotat|gate|redir|offer|bonus|prize|reward|promot|adserver|smartlink|affiliate|traff|cpa|cpm|lead|monetiz|revenue|banner|sponsor|lander|adster|traffic|yield|campaign)/i;
-
-  var SUSPICIOUS_QUERY_PARAMS = /(?:click_id|aff_id|offer_id|campaign_id|subid|smartlink|cpa|rotator|track_id|ad_id|popunder|pop_id)=/i;
 
   function isSuspiciousRedirectDomain(url) {
     if (!url) return false;
@@ -74,11 +71,8 @@
       var urlStr = url.toString();
       if (isSafeUrl(urlStr)) return false;
 
-      if (SUSPICIOUS_QUERY_PARAMS.test(urlStr)) {
-        return true;
-      }
-
-      var hostname = new URL(urlStr).hostname.toLowerCase();
+      var parsed = new URL(urlStr, window.location.href);
+      var hostname = parsed.hostname.toLowerCase();
       var parts = hostname.split('.');
       if (parts.length < 2) return false;
 
@@ -87,11 +81,11 @@
 
       if (!SUSPICIOUS_TLDS.has(tld)) return false;
 
-      if (sld.length >= 16 && /^[a-z]+$/.test(sld)) {
+      if (sld.length >= 18 && /^[a-z]+$/.test(sld)) {
         return true;
       }
 
-      if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld) || (sld.indexOf('-') !== -1 && SUSPICIOUS_KEYWORDS.test(urlStr))) {
+      if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld) || (sld.indexOf('-') !== -1 && SUSPICIOUS_KEYWORDS.test(parsed.pathname))) {
         return true;
       }
 

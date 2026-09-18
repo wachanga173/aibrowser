@@ -8056,7 +8056,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "*smartlink*",
+      "urlFilter": "*click_id=pop*",
       "resourceTypes": [
         "main_frame",
         "sub_frame",
@@ -8081,7 +8081,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "*rotator*",
+      "urlFilter": "*track=*click_id=*",
       "resourceTypes": [
         "main_frame",
         "sub_frame",
@@ -8106,7 +8106,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "*aff_id=*",
+      "urlFilter": "*popunder*",
       "resourceTypes": [
         "main_frame",
         "sub_frame",
@@ -8131,7 +8131,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "*offer_id=*",
+      "urlFilter": "*wrestpop*",
       "resourceTypes": [
         "main_frame",
         "sub_frame",
@@ -8156,106 +8156,6 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "*click_id=pop*",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "stylesheet",
-        "script",
-        "image",
-        "font",
-        "object",
-        "xmlhttprequest",
-        "ping",
-        "csp_report",
-        "media",
-        "websocket",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 328,
-    "priority": 1,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "*track=*click_id=*",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "stylesheet",
-        "script",
-        "image",
-        "font",
-        "object",
-        "xmlhttprequest",
-        "ping",
-        "csp_report",
-        "media",
-        "websocket",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 329,
-    "priority": 1,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "*popunder*",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "stylesheet",
-        "script",
-        "image",
-        "font",
-        "object",
-        "xmlhttprequest",
-        "ping",
-        "csp_report",
-        "media",
-        "websocket",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 330,
-    "priority": 1,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "*wrestpop*",
-      "resourceTypes": [
-        "main_frame",
-        "sub_frame",
-        "stylesheet",
-        "script",
-        "image",
-        "font",
-        "object",
-        "xmlhttprequest",
-        "ping",
-        "csp_report",
-        "media",
-        "websocket",
-        "other"
-      ]
-    }
-  },
-  {
-    "id": 331,
-    "priority": 1,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
       "urlFilter": "*popdownload*",
       "resourceTypes": [
         "main_frame",
@@ -8275,7 +8175,7 @@
     }
   },
   {
-    "id": 332,
+    "id": 328,
     "priority": 1,
     "action": {
       "type": "block"

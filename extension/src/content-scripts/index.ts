@@ -89,30 +89,27 @@ function isSafeUrl(urlStr: string): boolean {
 }
 
 const SUSPICIOUS_TLDS = new Set([
-  'com', 'net', 'org', 'io', 'co', 'info', 'xyz', 'online', 'site',
-  'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip',
+  'xyz', 'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip',
   'pro', 'cc', 'ws', 'me', 'pw', 'monster', 'quest', 'space', 'surf', 'rest',
   'best', 'stream', 'win', 'bid', 'racing', 'date', 'faith', 'trade', 'review',
-  'party', 'gq', 'cf', 'ga', 'ml', 'tk', 'loan', 'download', 'app'
+  'party', 'gq', 'cf', 'ga', 'ml', 'tk', 'loan', 'download'
 ]);
 
 const SUSPICIOUS_KEYWORDS = /(?:click|track|pop|jump|direct|rotat|gate|redir|offer|bonus|prize|reward|promot|adserver|smartlink|affiliate|traff|cpa|cpm|lead|monetiz|revenue|banner|sponsor|lander|adster|traffic|yield|campaign)/i;
-
-const SUSPICIOUS_QUERY_PARAMS = /(?:click_id|aff_id|offer_id|campaign_id|subid|smartlink|cpa|rotator|track_id|ad_id|popunder|pop_id)=/i;
 
 function isSuspiciousRedirectDomain(urlStr: string): boolean {
   if (!urlStr) return false;
   try {
     if (isSafeUrl(urlStr)) return false;
-    if (SUSPICIOUS_QUERY_PARAMS.test(urlStr)) return true;
-    const hostname = new URL(urlStr).hostname.toLowerCase();
+    const parsed = new URL(urlStr);
+    const hostname = parsed.hostname.toLowerCase();
     const parts = hostname.split('.');
     if (parts.length < 2) return false;
     const tld = parts[parts.length - 1];
     const sld = parts[parts.length - 2];
     if (!SUSPICIOUS_TLDS.has(tld)) return false;
-    if (sld.length >= 16 && /^[a-z]+$/.test(sld)) return true;
-    if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld) || (sld.includes('-') && SUSPICIOUS_KEYWORDS.test(urlStr))) return true;
+    if (sld.length >= 18 && /^[a-z]+$/.test(sld)) return true;
+    if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld) || (sld.includes('-') && SUSPICIOUS_KEYWORDS.test(parsed.pathname))) return true;
     return false;
   } catch {
     return false;

@@ -243,31 +243,69 @@ function isAdDomainUrl(url) {
 
 // Suspicious auto-generated redirect domain heuristic
 const SUSPICIOUS_TLDS = new Set([
-  'com', 'net', 'org', 'io', 'co', 'info', 'xyz', 'online', 'site',
-  'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip',
+  'xyz', 'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip',
   'pro', 'cc', 'ws', 'me', 'pw', 'monster', 'quest', 'space', 'surf', 'rest',
   'best', 'stream', 'win', 'bid', 'racing', 'date', 'faith', 'trade', 'review',
-  'party', 'gq', 'cf', 'ga', 'ml', 'tk', 'loan', 'download', 'app'
+  'party', 'gq', 'cf', 'ga', 'ml', 'tk', 'loan', 'download'
 ]);
 
 const SUSPICIOUS_KEYWORDS = /(?:click|track|pop|jump|direct|rotat|gate|redir|offer|bonus|prize|reward|promot|adserver|smartlink|affiliate|traff|cpa|cpm|lead|monetiz|revenue|banner|sponsor|lander|adster|traffic|yield|campaign)/i;
 
-const SUSPICIOUS_QUERY_PARAMS = /(?:click_id|aff_id|offer_id|campaign_id|subid|smartlink|cpa|rotator|track_id|ad_id|popunder|pop_id)=/i;
-
 function isSuspiciousRedirectDomain(url) {
   try {
-    const hostname = new URL(url).hostname.toLowerCase();
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
     if (isSafeDomain(url)) return false;
-    if (SUSPICIOUS_QUERY_PARAMS.test(url)) return true;
     const parts = hostname.split('.');
     if (parts.length < 2) return false;
     const tld = parts[parts.length - 1];
     const sld = parts[parts.length - 2];
     if (!SUSPICIOUS_TLDS.has(tld)) return false;
-    if (sld.length >= 16 && /^[a-z]+$/.test(sld)) return true;
-    if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld) || (sld.indexOf('-') !== -1 && SUSPICIOUS_KEYWORDS.test(url))) return true;
+    if (sld.length >= 18 && /^[a-z]+$/.test(sld)) return true;
+    if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld) || (sld.indexOf('-') !== -1 && SUSPICIOUS_KEYWORDS.test(parsed.pathname))) return true;
     return false;
   } catch {
+    return false;
+  }
+}
+
+/**
+ * Safely removes a tab ONLY if it is a secondary background popup and not the only tab in the window.
+ * NEVER removes the active tab or the last tab in a window (which would close the window and terminate the browser).
+ */
+async function safeRemoveTab(tabId, url, reason = 'Ad') {
+  if (!tabId) return false;
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    if (!tab || tab.id === undefined) return false;
+
+    if (tab.windowId) {
+      const windowTabs = await chrome.tabs.query({ windowId: tab.windowId });
+      // Never close the only remaining tab in a window to avoid terminating the browser process
+      if (windowTabs.length <= 1) {
+        if (url && isAdDomainUrl(url)) {
+          await chrome.tabs.update(tabId, { url: 'about:blank' });
+          recordBlockedItem(url, reason);
+        }
+        return false;
+      }
+    }
+
+    // Never close the active tab the user is viewing
+    if (tab.active) {
+      if (url && isAdDomainUrl(url)) {
+        await chrome.tabs.update(tabId, { url: 'about:blank' });
+        recordBlockedItem(url, reason);
+      }
+      return false;
+    }
+
+    await chrome.tabs.remove(tabId);
+    if (url) {
+      recordBlockedItem(url, reason);
+    }
+    return true;
+  } catch (e) {
     return false;
   }
 }
@@ -275,12 +313,11 @@ function isSuspiciousRedirectDomain(url) {
 const spawnedAboutBlankTabs = new Set();
 
 // ── Redirect chain detection state ────────────────────────────────────
-// Track newly opened tabs (those with an openerTabId or created navigation target)
-// and monitor their navigation history. If a tab visits 2+ distinct external domains,
-// or hops through an external redirect chain within 15 seconds, close it immediately.
+// Track newly opened popup tabs (those with an openerTabId) and monitor their navigation history.
+// If a tab visits 4+ distinct domains in rapid succession and touches suspicious domains, close it.
 
 const REDIRECT_CHAIN_WINDOW_MS = 15000;
-const REDIRECT_CHAIN_DOMAIN_THRESHOLD = 2;
+const REDIRECT_CHAIN_DOMAIN_THRESHOLD = 4;
 
 const redirectChainMap = new Map();
 
@@ -296,17 +333,14 @@ function trackRedirectChain(tabId, url, isRedirectHop = false) {
   const domain = getBaseDomain(url);
   if (!domain) return;
 
+  const entry = redirectChainMap.get(tabId);
+  if (!entry) return;
+
   if (isAdDomainUrl(url)) {
-    chrome.tabs.remove(tabId, () => {
-      if (chrome.runtime.lastError) {}
-    });
-    recordBlockedItem(url, 'Ad');
+    safeRemoveTab(tabId, url, 'Ad');
     redirectChainMap.delete(tabId);
     return;
   }
-
-  const entry = redirectChainMap.get(tabId);
-  if (!entry) return;
 
   // Skip safe domains -- legitimate OAuth flows, etc.
   if (isSafeDomain(url)) {
@@ -326,17 +360,12 @@ function trackRedirectChain(tabId, url, isRedirectHop = false) {
   }
 
   // Check threshold:
-  // If a tab visits 2 or more distinct external domains, or is a redirect hop across 2 domains,
-  // or has suspicious traits, close immediately.
+  // Tab must visit 4+ distinct domains in rapid succession and touch a suspicious domain
   const hasMultipleDomains = entry.domains.length >= REDIRECT_CHAIN_DOMAIN_THRESHOLD;
-  const isSuspiciousHop = isRedirectHop && entry.domains.length >= 2;
   const hasSuspiciousDomain = entry.domains.some(d => isSuspiciousRedirectDomain('https://' + d));
 
-  if (hasMultipleDomains || isSuspiciousHop || (hasSuspiciousDomain && entry.domains.length >= 2)) {
-    chrome.tabs.remove(tabId, () => {
-      if (chrome.runtime.lastError) {}
-    });
-    recordBlockedItem(url, 'Ad');
+  if (hasMultipleDomains && hasSuspiciousDomain) {
+    safeRemoveTab(tabId, url, 'Ad');
     redirectChainMap.delete(tabId);
   }
 }
@@ -344,7 +373,7 @@ function trackRedirectChain(tabId, url, isRedirectHop = false) {
 // ── Tab-burst detection state ─────────────────────────────────────────
 
 const TAB_BURST_WINDOW_MS = 2000;
-const TAB_BURST_THRESHOLD = 2;
+const TAB_BURST_THRESHOLD = 3;
 
 const tabBurstMap = new Map();
 const userIntentUrls = new Map();
@@ -376,10 +405,7 @@ function handleTabBurst(newTabId, openerId, url) {
         continue;
       }
 
-      chrome.tabs.remove(entry.tabId, () => {
-        if (chrome.runtime.lastError) {}
-      });
-      recordBlockedItem(entry.url || 'tab_burst_popup', 'Ad');
+      safeRemoveTab(entry.tabId, entry.url || 'tab_burst_popup', 'Ad');
     }
 
     tabBurstMap.delete(openerId);
@@ -412,16 +438,13 @@ function checkAndCloseAdTab(tabId, url) {
     spawnedAboutBlankTabs.delete(tabId);
   }
   if (isAdDomainUrl(url)) {
-    chrome.tabs.remove(tabId, () => {
-      if (chrome.runtime.lastError) {}
-    });
+    safeRemoveTab(tabId, url, 'Ad');
     spawnedAboutBlankTabs.delete(tabId);
-    recordBlockedItem(url, 'Ad');
   }
 }
 
 const GLOBAL_TAB_BURST_WINDOW_MS = 1500;
-const GLOBAL_TAB_BURST_THRESHOLD = 2;
+const GLOBAL_TAB_BURST_THRESHOLD = 5;
 const recentGlobalTabs = [];
 
 function isGlobalTabBurst(tabId, url) {
@@ -433,18 +456,15 @@ function isGlobalTabBurst(tabId, url) {
   return recentGlobalTabs.length > GLOBAL_TAB_BURST_THRESHOLD;
 }
 
-// Automatically close any newly spawned tabs navigating to ad domains, detect tab bursts,
-// or close orphan about:blank popups
+// Automatically close secondary popup tabs navigating to ad domains, detect tab bursts,
+// or close orphan about:blank script popups
 if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
   chrome.tabs.onCreated.addListener((tab) => {
     const targetUrl = tab.pendingUrl || tab.url || '';
 
-    // Layer 1: Known ad domain — close immediately
+    // Layer 1: Known ad domain in newly spawned tab — close safely
     if (tab.id && targetUrl && isAdDomainUrl(targetUrl)) {
-      chrome.tabs.remove(tab.id, () => {
-        if (chrome.runtime.lastError) {}
-      });
-      recordBlockedItem(targetUrl, 'Ad');
+      safeRemoveTab(tab.id, targetUrl, 'Ad');
       return;
     }
 
@@ -455,16 +475,13 @@ if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
     }
 
     // Layer 2.5: Global burst detection (covers popups opened with noopener or detached windows)
-    if (tab.id && isGlobalTabBurst(tab.id, targetUrl)) {
-      chrome.tabs.remove(tab.id, () => {
-        if (chrome.runtime.lastError) {}
-      });
-      recordBlockedItem(targetUrl || 'global_tab_burst', 'Ad');
+    if (tab.id && tab.openerTabId && isGlobalTabBurst(tab.id, targetUrl)) {
+      safeRemoveTab(tab.id, targetUrl || 'global_tab_burst', 'Ad');
       return;
     }
 
-    // Layer 3: Orphan about:blank popups — track regardless of openerTabId
-    if (tab.id && (!targetUrl || targetUrl === 'about:blank' || targetUrl === '')) {
+    // Layer 3: Orphan about:blank popups — track only scripted popups (openerTabId present)
+    if (tab.id && tab.openerTabId && (!targetUrl || targetUrl === 'about:blank' || targetUrl === '')) {
       spawnedAboutBlankTabs.add(tab.id);
       setTimeout(() => {
         if (spawnedAboutBlankTabs.has(tab.id)) {
@@ -474,24 +491,21 @@ if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
               return;
             }
             if (t && (t.url === 'about:blank' || !t.url || isAdDomainUrl(t.url))) {
-              chrome.tabs.remove(tab.id, () => {
-                if (chrome.runtime.lastError) {}
-              });
-              recordBlockedItem(t.url || 'about:blank_popup', 'Ad');
+              safeRemoveTab(tab.id, t.url || 'about:blank_popup', 'Ad');
             }
             spawnedAboutBlankTabs.delete(tab.id);
           });
         }
-      }, 500);
+      }, 1500);
     }
 
-    // Layer 4: Register all new tabs for redirect chain monitoring
-    if (tab.id) {
+    // Layer 4: Register only popup tabs (with openerTabId) for redirect chain monitoring
+    if (tab.id && tab.openerTabId) {
       const initialDomain = (targetUrl && targetUrl !== 'about:blank') ? (getBaseDomain(targetUrl) || '') : '';
       redirectChainMap.set(tab.id, {
         domains: initialDomain ? [initialDomain] : [],
         firstNavTime: Date.now(),
-        openerTabId: tab.openerTabId || 0
+        openerTabId: tab.openerTabId
       });
       const trackedTabId = tab.id;
       setTimeout(() => {
@@ -526,10 +540,7 @@ if (typeof chrome !== 'undefined' && chrome.webNavigation) {
     chrome.webNavigation.onBeforeRedirect.addListener((details) => {
       if (details.frameId === 0 && details.tabId) {
         if (isAdDomainUrl(details.url) || isAdDomainUrl(details.redirectUrl)) {
-          chrome.tabs.remove(details.tabId, () => {
-            if (chrome.runtime.lastError) {}
-          });
-          recordBlockedItem(details.redirectUrl || details.url, 'Ad');
+          safeRemoveTab(details.tabId, details.redirectUrl || details.url, 'Ad');
           return;
         }
         trackRedirectChain(details.tabId, details.redirectUrl, true);
@@ -542,10 +553,7 @@ if (typeof chrome !== 'undefined' && chrome.webNavigation) {
     chrome.webNavigation.onCreatedNavigationTarget.addListener((details) => {
       if (details.tabId) {
         if (details.url && isAdDomainUrl(details.url)) {
-          chrome.tabs.remove(details.tabId, () => {
-            if (chrome.runtime.lastError) {}
-          });
-          recordBlockedItem(details.url, 'Ad');
+          safeRemoveTab(details.tabId, details.url, 'Ad');
           return;
         }
         const sourceDomain = getBaseDomain(details.url) || '';
@@ -568,13 +576,10 @@ if (typeof chrome !== 'undefined' && chrome.webNavigation) {
     });
   }
 
-  // Automatically close top-level tabs that fail navigation due to DNR ad blocks
+  // Record DNR ad blocks without destructively closing the tab or browser
   if (chrome.webNavigation.onErrorOccurred) {
     chrome.webNavigation.onErrorOccurred.addListener((details) => {
       if (details.frameId === 0 && details.tabId && details.error === 'net::ERR_BLOCKED_BY_CLIENT') {
-        chrome.tabs.remove(details.tabId, () => {
-          if (chrome.runtime.lastError) {}
-        });
         recordBlockedItem(details.url, 'Ad');
       }
     });
