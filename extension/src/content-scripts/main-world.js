@@ -17,7 +17,7 @@
 
   // ── Known ad & popunder URL patterns ─────────────────────────────────
 
-  var AD_PATTERN_REGEX = /(?:google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|criteo\.net|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|segment\.com|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|revcontent\.com|mgid\.com|content-ad\.net|zemanta\.com|ntv\.io|sharethrough\.com|3lift\.com|triplelift\.com|applovin\.com|supersonicads\.com|ironsrc\.com|vungle\.com|chartboost\.com|inmobi\.com|rayjump\.com|mintegral\.com|fyber\.com|smaato\.net|adroll\.com|casalemedia\.com|teads\.tv|spotxchange\.com|freewheel\.tv|tremorhub\.com|connatix\.com|bluekai\.com|id5-sync\.com|crwdcntrl\.net|imrworldwide\.com|rlcdn\.com|adsrvr\.org|agkn\.com|tapad\.com|drawbrid\.ge|sc-static\.net|amplitude\.com|mixpanel\.com|mxpnl\.com|fullstory\.com|heapanalytics\.com|crazyegg\.com|popads|popcash|propellerads|adsterra|exoclick|clickadu|hilltopads|trafficjunky|monetag|yllix|richpush|pushground|zeropark|galaksion|trafficstars|adxad|admaven|revenuehits|bidvertiser|clickorience|smarturl|adf\.ly|ouo\.io|shrinkearn|highcpmgate|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
+  var AD_PATTERN_REGEX = /(?:google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|criteo\.net|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|segment\.com|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|revcontent\.com|mgid\.com|content-ad\.net|zemanta\.com|ntv\.io|sharethrough\.com|3lift\.com|triplelift\.com|applovin\.com|supersonicads\.com|ironsrc\.com|vungle\.com|chartboost\.com|inmobi\.com|rayjump\.com|mintegral\.com|fyber\.com|smaato\.net|adroll\.com|casalemedia\.com|teads\.tv|spotxchange\.com|freewheel\.tv|tremorhub\.com|connatix\.com|bluekai\.com|id5-sync\.com|crwdcntrl\.net|imrworldwide\.com|rlcdn\.com|adsrvr\.org|agkn\.com|tapad\.com|drawbrid\.ge|sc-static\.net|amplitude\.com|mixpanel\.com|mxpnl\.com|fullstory\.com|heapanalytics\.com|crazyegg\.com|popads|popcash|propellerads|adsterra|exoclick|clickadu|hilltopads|trafficjunky|monetag|yllix|richpush|pushground|zeropark|galaksion|trafficstars|adxad|admaven|revenuehits|bidvertiser|clickorience|smarturl|adf\.ly|ouo\.io|shrinkearn|highcpmgate|highcpmrevenues|wrestpop|popdownload|downloadnow|popunder|click_id=pop|adcash|adkeeper|adkernel|adtrue|adspyglass|adsupply|adxpansion|adcombo|adworkmedia|clickdealer|clickguard|deloton|onclickprediction|onclickmega|onclickalgo|onclicksuper|onclickperformance|propu|voluum|keitaro|binom|redtrack|bemob|adsbridge|peerclick|octotracker|funnelflux|traffichaus|trafficforce|trafficcompany|linkvertise|cpagrip|cpalead|ogads|realsrv|adtng|clkmr|clksite|directrev|adkmob|leadbolt|startapp|mobfox|smartlink|rotator)/i;
 
   // ── First-party safe domains (must never be blocked) ─────────────────
 
@@ -58,16 +58,25 @@
 
   var SUSPICIOUS_TLDS = new Set([
     'com', 'net', 'org', 'io', 'co', 'info', 'xyz', 'online', 'site',
-    'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip'
+    'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip',
+    'pro', 'cc', 'ws', 'me', 'pw', 'monster', 'quest', 'space', 'surf', 'rest',
+    'best', 'stream', 'win', 'bid', 'racing', 'date', 'faith', 'trade', 'review',
+    'party', 'gq', 'cf', 'ga', 'ml', 'tk', 'loan', 'download', 'app'
   ]);
 
-  var SUSPICIOUS_KEYWORDS = /(?:click|track|pop|jump|direct|rotat|gate|redir|offer|bonus|prize|reward|promot|adserver)/i;
+  var SUSPICIOUS_KEYWORDS = /(?:click|track|pop|jump|direct|rotat|gate|redir|offer|bonus|prize|reward|promot|adserver|smartlink|affiliate|traff|cpa|cpm|lead|monetiz|revenue|banner|sponsor|lander|adster|traffic|yield|campaign)/i;
+
+  var SUSPICIOUS_QUERY_PARAMS = /(?:click_id|aff_id|offer_id|campaign_id|subid|smartlink|cpa|rotator|track_id|ad_id|popunder|pop_id)=/i;
 
   function isSuspiciousRedirectDomain(url) {
     if (!url) return false;
     try {
       var urlStr = url.toString();
       if (isSafeUrl(urlStr)) return false;
+
+      if (SUSPICIOUS_QUERY_PARAMS.test(urlStr)) {
+        return true;
+      }
 
       var hostname = new URL(urlStr).hostname.toLowerCase();
       var parts = hostname.split('.');
@@ -78,14 +87,12 @@
 
       if (!SUSPICIOUS_TLDS.has(tld)) return false;
 
-      if (sld.length >= 18 && /^[a-z]+$/.test(sld)) {
+      if (sld.length >= 16 && /^[a-z]+$/.test(sld)) {
         return true;
       }
 
-      if (['xyz', 'top', 'icu', 'click', 'site', 'link', 'live', 'online', 'club', 'buzz'].indexOf(tld) !== -1) {
-        if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld)) {
-          return true;
-        }
+      if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld) || (sld.indexOf('-') !== -1 && SUSPICIOUS_KEYWORDS.test(urlStr))) {
+        return true;
       }
 
       return false;
@@ -96,9 +103,10 @@
 
   // ── User interaction tracking ─────────────────────────────────────────
 
-  var USER_GESTURE_TIMEOUT_MS = 350;
+  var USER_GESTURE_TIMEOUT_MS = 500;
   var lastTrustedUserActionTime = 0;
   var activeUserClickAnchor = null;
+  var activeClickAnchorHref = null;
   var openCallsDuringCurrentAction = 0;
 
   function recordTrustedAction(event) {
@@ -106,11 +114,14 @@
       lastTrustedUserActionTime = Date.now();
       openCallsDuringCurrentAction = 0;
       var target = event.target;
-      activeUserClickAnchor = target && target.closest ? target.closest('a') : null;
+      var anchor = target && target.closest ? target.closest('a') : null;
+      activeUserClickAnchor = anchor;
+      activeClickAnchorHref = anchor && anchor.href ? anchor.href : null;
 
       setTimeout(function () {
         activeUserClickAnchor = null;
-      }, 0);
+        activeClickAnchorHref = null;
+      }, USER_GESTURE_TIMEOUT_MS);
     }
   }
 
@@ -222,9 +233,21 @@
     }
 
     // Defense 5: Parasitic popup detection
-    if (urlStr && isNewTab && activeUserClickAnchor) {
-      var anchorHref = (activeUserClickAnchor.href || '').trim();
+    if (urlStr && isNewTab && activeClickAnchorHref) {
+      var anchorHref = activeClickAnchorHref.trim();
       if (anchorHref && urlStr !== anchorHref && !anchorHref.startsWith('javascript:')) {
+        return createNoopWindow();
+      }
+    }
+
+    // Defense 5.5: Non-anchor click popunder defense
+    if (urlStr && isNewTab && !activeClickAnchorHref && !isSafeUrl(urlStr)) {
+      try {
+        var targetOrigin = new URL(urlStr, window.location.href).origin;
+        if (targetOrigin !== window.location.origin) {
+          return createNoopWindow();
+        }
+      } catch (e) {
         return createNoopWindow();
       }
     }
@@ -281,5 +304,54 @@
 
     return originalAnchorClick.apply(this);
   };
+
+  // ── Intercepted HTMLFormElement.prototype.submit ──────────────────────
+
+  var originalFormSubmit = HTMLFormElement.prototype.submit;
+
+  HTMLFormElement.prototype.submit = function () {
+    var action = (this.action || '').trim();
+    var target = this.target || '';
+    var isNewTab = target === '_blank' || target === '_new';
+    var hasRecentUserGesture = Date.now() - lastTrustedUserActionTime <= USER_GESTURE_TIMEOUT_MS;
+
+    if (isNewTab && !hasRecentUserGesture) {
+      return;
+    }
+    if (isKnownAdUrl(action) || isSuspiciousRedirectDomain(action)) {
+      return;
+    }
+    if (isNewTab && openCallsDuringCurrentAction >= 1) {
+      return;
+    }
+    if (isNewTab) {
+      openCallsDuringCurrentAction++;
+    }
+    return originalFormSubmit.apply(this);
+  };
+
+  // ── Guard Location navigation against ad rotators ────────────────────
+
+  if (typeof Location !== 'undefined' && Location.prototype) {
+    var origAssign = Location.prototype.assign;
+    var origReplace = Location.prototype.replace;
+
+    if (origAssign) {
+      Location.prototype.assign = function (url) {
+        if (isKnownAdUrl(url) || isSuspiciousRedirectDomain(url)) {
+          return;
+        }
+        return origAssign.call(this, url);
+      };
+    }
+    if (origReplace) {
+      Location.prototype.replace = function (url) {
+        if (isKnownAdUrl(url) || isSuspiciousRedirectDomain(url)) {
+          return;
+        }
+        return origReplace.call(this, url);
+      };
+    }
+  }
 
 })();

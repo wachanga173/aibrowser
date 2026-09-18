@@ -200,13 +200,59 @@ const AD_DOMAIN_PATTERNS = [
   /ouo\.io/i,
   /shrinkearn/i,
   /highcpmgate/i,
+  /highcpmrevenues/i,
   /click_id=pop/i,
   /pop202/i,
   /popunder/i,
   /pop\d{4}/i,
   /wrestpop/i,
   /downloadnow/i,
-  /popdownload/i
+  /popdownload/i,
+  /adcash/i,
+  /adkeeper/i,
+  /adkernel/i,
+  /adtrue/i,
+  /adspyglass/i,
+  /adsupply/i,
+  /adxpansion/i,
+  /adcombo/i,
+  /adworkmedia/i,
+  /clickdealer/i,
+  /clickguard/i,
+  /deloton/i,
+  /onclickprediction/i,
+  /onclickmega/i,
+  /onclickalgo/i,
+  /onclicksuper/i,
+  /onclickperformance/i,
+  /propu/i,
+  /voluum/i,
+  /keitaro/i,
+  /binom/i,
+  /redtrack/i,
+  /bemob/i,
+  /adsbridge/i,
+  /peerclick/i,
+  /octotracker/i,
+  /funnelflux/i,
+  /traffichaus/i,
+  /trafficforce/i,
+  /trafficcompany/i,
+  /linkvertise/i,
+  /cpagrip/i,
+  /cpalead/i,
+  /ogads/i,
+  /realsrv/i,
+  /adtng/i,
+  /clkmr/i,
+  /clksite/i,
+  /directrev/i,
+  /adkmob/i,
+  /leadbolt/i,
+  /startapp/i,
+  /mobfox/i,
+  /smartlink/i,
+  /rotator/i
 ];
 
 function isAdDomainUrl(url: string): boolean {
@@ -220,24 +266,28 @@ function isAdDomainUrl(url: string): boolean {
 
 const SUSPICIOUS_TLDS = new Set([
   'com', 'net', 'org', 'io', 'co', 'info', 'xyz', 'online', 'site',
-  'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip'
+  'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip',
+  'pro', 'cc', 'ws', 'me', 'pw', 'monster', 'quest', 'space', 'surf', 'rest',
+  'best', 'stream', 'win', 'bid', 'racing', 'date', 'faith', 'trade', 'review',
+  'party', 'gq', 'cf', 'ga', 'ml', 'tk', 'loan', 'download', 'app'
 ]);
 
-const SUSPICIOUS_KEYWORDS = /(?:click|track|pop|jump|direct|rotat|gate|redir|offer|bonus|prize|reward|promot|adserver)/i;
+const SUSPICIOUS_KEYWORDS = /(?:click|track|pop|jump|direct|rotat|gate|redir|offer|bonus|prize|reward|promot|adserver|smartlink|affiliate|traff|cpa|cpm|lead|monetiz|revenue|banner|sponsor|lander|adster|traffic|yield|campaign)/i;
+
+const SUSPICIOUS_QUERY_PARAMS = /(?:click_id|aff_id|offer_id|campaign_id|subid|smartlink|cpa|rotator|track_id|ad_id|popunder|pop_id)=/i;
 
 function isSuspiciousRedirectDomain(url: string): boolean {
   try {
     const hostname = new URL(url).hostname.toLowerCase();
     if (isSafeDomain(url)) return false;
+    if (SUSPICIOUS_QUERY_PARAMS.test(url)) return true;
     const parts = hostname.split('.');
     if (parts.length < 2) return false;
     const tld = parts[parts.length - 1];
     const sld = parts[parts.length - 2];
     if (!SUSPICIOUS_TLDS.has(tld)) return false;
-    if (sld.length >= 18 && /^[a-z]+$/.test(sld)) return true;
-    if (['xyz', 'top', 'icu', 'click', 'site', 'link', 'live', 'online', 'club', 'buzz'].includes(tld)) {
-      if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld)) return true;
-    }
+    if (sld.length >= 16 && /^[a-z]+$/.test(sld)) return true;
+    if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld) || (sld.includes('-') && SUSPICIOUS_KEYWORDS.test(url))) return true;
     return false;
   } catch {
     return false;
@@ -247,13 +297,12 @@ function isSuspiciousRedirectDomain(url: string): boolean {
 const spawnedAboutBlankTabs = new Set<number>();
 
 // ── Redirect chain detection state ────────────────────────────────────
-// Track newly opened tabs (those with an openerTabId) and monitor their
-// navigation history.  If a tab visits 3+ distinct domains within 3
-// seconds of being created, it is almost certainly a redirect-chain ad
-// (e.g. streaming site -> randomword1.com -> randomword2.com -> ad).
+// Track newly opened tabs (those with an openerTabId or created navigation target)
+// and monitor their navigation history. If a tab visits 2+ distinct external domains,
+// or hops through an external redirect chain within 15 seconds, close it immediately.
 
-const REDIRECT_CHAIN_WINDOW_MS = 3000;
-const REDIRECT_CHAIN_DOMAIN_THRESHOLD = 3;
+const REDIRECT_CHAIN_WINDOW_MS = 15000;
+const REDIRECT_CHAIN_DOMAIN_THRESHOLD = 2;
 
 interface RedirectChainEntry {
   domains: string[];
@@ -271,17 +320,24 @@ function getBaseDomain(url: string): string | null {
   }
 }
 
-function trackRedirectChain(tabId: number, url: string): void {
+function trackRedirectChain(tabId: number, url: string, isRedirectHop = false): void {
   const domain = getBaseDomain(url);
   if (!domain) return;
 
-  // Only track tabs we are monitoring (registered on creation)
+  if (isAdDomainUrl(url)) {
+    chrome.tabs.remove(tabId, () => {
+      if (chrome.runtime.lastError) {}
+    });
+    recordBlockedItem(url, 'Ad');
+    redirectChainMap.delete(tabId);
+    return;
+  }
+
   const entry = redirectChainMap.get(tabId);
   if (!entry) return;
 
   // Skip safe domains — legitimate OAuth flows, etc.
   if (isSafeDomain(url)) {
-    // If the tab has landed on a safe domain, stop tracking it
     redirectChainMap.delete(tabId);
     return;
   }
@@ -297,8 +353,14 @@ function trackRedirectChain(tabId: number, url: string): void {
     entry.domains.push(domain);
   }
 
-  // Check threshold
-  if (entry.domains.length >= REDIRECT_CHAIN_DOMAIN_THRESHOLD) {
+  // Check threshold:
+  // If a tab visits 2 or more distinct external domains, or is a redirect hop across 2 domains,
+  // or has suspicious traits, close immediately.
+  const hasMultipleDomains = entry.domains.length >= REDIRECT_CHAIN_DOMAIN_THRESHOLD;
+  const isSuspiciousHop = isRedirectHop && entry.domains.length >= 2;
+  const hasSuspiciousDomain = entry.domains.some(d => isSuspiciousRedirectDomain('https://' + d));
+
+  if (hasMultipleDomains || isSuspiciousHop || (hasSuspiciousDomain && entry.domains.length >= 2)) {
     chrome.tabs.remove(tabId, () => {
       if (chrome.runtime.lastError) {}
     });
@@ -471,15 +533,16 @@ if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
 
     // Layer 4: Register all new tabs for redirect chain monitoring
     if (tab.id) {
+      const initialDomain = (targetUrl && targetUrl !== 'about:blank') ? (getBaseDomain(targetUrl) || '') : '';
       redirectChainMap.set(tab.id, {
-        domains: targetUrl && targetUrl !== 'about:blank' ? [getBaseDomain(targetUrl) || ''] : [],
+        domains: initialDomain ? [initialDomain] : [],
         firstNavTime: Date.now(),
         openerTabId: tab.openerTabId || 0
       });
       const trackedTabId = tab.id;
       setTimeout(() => {
         redirectChainMap.delete(trackedTabId);
-      }, REDIRECT_CHAIN_WINDOW_MS + 500);
+      }, REDIRECT_CHAIN_WINDOW_MS + 1000);
     }
   });
 }
@@ -488,7 +551,10 @@ if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onCreated) {
 if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onUpdated) {
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     const currentUrl = changeInfo.url || tab.pendingUrl || tab.url;
-    if (tabId) checkAndCloseAdTab(tabId, currentUrl);
+    if (tabId && currentUrl) {
+      checkAndCloseAdTab(tabId, currentUrl);
+      trackRedirectChain(tabId, currentUrl, false);
+    }
   });
 }
 
@@ -501,12 +567,49 @@ if (typeof chrome !== 'undefined' && chrome.webNavigation) {
     });
   }
 
+  // Intercept server-side and client-side redirect chains in flight
+  if (chrome.webNavigation.onBeforeRedirect) {
+    chrome.webNavigation.onBeforeRedirect.addListener((details) => {
+      if (details.frameId === 0 && details.tabId) {
+        if (isAdDomainUrl(details.url) || isAdDomainUrl(details.redirectUrl)) {
+          chrome.tabs.remove(details.tabId, () => {
+            if (chrome.runtime.lastError) {}
+          });
+          recordBlockedItem(details.redirectUrl || details.url, 'Ad');
+          return;
+        }
+        trackRedirectChain(details.tabId, details.redirectUrl, true);
+      }
+    });
+  }
+
+  // Intercept newly created navigation targets (e.g. window.open or target=_blank)
+  if (chrome.webNavigation.onCreatedNavigationTarget) {
+    chrome.webNavigation.onCreatedNavigationTarget.addListener((details) => {
+      if (details.tabId) {
+        if (details.url && isAdDomainUrl(details.url)) {
+          chrome.tabs.remove(details.tabId, () => {
+            if (chrome.runtime.lastError) {}
+          });
+          recordBlockedItem(details.url, 'Ad');
+          return;
+        }
+        const sourceDomain = getBaseDomain(details.url) || '';
+        redirectChainMap.set(details.tabId, {
+          domains: sourceDomain && sourceDomain !== 'about:blank' ? [sourceDomain] : [],
+          firstNavTime: Date.now(),
+          openerTabId: details.sourceTabId || 0
+        });
+      }
+    });
+  }
+
   if (chrome.webNavigation.onCommitted) {
     chrome.webNavigation.onCommitted.addListener((details) => {
       if (details.frameId === 0 && details.tabId) {
         checkAndCloseAdTab(details.tabId, details.url);
-        // Feed redirect chain tracker
-        trackRedirectChain(details.tabId, details.url);
+        const isRedirect = details.transitionQualifiers && (details.transitionQualifiers.includes('server_redirect') || details.transitionQualifiers.includes('client_redirect'));
+        trackRedirectChain(details.tabId, details.url, !!isRedirect);
       }
     });
   }

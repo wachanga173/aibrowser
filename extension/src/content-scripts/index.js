@@ -63,7 +63,7 @@ function checkHeuristicThresholds() {
   }
 })();
 
-const AD_PATTERN_REGEX = /(?:google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|criteo\.net|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|segment\.com|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|revcontent\.com|mgid\.com|content-ad\.net|zemanta\.com|ntv\.io|sharethrough\.com|3lift\.com|triplelift\.com|applovin\.com|supersonicads\.com|ironsrc\.com|vungle\.com|chartboost\.com|inmobi\.com|rayjump\.com|mintegral\.com|fyber\.com|smaato\.net|adroll\.com|casalemedia\.com|teads\.tv|spotxchange\.com|freewheel\.tv|tremorhub\.com|connatix\.com|bluekai\.com|id5-sync\.com|crwdcntrl\.net|imrworldwide\.com|rlcdn\.com|adsrvr\.org|agkn\.com|tapad\.com|drawbrid\.ge|sc-static\.net|amplitude\.com|mixpanel\.com|mxpnl\.com|fullstory\.com|heapanalytics\.com|crazyegg\.com|popads|popcash|propellerads|adsterra|exoclick|clickadu|hilltopads|trafficjunky|monetag|yllix|richpush|pushground|zeropark|galaksion|trafficstars|adxad|admaven|revenuehits|bidvertiser|clickorience|smarturl|adf\.ly|ouo\.io|shrinkearn|highcpmgate|wrestpop|popdownload|downloadnow|popunder|click_id=pop)/i;
+const AD_PATTERN_REGEX = /(?:google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|facebook\.net\/signals|connect\.facebook\.net|scorecardresearch\.com|adservice\.google\.com|adnxs\.com|criteo\.com|criteo\.net|taboola\.com|outbrain\.com|hotjar\.com|segment\.io|segment\.com|clarity\.ms|amazon-adsystem\.com|pubmatic\.com|rubiconproject\.com|openx\.net|quantserve\.com|revcontent\.com|mgid\.com|content-ad\.net|zemanta\.com|ntv\.io|sharethrough\.com|3lift\.com|triplelift\.com|applovin\.com|supersonicads\.com|ironsrc\.com|vungle\.com|chartboost\.com|inmobi\.com|rayjump\.com|mintegral\.com|fyber\.com|smaato\.net|adroll\.com|casalemedia\.com|teads\.tv|spotxchange\.com|freewheel\.tv|tremorhub\.com|connatix\.com|bluekai\.com|id5-sync\.com|crwdcntrl\.net|imrworldwide\.com|rlcdn\.com|adsrvr\.org|agkn\.com|tapad\.com|drawbrid\.ge|sc-static\.net|amplitude\.com|mixpanel\.com|mxpnl\.com|fullstory\.com|heapanalytics\.com|crazyegg\.com|popads|popcash|propellerads|adsterra|exoclick|clickadu|hilltopads|trafficjunky|monetag|yllix|richpush|pushground|zeropark|galaksion|trafficstars|adxad|admaven|revenuehits|bidvertiser|clickorience|smarturl|adf\.ly|ouo\.io|shrinkearn|highcpmgate|highcpmrevenues|wrestpop|popdownload|downloadnow|popunder|click_id=pop|adcash|adkeeper|adkernel|adtrue|adspyglass|adsupply|adxpansion|adcombo|adworkmedia|clickdealer|clickguard|deloton|onclickprediction|onclickmega|onclickalgo|onclicksuper|onclickperformance|propu|voluum|keitaro|binom|redtrack|bemob|adsbridge|peerclick|octotracker|funnelflux|traffichaus|trafficforce|trafficcompany|linkvertise|cpagrip|cpalead|ogads|realsrv|adtng|clkmr|clksite|directrev|adkmob|leadbolt|startapp|mobfox|smartlink|rotator)/i;
 
 // ── First-party safe domains ──────────────────────────────────────────
 const SAFE_DOMAIN_SUFFIXES = [
@@ -88,13 +88,44 @@ function isSafeUrl(urlStr) {
   }
 }
 
+const SUSPICIOUS_TLDS = new Set([
+  'com', 'net', 'org', 'io', 'co', 'info', 'xyz', 'online', 'site',
+  'top', 'icu', 'club', 'live', 'fun', 'buzz', 'click', 'link', 'work', 'vip',
+  'pro', 'cc', 'ws', 'me', 'pw', 'monster', 'quest', 'space', 'surf', 'rest',
+  'best', 'stream', 'win', 'bid', 'racing', 'date', 'faith', 'trade', 'review',
+  'party', 'gq', 'cf', 'ga', 'ml', 'tk', 'loan', 'download', 'app'
+]);
+
+const SUSPICIOUS_KEYWORDS = /(?:click|track|pop|jump|direct|rotat|gate|redir|offer|bonus|prize|reward|promot|adserver|smartlink|affiliate|traff|cpa|cpm|lead|monetiz|revenue|banner|sponsor|lander|adster|traffic|yield|campaign)/i;
+
+const SUSPICIOUS_QUERY_PARAMS = /(?:click_id|aff_id|offer_id|campaign_id|subid|smartlink|cpa|rotator|track_id|ad_id|popunder|pop_id)=/i;
+
+function isSuspiciousRedirectDomain(urlStr) {
+  if (!urlStr) return false;
+  try {
+    if (isSafeUrl(urlStr)) return false;
+    if (SUSPICIOUS_QUERY_PARAMS.test(urlStr)) return true;
+    const hostname = new URL(urlStr).hostname.toLowerCase();
+    const parts = hostname.split('.');
+    if (parts.length < 2) return false;
+    const tld = parts[parts.length - 1];
+    const sld = parts[parts.length - 2];
+    if (!SUSPICIOUS_TLDS.has(tld)) return false;
+    if (sld.length >= 16 && /^[a-z]+$/.test(sld)) return true;
+    if (SUSPICIOUS_KEYWORDS.test(sld) || /\d{3,}/.test(sld) || (sld.indexOf('-') !== -1 && SUSPICIOUS_KEYWORDS.test(urlStr))) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function isAdUrlPattern(urlStr) {
   if (!urlStr) return false;
   if (/\.(png|jpe?g|gif|webp|svg|avif|bmp|ico|tiff|pdf)(\?.*)?$/i.test(urlStr)) {
     return false;
   }
   if (isSafeUrl(urlStr)) return false;
-  return AD_PATTERN_REGEX.test(urlStr);
+  return AD_PATTERN_REGEX.test(urlStr) || isSuspiciousRedirectDomain(urlStr);
 }
 
 // ── Intercept window.open in isolated content script context ─────────
